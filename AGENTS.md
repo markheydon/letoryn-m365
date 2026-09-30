@@ -36,6 +36,7 @@ specs/         Spec Kit features; platform epic index at specs/tenancy-hub-platf
 Follow these when writing or reviewing C# and tests:
 
 - [docs/local-development.md](docs/local-development.md) — prerequisites, build, test, Aspire, secrets
+- [docs/operations-rebuild-runbook.md](docs/operations-rebuild-runbook.md) — authoritative Entra/Postgres/incident recovery (update here, not in specs)
 - [docs/build-quality.md](docs/build-quality.md) — warnings as errors, analyzers, XML docs on libraries
 - [docs/tech-stack.md](docs/tech-stack.md) — Aspire/.NET 10 layout, Azure + PostgreSQL + Graph direction, integration boundaries
 - [docs/csharp-patterns.md](docs/csharp-patterns.md) — DI, async/`CancellationToken`, `IOptions<T>`, typed `HttpClient`, records, nullable
