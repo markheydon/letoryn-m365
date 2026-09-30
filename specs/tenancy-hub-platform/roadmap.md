@@ -16,7 +16,7 @@ An initial **design-partner agency** supplies domain expertise and early validat
 
 | ID | Sub-feature | Intent | Scope boundary | Depends on | Phase | Status | Sub-spec |
 |----|-------------|--------|----------------|------------|-------|--------|----------|
-| R1 | Platform foundation | Multi-tenant SaaS shell: PostgreSQL, Entra ID, agency isolation, roles, audit, notifications | Per-agency tenancy from day one; shared UI chrome; domain modules plug in behind stable tenancy APIs | — | **POC** | planned | — |
+| R1 | Platform foundation | Multi-tenant SaaS shell: PostgreSQL, Entra ID, agency isolation, roles, audit, notifications | Per-agency tenancy from day one; shared UI chrome; domain modules plug in behind stable tenancy APIs | — | **POC** | planned | `specs/001-platform-foundation/` |
 | R2 | CRM & contacts | Tenants, landlords, contractors, applicants, companies, activities, communication history | Contact-centric CRM; property links deepen with R3/R4 | R1 | **POC** | planned | — |
 | R3 | Properties & units | Property records, units, lifecycle/preparation, media **metadata** tied to properties | Operational property data in PostgreSQL; binary media in SharePoint via R8—not portal syndication (see R14) | R1, R2 | **POC** | planned | — |
 | R4 | Tenancies & lettings flow | Applications, tenancy creation, move-in, renewals, arrears **tracking** (not collection) | Lightweight marketing/viewings; no payment execution | R2, R3 | **Go-live** | planned | — |
