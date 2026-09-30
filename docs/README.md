@@ -1,6 +1,6 @@
 # Tenancy Hub documentation
 
-Internal standards and reference for contributors and automation.
+Internal standards and reference for contributors and automation. Product delivery phases and Spec Kit roadmap: [specs/tenancy-hub-platform/roadmap.md](../specs/tenancy-hub-platform/roadmap.md).
 
 | Document | Purpose |
 |----------|---------|

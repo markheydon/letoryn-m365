@@ -1,6 +1,6 @@
 # Local development
 
-How to build, test, and run Tenancy Hub on a developer machine. Product requirements live outside this repo.
+How to build, test, and run Tenancy Hub on a developer machine. Product scope is under `specs/` via [Spec Kit](https://github.com/github/spec-kit) (see [platform roadmap](../specs/tenancy-hub-platform/roadmap.md)).
 
 ## Prerequisites
 

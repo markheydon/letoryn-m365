@@ -1,0 +1,89 @@
+# Tenancy Hub
+
+**Working name.** A **multi-tenant**, **Microsoft 365–centric** operating platform for small UK letting agencies (typically 1–25 staff). The goal is one integrated product—CRM, property and tenancy operations, maintenance, compliance, communications, and (over time) finance and portals—while **staying native to Entra ID and Microsoft Graph**, not replacing Microsoft 365.
+
+The repository is an early **.NET Aspire** scaffold ([tech stack](docs/tech-stack.md)). All product work is **Spec Kit** SDD: a [platform roadmap](specs/tenancy-hub-platform/roadmap.md) decomposes the epic; each slice runs specify → plan → tasks → implement ([Spec Kit](https://github.com/github/spec-kit), [spec of specs](https://github.github.com/spec-kit/concepts/spec-of-specs.html)).
+
+An initial **design-partner agency** provides domain expertise and early testing; **mid–long term** the intent is a **commercial SaaS** for any qualifying agency. Delivery is phased: a **POC** to demonstrate feasibility, then **go-live** scope if the partner commits—see the [roadmap](specs/tenancy-hub-platform/roadmap.md).
+
+## Problem
+
+Many agencies stitch together a CRM, referencing tools, rent and compliance products, Outlook, SharePoint, telephony, spreadsheets, and accounting. That fragmentation drives duplicate entry, manual handoffs, weak reporting, brittle integrations, and high total cost. Tenancy Hub aims to **consolidate operational software** around a single platform that still **integrates with M365** rather than fighting it.
+
+## Product direction
+
+| Area | Direction |
+|------|-----------|
+| Tenancy | **Multi-tenant SaaS** from day one (agency isolation, shared deployment) |
+| Identity | Entra ID / Microsoft 365 accounts |
+| UX | Blazor + Fluent UI |
+| Integrations | Microsoft Graph (mail, calendar, SharePoint documents **and media library**); see roadmap phases |
+| System of record | PostgreSQL |
+| Hosting | Azure (Aspire deployment flows when introduced) |
+| Go-live integrations | WordPress property showcase plugin (R13), property feed for aggregators such as [Data Export](https://dataexport.co.uk/) (R14)—not replacing those platforms |
+| Later | Reporting, finance, portals, AI—roadmap **Later** phase |
+
+Capability areas roll out via the [roadmap](specs/tenancy-hub-platform/roadmap.md); there is no separate PRD process.
+
+## Repository hygiene
+
+The repo may go **public/OSS**. Do not commit customer-confidential material, internal process maps, or private M365 links. Keep `specs/` public-safe (see roadmap [Confidentiality](specs/tenancy-hub-platform/roadmap.md#confidentiality)).
+
+## Repository layout
+
+```
+src/          TenancyHub.AppHost, ApiService, Web, ServiceDefaults
+tests/        Unit tests (xUnit v3, NSubstitute)
+docs/         Engineering standards (see docs/README.md)
+specs/        Spec Kit features + platform roadmap
+.agents/skills/  Aspire, Fluent UI, Playwright workflows
+```
+
+| Project | Role |
+|---------|------|
+| `TenancyHub.AppHost` | Aspire orchestration |
+| `TenancyHub.ApiService` | Backend API |
+| `TenancyHub.Web` | Blazor web UI |
+| `TenancyHub.ServiceDefaults` | OpenTelemetry, health, service discovery |
+
+Contributors and agents: [AGENTS.md](AGENTS.md), [docs/README.md](docs/README.md).
+
+## Prerequisites
+
+- [.NET SDK 10](https://dotnet.microsoft.com/download) (`global.json`)
+- [Aspire CLI 13.6+](https://aspire.dev/get-started/install-cli/)
+
+## Quick start
+
+```bash
+git clone <repo-url>
+cd tenancy-hub
+dotnet restore TenancyHub.slnx
+aspire update --migrate   # first time / after package bumps
+dotnet build TenancyHub.slnx
+dotnet test TenancyHub.slnx
+aspire run                # from repo root
+```
+
+Details: [docs/local-development.md](docs/local-development.md).
+
+## Development status
+
+| Layer | Status |
+|-------|--------|
+| Aspire AppHost + API + Blazor shell | Scaffolded |
+| POC (R1, R2, R3, R8) and go-live slices | Planned ([roadmap](specs/tenancy-hub-platform/roadmap.md)) |
+
+## Spec-driven work
+
+**POC milestone:** **R1 → R2 → R3 → R8** (multi-tenant foundation, CRM, properties, Graph/Outlook/SharePoint media).
+
+**Go-live milestone (after partner commitment):** **R4–R6**, optional **R7**, plus **R13** (WordPress showcase) and **R14** (property feed for aggregators). **Later:** R9–R12.
+
+See [platform roadmap](specs/tenancy-hub-platform/roadmap.md) for Spec Kit workflow and phase definitions.
+
+CI: Release build, format check, and tests on push/PR to `main` (`.github/workflows/ci.yml`).
+
+## License
+
+See repository license file when present; otherwise all rights reserved by the owner until published.

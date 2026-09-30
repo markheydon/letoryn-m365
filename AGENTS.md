@@ -23,10 +23,13 @@ Guidance for AI agents and contributors working in this repository.
 src/           Application and AppHost projects (TenancyHub.* naming)
 tests/         Unit and E2E test projects (TenancyHub.*.UnitTests, etc.)
 docs/          Human-readable standards (see below)
+specs/         Spec Kit features; platform epic index at specs/tenancy-hub-platform/roadmap.md
 .cursor/rules/ Cursor rules (standards pointer)
 .github/       CI workflow and Dependabot
 .agents/skills/ Cursor/Aspire agent skills
 ```
+
+**Product work:** Spec Kit SDD only—no PRD track. The repo may go public; keep specs free of customer-confidential detail (see [specs/tenancy-hub-platform/roadmap.md](specs/tenancy-hub-platform/roadmap.md)).
 
 ## Documentation (source of truth)
 
