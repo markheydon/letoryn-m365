@@ -1,50 +1,135 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# Tenancy Hub Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Security First (NON-NEGOTIABLE)
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+Tenancy Hub is a **security-first** application. Threat modeling, least privilege, and safe defaults
+MUST guide every feature and integration.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+- All **user-supplied and external input** MUST be validated at trust boundaries (HTTP APIs, forms,
+  webhooks, file uploads, and background job payloads) before use in business logic, persistence, or
+  outbound calls.
+- Authentication, authorization, tenant isolation, and secrets handling MUST be explicit in design
+  and review—not assumed from framework defaults alone.
+- Sensitive data MUST NOT appear in logs, error pages, or client-visible messages unless required
+  and approved.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+**Rationale:** The product handles tenancy and operational data; a single missed boundary undermines
+trust for every customer.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### II. Documentation Completeness
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+Code MUST be understandable without oral tradition. Documentation is part of the deliverable, not
+an afterthought.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+- **Class libraries** under `src/` MUST document public types and members with XML comments; the
+  solution build enforces this (see `docs/build-quality.md`).
+- **Application projects** (Web, API, AppHost) MUST document non-obvious public contracts, security
+  assumptions, and integration behavior where a maintainer would otherwise guess.
+- Feature specs, plans, and tasks under `specs/` MUST stay aligned with shipped behavior for
+  governance work; user-facing guides MUST stay aligned with E2E coverage (Principle VI).
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+**Rationale:** Fully documented code reduces security and quality regressions and speeds onboarding
+for any modern contributor.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+### III. Clean Architecture & Familiar Modern Practices
+
+Solution structure MUST follow **clean architecture** boundaries: domain and application rules stay
+independent of UI, hosting, and infrastructure; dependencies point inward.
+
+- Use patterns documented in `docs/csharp-patterns.md` and `docs/tech-stack.md`: dependency
+  injection, async/`CancellationToken`, typed HTTP clients, `IOptions<T>` in apps, records for
+  immutable DTOs, nullable reference types, and centralized package/MSBuild policy.
+- New code MUST match existing project conventions before introducing new abstractions; complexity
+  MUST be justified in review.
+- Aspire orchestration stays in AppHost; cross-cutting defaults in `TenancyHub.ServiceDefaults`;
+  product logic MUST NOT leak into orchestration-only projects.
+
+**Rationale:** Predictable structure lets contributors apply standard .NET and Aspire skills without
+relearning a bespoke layout.
+
+### IV. Testing Standards
+
+Automated tests MUST prove behavior that matters; style and tooling MUST stay consistent.
+
+- **Unit tests:** xUnit v3, NSubstitute, xUnit assertions only—no FluentAssertions, Moq, NUnit, or
+  MSTest (see `docs/testing.md`).
+- Tests MUST cover meaningful behavior and regressions; trivial assertions that duplicate the
+  compiler are discouraged.
+- **AppHost** resource graphs are not unit-tested; validate orchestration by running the distributed
+  app locally and through application-level tests.
+- CI MUST pass Release lint (`dotnet format --verify-no-changes`), build, and test before merge.
+
+**Rationale:** One testing stack keeps reviews fast and avoids incompatible mock/assert ecosystems.
+
+### V. User Experience Consistency
+
+The web UI MUST feel like one product, not a collection of one-off pages.
+
+- **Fluent UI Blazor** components and parameters are the default for layout, spacing, and
+  appearance (see `docs/web-ui-and-css.md`).
+- Custom CSS is limited to Blazor platform chrome, approved shell hooks, and future centralized
+  branding— not per-page overrides of Fluent internals.
+- Error, empty, and loading states MUST use consistent patterns across journeys so users are not
+  surprised by divergent behavior.
+
+**Rationale:** Consistency reduces support burden and reinforces trust in a security-first product.
+
+### VI. E2E Journeys Aligned with Public Documentation
+
+End-to-end tests MUST reflect what we tell users the product does.
+
+- **Playwright C#** covers high-value user journeys—not TypeScript Playwright or micro UI tests
+  (see `docs/testing.md`).
+- Each E2E journey MUST map to a documented path in a **user guide, help topic, or equivalent
+  public-facing documentation**; when docs or product behavior changes, tests or docs MUST update
+  in the same change set or a tracked follow-up before release.
+- Prefer a small set of stable journey tests over brittle element-level coverage.
+
+**Rationale:** Misaligned docs and tests hide broken workflows and undermine security and UX
+promises we make publicly.
+
+## Engineering Standards
+
+Technology choices and non-negotiable build rules for this repository:
+
+| Area | Requirement |
+|------|-------------|
+| Runtime & orchestration | .NET 10, Aspire 13.6+ AppHost with Project v2 (`AddDotnetProject`) |
+| Front end | Blazor + Fluent UI Blazor v5 (`TenancyHub.Web`) |
+| Quality bar | `TreatWarningsAsErrors`, nullable enabled, EditorConfig enforced in build |
+| Packages | Central versions in `Directory.Packages.props` |
+| Product planning | Spec Kit SDD under `specs/`; keep public-repo specs free of confidential detail |
+| Runtime guidance | `AGENTS.md` and `docs/` elaborate this constitution; they MUST NOT contradict it |
+
+## Quality Gates & Workflow
+
+- Pull requests MUST demonstrate compliance with Core Principles; reviewers MUST block merges that
+  skip input validation, drop required documentation, or diverge from testing/UI standards without
+  explicit amendment to this constitution.
+- Features SHOULD flow specify → plan → tasks → implement using Spec Kit workflows when scope is
+  non-trivial.
+- Local verification before push: `dotnet build TenancyHub.slnx`, `dotnet test TenancyHub.slnx`, and
+  format as needed (`dotnet format TenancyHub.slnx`).
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+This constitution is the highest-level engineering governance for Tenancy Hub. When `AGENTS.md`,
+`docs/`, or team habit conflict with a principle here, **this document wins** until amended.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Amendments:** Propose changes via `/speckit-constitution` (or equivalent constitution workflow)
+with rationale, version bump, and updated `LAST_AMENDED_DATE`. Material new principles or
+redefinitions require MINOR or MAJOR version increments per semantic versioning below.
+
+**Version policy:**
+
+- **MAJOR:** Backward-incompatible removal or redefinition of principles.
+- **MINOR:** New principle or materially expanded section.
+- **PATCH:** Clarifications, wording, typo fixes without changing intent.
+
+**Compliance review:** Periodic review SHOULD occur when platform direction changes (see
+`docs/tech-stack.md` and `specs/tenancy-hub-platform/roadmap.md`) or after significant security
+incidents.
+
+**Version**: 1.0.0 | **Ratified**: 2026-09-30 | **Last Amended**: 2026-09-30
