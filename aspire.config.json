@@ -1,0 +1,7 @@
+{
+  "appHost": {
+    "language": "csharp",
+    "path": "src/TenancyHub.AppHost/TenancyHub.AppHost.csproj"
+  },
+  "channel": "stable"
+}

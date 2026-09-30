@@ -1,0 +1,22 @@
+﻿@inherits LayoutComponentBase
+
+<FluentLayout>
+    <FluentLayoutItem Area="LayoutArea.Header">
+        <FluentLayoutHamburger />
+        Tenancy Hub
+    </FluentLayoutItem>
+    <FluentLayoutItem Area="LayoutArea.Navigation">
+        <NavMenu />
+    </FluentLayoutItem>
+    <FluentLayoutItem Area="LayoutArea.Content" Class="main">
+        <div class="content">
+            @Body
+        </div>
+    </FluentLayoutItem>
+</FluentLayout>
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>

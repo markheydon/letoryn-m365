@@ -1,0 +1,10 @@
+@ApiService_HostAddress = http://localhost:5443
+
+GET {{ApiService_HostAddress}}/health
+Accept: application/json
+
+###
+GET {{ApiService_HostAddress}}/
+Accept: application/json
+
+###

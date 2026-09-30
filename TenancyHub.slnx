@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/TenancyHub.ApiService/TenancyHub.ApiService.csproj" />
+    <Project Path="src/TenancyHub.AppHost/TenancyHub.AppHost.csproj" />
+    <Project Path="src/TenancyHub.ServiceDefaults/TenancyHub.ServiceDefaults.csproj" />
+    <Project Path="src/TenancyHub.Web/TenancyHub.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/TenancyHub.ApiService.UnitTests/TenancyHub.ApiService.UnitTests.csproj" />
+  </Folder>
+</Solution>

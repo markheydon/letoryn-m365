@@ -1,0 +1,14 @@
+# Tenancy Hub documentation
+
+Internal standards and reference for contributors and automation.
+
+| Document | Purpose |
+|----------|---------|
+| [local-development.md](./local-development.md) | Prerequisites, build, test, Aspire run/stop, secrets |
+| [build-quality.md](./build-quality.md) | WAE, analyzers, nullable, XML doc policy, CI |
+| [tech-stack.md](./tech-stack.md) | Current repo stack, target Azure/PostgreSQL/Graph direction, integration boundaries |
+| [csharp-patterns.md](./csharp-patterns.md) | Modern C# conventions (DI, HTTP clients, async, options, records) |
+| [testing.md](./testing.md) | Unit, AppHost, and end-to-end testing standards |
+| [web-ui-and-css.md](./web-ui-and-css.md) | Fluent UI first; minimal custom CSS; branding ownership |
+
+Repository entry point for AI agents: [../AGENTS.md](../AGENTS.md).
