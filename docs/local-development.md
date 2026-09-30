@@ -79,6 +79,7 @@ VS Code tasks: **aspire start**, **build**, **test** (`.vscode/tasks.json`).
 - Use `dotnet user-secrets` on the AppHost or individual service projects as integrations are added.
 - Do **not** commit secrets, `.env` files with credentials, or connection strings in `appsettings*.json`.
 - Prefer Aspire parameters and user secrets for local dev; Azure Key Vault / managed identity patterns for deployment (document when introduced).
+- **Rebuild after loss or incident** (Entra, Postgres volumes, operator seed): [operations-rebuild-runbook.md](./operations-rebuild-runbook.md).
 
 ## Troubleshooting
 
@@ -91,5 +92,6 @@ VS Code tasks: **aspire start**, **build**, **test** (`.vscode/tasks.json`).
 
 ## Related docs
 
+- [operations-rebuild-runbook.md](./operations-rebuild-runbook.md) — authoritative recovery after Entra/DB/environment loss
 - [tech-stack.md](./tech-stack.md) — architecture and AppHost modelling
 - [../AGENTS.md](../AGENTS.md) — agent entry point

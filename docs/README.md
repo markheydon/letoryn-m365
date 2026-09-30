@@ -5,6 +5,7 @@ Internal standards and reference for contributors and automation. Product delive
 | Document | Purpose |
 |----------|---------|
 | [local-development.md](./local-development.md) | Prerequisites, build, test, Aspire run/stop, secrets |
+| [operations-rebuild-runbook.md](./operations-rebuild-runbook.md) | **Authoritative** Entra, Postgres, and recovery steps after loss or incident |
 | [build-quality.md](./build-quality.md) | WAE, analyzers, nullable, XML doc policy, CI |
 | [tech-stack.md](./tech-stack.md) | Current repo stack, target Azure/PostgreSQL/Graph direction, integration boundaries |
 | [csharp-patterns.md](./csharp-patterns.md) | Modern C# conventions (DI, HTTP clients, async, options, records) |
