@@ -38,6 +38,7 @@ Add new projects under `src/` with the `TenancyHub.` prefix unless a tool genera
 - The `Aspire.Hosting.Dotnet` package is currently a **13.6 preview** NuGet (`13.6.0-preview.*` in `Directory.Packages.props`); bump it with `aspire update` / `aspire add dotnet` when aligning with stable releases.
 - Paths are relative to the AppHost project (for example `../TenancyHub.ApiService/TenancyHub.ApiService.csproj`). The AppHost does **not** use `ProjectReference` edges to those services solely for metadata; coordinated restore/build groups handle the graph.
 - New .NET services: add the `.csproj` path in `AppHost.cs` and wire references, waits, and endpoints there. Keep `Aspire.AppHost.Sdk` and `Aspire.Hosting.*` packages on the same release family (`aspire update` from repo root).
+- **Health checks:** `MapDefaultEndpoints` in ServiceDefaults maps `/health` only in **Development** (Aspire local runs use Development). Before non-Development deployment, define an explicit health endpoint policy; see https://aka.ms/aspire/healthchecks.
 
 ## Target platform direction
 

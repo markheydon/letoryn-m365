@@ -20,7 +20,7 @@ If something looks wrong, first check whether Fluent already exposes the behavio
 
 | Category | Examples | Guidance |
 |----------|----------|----------|
-| **Platform / Blazor chrome** | `#blazor-error-ui`, `.blazor-error-boundary`, `.loading-progress*`, reload bar in `MainLayout` | Not Fluent components; template-provided UI. Styles may live in `wwwroot/app.css` (or a dedicated `wwwroot/blazor-chrome.css` if we split later). Keep grouped and minimal. |
+| **Platform / Blazor chrome** | `#blazor-error-ui`, `.blazor-error-boundary`, `.loading-progress*`, reload bar in `MainLayout`, **`Components/Pages/Error.razor`** (`UseExceptionHandler`), future **ReconnectModal** / reconnect UI | Not Fluent components; ASP.NET Core / Blazor template surfaces. Keep stock `app.css` and markup from the template even if some rules look unused in our Razor (for example loading progress during Blazor boot). Do **not** delete template chrome CSS without evidence it is safe. Do **not** require Fluent components on these routes. |
 | **App shell layout hooks** | `#main-menu`, `.content` padding/width | Prefer `FluentLayout` / item parameters first. Existing shell rules should shrink over time, not grow. Avoid new `!important` rules. |
 | **Branding** | Logo treatment, brand palette overrides, marketing surfaces | **Not yet implemented.** When added, must live in one owned place (see below)—not ad hoc overrides. |
 | **Page-specific layout** | Rare one-off layout that Fluent stacks cannot express | Prefer component-scoped `.razor.css` with **Fluent design tokens** (`var(--spacingVerticalM)`, etc.), not raw literals. |
@@ -57,7 +57,7 @@ As of initial standards, `app.css` contains:
 
 1. Fluent **reboot** import (required baseline).
 2. **Shell**: `#main-menu`, `.content`, responsive `#main-menu` rule — layout helpers; treat as legacy shell, not a pattern to copy.
-3. **Blazor chrome**: error UI, error boundary, loading progress — acceptable special case.
+3. **Blazor chrome**: error UI, error boundary, loading progress — acceptable special case; leave template rules in place.
 4. **`code` element color** — generic prose styling; prefer Fluent typography/tokens if we extend markdown/code display.
 
 New work should not expand sections 2–4 without an explicit exception documented in a PR or task.

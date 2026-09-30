@@ -20,7 +20,7 @@ Do **not** introduce:
 
 ### Test runner
 
-`global.json` configures **Microsoft.Testing.Platform** as the test runner. New test projects under `tests/` should align with the versions pinned in `Directory.Packages.props` (`xunit.v3`, `NSubstitute`, `Microsoft.NET.Test.Sdk`, `coverlet.collector`).
+`global.json` configures **Microsoft.Testing.Platform** as the test runner (`test.runner`). New test projects under `tests/` should use the xUnit v3 and test SDK packages pinned in `Directory.Packages.props` (`xunit.v3`, `NSubstitute`, `Microsoft.NET.Test.Sdk`, `coverlet.collector`).
 
 ## AppHost testing (.NET Aspire)
 
