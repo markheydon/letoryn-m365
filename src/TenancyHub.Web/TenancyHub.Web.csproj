@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TenancyHub.Application\TenancyHub.Application.csproj" />
     <ProjectReference Include="..\TenancyHub.ServiceDefaults\TenancyHub.ServiceDefaults.csproj" />
     <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" />
     <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" />

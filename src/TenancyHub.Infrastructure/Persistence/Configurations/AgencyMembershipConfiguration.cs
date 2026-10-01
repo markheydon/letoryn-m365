@@ -1,0 +1,21 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using TenancyHub.Domain.Memberships;
+
+namespace TenancyHub.Infrastructure.Persistence.Configurations;
+
+/// <summary>EF configuration for <see cref="AgencyMembership"/>.</summary>
+public sealed class AgencyMembershipConfiguration : IEntityTypeConfiguration<AgencyMembership>
+{
+    /// <inheritdoc />
+    public void Configure(EntityTypeBuilder<AgencyMembership> builder)
+    {
+        builder.ToTable("AgencyMemberships");
+        builder.HasKey(m => m.Id);
+        builder.Property(m => m.Status).HasConversion<string>().HasMaxLength(32);
+        builder.Property(m => m.AgencyRole).HasConversion<string>().HasMaxLength(32);
+        builder.Property(m => m.InvitedRoleSnapshot).HasConversion<string>().HasMaxLength(32);
+        builder.HasIndex(m => new { m.AgencyId, m.Status });
+        builder.HasIndex(m => new { m.UserIdentityId, m.Status });
+    }
+}

@@ -81,7 +81,19 @@ dotnet user-secrets set "Parameters:EntraApiAudience" "api://<api-client-id>"
 
 The AppHost should wire these with `AddParameter(..., secret: true)` and `WithEnvironment` / configuration mapping on `webfrontend` and `apiservice`. **Do not** paste secrets into `appsettings.json`.
 
-Parameter names and mapping must match what `TenancyHub.AppHost` declares after implement—if they differ, update this section in the same PR as the AppHost change.
+AppHost parameter names (secret parameters via `AddParameter`):
+
+| Parameter | Mapped to `apiservice` | Mapped to `webfrontend` |
+|-----------|------------------------|-------------------------|
+| `EntraTenantId` | `AzureAd__TenantId` | `AzureAd__TenantId` |
+| `EntraApiClientId` | `AzureAd__ClientId` | — |
+| `EntraApiAudience` | `AzureAd__Audience` | — |
+| `EntraWebClientId` | — | `AzureAd__ClientId` |
+| `EntraWebClientSecret` | — | `AzureAd__ClientSecret` |
+
+Both apps also receive `AzureAd__Instance` = `https://login.microsoftonline.com/`.
+
+PostgreSQL resource: AppHost `AddPostgres("postgres").AddDatabase("tenancyhub")`; API uses `AddNpgsqlDbContext<TenancyHubDbContext>(connectionName: "tenancyhub")`.
 
 **Disabled directory accounts (FR-001)**: In Entra, keep **access token lifetime** ≤ 60 minutes for POC so revoked/disabled users lose API access within a refresh cycle without Microsoft Graph integration (see [research.md](../specs/001-platform-foundation/research.md)).
 
@@ -126,7 +138,14 @@ R1 allows seeding **outside** the product before the “at least one operator”
 After database is migrated:
 
 1. Identify your Entra **object id** (`oid` claim) after first sign-in attempt or from Entra user profile.
-2. Edit and run [scripts/r1/seed-platform-operator.sql](../scripts/r1/seed-platform-operator.sql) against the Aspire Postgres database (connection string from `aspire describe postgres` or dashboard). Replace placeholder `oid` and email. After EF migrations land, align script table/column names with the migration (task T102).
+2. Run [scripts/r1/seed-platform-operator.sql](../scripts/r1/seed-platform-operator.sql) against the Aspire Postgres database:
+
+   ```bash
+   aspire describe postgres   # connection string for psql
+   psql "<connection-string>" -f scripts/r1/seed-platform-operator.sql
+   ```
+
+   Edit the script placeholders `REPLACE_WITH_ENTRA_OID` and `REPLACE_WITH_EMAIL` before running. The script upserts into `"UserIdentities"` on unique `"EntraObjectId"` and sets `"IsPlatformOperator" = TRUE`.
 3. Verify: sign in → operator global flows visible per platform foundation spec User Story 1.
 
 **Access token lifetime (FR-001)**: For POC, set Entra access token lifetime to ≤ 60 minutes so disabled directory accounts lose API access within a refresh cycle without Microsoft Graph polling (see [specs/001-platform-foundation/research.md](../specs/001-platform-foundation/research.md)).

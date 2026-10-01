@@ -1,5 +1,5 @@
 -- Tenancy Hub R1: seed initial platform operator (run AFTER EF migrations).
--- Table/column names are placeholders until T102 aligns with the first migration.
+-- Aligned with EF migration InitialPlatformFoundation ("UserIdentities" table).
 --
 -- Usage:
 --   1. Replace ENTRA_OID and EMAIL below.
