@@ -9,6 +9,7 @@ using TenancyHub.Application.Abstractions.Tenancy;
 using TenancyHub.Domain.Agencies;
 using TenancyHub.Domain.Identities;
 using TenancyHub.Domain.Memberships;
+using TenancyHub.Domain.PlatformOperators;
 using TenancyHub.Infrastructure.Persistence;
 
 namespace TenancyHub.ApiService.UnitTests.Middleware;
@@ -92,6 +93,68 @@ public sealed class TenancyContextMiddlewareTests
     }
 
     [Fact]
+    public async Task InvokeAsync_AgencyHeaderWithoutAuthentication_Returns401()
+    {
+        await using var db = CreateDbContext();
+        var agencyId = Guid.NewGuid();
+        db.Agencies.Add(CreateAgency(agencyId, AgencyLifecycleStatus.Active));
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var context = CreateHttpContext("/api/v1/agencies/settings", agencyId);
+        var accessor = new AgencyContextAccessor();
+        var currentUser = new TestCurrentUser(Guid.Empty);
+
+        var middleware = new TenancyContextMiddleware(_ => Task.CompletedTask, NullLogger<TenancyContextMiddleware>.Instance);
+
+        await middleware.InvokeAsync(context, accessor, currentUser, db);
+
+        Assert.Equal(StatusCodes.Status401Unauthorized, context.Response.StatusCode);
+        Assert.Null(accessor.ActiveAgencyId);
+    }
+
+    [Fact]
+    public async Task InvokeAsync_OperatorRouteWithAssignment_AllowsArchivedAgency()
+    {
+        await using var db = CreateDbContext();
+        var agencyId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        db.Agencies.Add(CreateAgency(agencyId, AgencyLifecycleStatus.Archived));
+        db.UserIdentities.Add(new UserIdentity
+        {
+            Id = userId,
+            EntraObjectId = "operator-2",
+            Email = "operator@contoso.com",
+            IsPlatformOperator = true,
+            CreatedAt = DateTimeOffset.UtcNow,
+        });
+        db.PlatformOperatorAssignments.Add(new PlatformOperatorAssignment
+        {
+            Id = Guid.NewGuid(),
+            AgencyId = agencyId,
+            UserIdentityId = userId,
+            AssignedAt = DateTimeOffset.UtcNow,
+            AssignedByUserIdentityId = userId,
+        });
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var context = CreateHttpContext("/api/v1/operator/agencies/" + agencyId, agencyId);
+        var accessor = new AgencyContextAccessor();
+        var currentUser = new TestCurrentUser(userId, isPlatformOperator: true);
+        var invoked = false;
+
+        var middleware = new TenancyContextMiddleware(_ =>
+        {
+            invoked = true;
+            return Task.CompletedTask;
+        }, NullLogger<TenancyContextMiddleware>.Instance);
+
+        await middleware.InvokeAsync(context, accessor, currentUser, db);
+
+        Assert.True(invoked);
+        Assert.Equal(agencyId, accessor.ActiveAgencyId);
+    }
+
+    [Fact]
     public async Task InvokeAsync_AgencyHeaderWithoutUserIdentityWhenAuthenticated_Returns404()
     {
         await using var db = CreateDbContext();
@@ -109,6 +172,7 @@ public sealed class TenancyContextMiddlewareTests
         await middleware.InvokeAsync(context, accessor, currentUser, db);
 
         Assert.Equal(StatusCodes.Status404NotFound, context.Response.StatusCode);
+        Assert.Null(accessor.ActiveAgencyId);
     }
 
     private static TenancyHubDbContext CreateDbContext()

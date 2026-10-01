@@ -77,21 +77,10 @@ public sealed class TenancyContextMiddleware(
             return;
         }
 
-        agencyContext.ActiveAgencyId = agencyId;
-        agencyContext.ActiveAgencyLifecycleStatus = agency.LifecycleStatus;
-        agencyContext.IsOperatorAssignedToActiveAgency = operatorAssigned;
-
-        if (membership is not null)
-        {
-            agencyContext.ActiveMembershipId = membership.Id;
-            agencyContext.ActiveMembershipStatus = membership.Status;
-            agencyContext.ActiveAgencyRole = membership.AgencyRole;
-        }
-
         var isOperatorRoute = context.Request.Path.StartsWithSegments(OperatorApiPrefix, StringComparison.OrdinalIgnoreCase);
         var access = AgencyAccessRules.EvaluateAgencyHeaderAccess(
             agency.LifecycleStatus,
-            agencyContext.ActiveMembershipStatus,
+            membership?.Status,
             operatorAssigned,
             isOperatorRoute);
 
@@ -103,6 +92,17 @@ public sealed class TenancyContextMiddleware(
                 context.Request.Path);
             await access.ExecuteFailureAsync(context);
             return;
+        }
+
+        agencyContext.ActiveAgencyId = agencyId;
+        agencyContext.ActiveAgencyLifecycleStatus = agency.LifecycleStatus;
+        agencyContext.IsOperatorAssignedToActiveAgency = operatorAssigned;
+
+        if (membership is not null)
+        {
+            agencyContext.ActiveMembershipId = membership.Id;
+            agencyContext.ActiveMembershipStatus = membership.Status;
+            agencyContext.ActiveAgencyRole = membership.AgencyRole;
         }
 
         await next(context);
