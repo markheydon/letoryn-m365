@@ -4,7 +4,7 @@ Tenancy Hub is a multi-tenant Microsoft 365–centric operating platform for sma
 
 **Status legend:** planned · in-progress · done
 
-Build rows in **dependency order**; POC / go-live / later grouping is in [product-vision.md](../../docs/product-vision.md#delivery-phases).
+Build rows in **dependency order**; POC / go-live / later grouping is in [product-vision.md](../../docs/product-vision.md#delivery-phases). GitHub milestones for those phases: [milestone-strategy.md](../../docs/milestone-strategy.md).
 
 | ID | Sub-feature | Intent | Scope boundary | Depends on | Phase | Status | Sub-spec |
 |----|-------------|--------|----------------|------------|-------|--------|----------|

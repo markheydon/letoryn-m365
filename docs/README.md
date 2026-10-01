@@ -12,5 +12,8 @@ Internal standards and reference for contributors and automation. Product contex
 | [csharp-patterns.md](./csharp-patterns.md) | Modern C# conventions (DI, HTTP clients, async, options, records) |
 | [testing.md](./testing.md) | Unit, AppHost, and end-to-end testing standards |
 | [web-ui-and-css.md](./web-ui-and-css.md) | Fluent UI first; minimal custom CSS; branding ownership |
+| [label-strategy.md](./label-strategy.md) | GitHub issue/PR labels (`type/`, `priority/`, `status/`, `area/`, `size/`) |
+| [milestone-strategy.md](./milestone-strategy.md) | GitHub milestones **POC**, **Go-live**, **Later** vs roadmap **R1–R15** |
+| [pull-request-policy.md](./pull-request-policy.md) | PR titles, template, labels, milestones, linking |
 
 Repository entry point for AI agents: [../AGENTS.md](../AGENTS.md).

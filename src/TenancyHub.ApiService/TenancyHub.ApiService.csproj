@@ -7,11 +7,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TenancyHub.Application\TenancyHub.Application.csproj" />
+    <ProjectReference Include="..\TenancyHub.Infrastructure\TenancyHub.Infrastructure.csproj" />
     <ProjectReference Include="..\TenancyHub.ServiceDefaults\TenancyHub.ServiceDefaults.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Microsoft.Identity.Web" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
 </Project>
