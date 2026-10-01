@@ -78,4 +78,4 @@ When stack choices conflict with those documents, the standards documents win un
 
 ## Out of scope for this file
 
-Domain features (CRM, compliance, portals, reporting), market positioning, process maps, and product roadmaps are intentionally omitted here. See [specs/tenancy-hub-platform/roadmap.md](../specs/tenancy-hub-platform/roadmap.md).
+Domain features, market positioning, process maps, and delivery phases are intentionally omitted here. See [product-vision.md](./product-vision.md) and the [platform roadmap](../specs/tenancy-hub-platform/roadmap.md).
