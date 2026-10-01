@@ -67,7 +67,7 @@ Real agencies run end-to-end processes (prospecting through compliance). **Step-
 
 ## Delivery phases
 
-Phases appear on the [roadmap](../specs/tenancy-hub-platform/roadmap.md) **Phase** column. Build in **dependency order** within each phase; re-prioritise by updating the roadmap first, then affected sub-specs.
+Phases appear on the [roadmap](../specs/tenancy-hub-platform/roadmap.md) **Phase** column. Build in **dependency order** within each phase; re-prioritise by updating the roadmap first, then affected sub-specs. Assign GitHub issues and PRs to the matching milestone (**POC**, **Go-live**, **Later**) per [milestone-strategy.md](./milestone-strategy.md)—there is no separate **MVP** milestone; informal “MVP” usually means POC complete or an agreed Go-live minimum.
 
 | Phase | Meaning |
 |-------|---------|

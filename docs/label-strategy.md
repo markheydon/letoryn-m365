@@ -7,6 +7,7 @@ This document defines the canonical label taxonomy for the **tenancy-hub** GitHu
 Related artefacts:
 
 - Pull requests: [pull-request-policy.md](./pull-request-policy.md) and [`.github/pull_request_template.md`](../.github/pull_request_template.md).
+- Milestones (delivery phases): [milestone-strategy.md](./milestone-strategy.md).
 - Product slices (R1–R15): [specs/tenancy-hub-platform/roadmap.md](../specs/tenancy-hub-platform/roadmap.md).
 
 GitHub label definitions are synced from the maintainer’s cross-repo taxonomy process; this file is the **Tenancy Hub–specific** catalogue (especially `area/*` for R1–R15).
@@ -21,7 +22,7 @@ Describes the nature of the issue or PR.
 
 | Label | Colour | Description |
 |-------|--------|-------------|
-| `type/epic` | `#6f42c1` | A named product theme spanning multiple features or a major roadmap increment (for example platform foundation)—not a milestone bucket |
+| `type/epic` | `#6f42c1` | A named product theme spanning multiple features or a major roadmap increment (for example platform foundation)—not a GitHub milestone; use [milestone-strategy.md](./milestone-strategy.md) for **POC** / **Go-live** / **Later** |
 | `type/feature` | `#0075ca` | A Feature—groups related stories under an epic or roadmap slice |
 | `type/story` | `#1d76db` | A user-facing Story delivering a discrete piece of value |
 | `type/enabler` | `#e4e669` | An Enabler—technical prerequisite that unblocks stories |
@@ -144,3 +145,9 @@ Effort estimate. Added during planning—not required when an issue is first cre
 
 - Size labels are optional at issue creation; add them when estimating.
 - If an issue is `size/xl`, split it before starting implementation.
+
+#### Milestones — delivery phase (not labels)
+
+- GitHub milestones **POC**, **Go-live**, and **Later** are defined in [milestone-strategy.md](./milestone-strategy.md).
+- Set milestone from the roadmap **Phase** column for the issue’s primary **R#**; do not duplicate phase as a label.
+- `type/epic` describes theme; milestone describes when the work is intended to ship in the programme.

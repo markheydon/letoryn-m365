@@ -8,6 +8,7 @@ Related artefacts:
 
 - Template: [`.github/pull_request_template.md`](../.github/pull_request_template.md).
 - Labels: [label-strategy.md](./label-strategy.md).
+- Milestones: [milestone-strategy.md](./milestone-strategy.md).
 - Agent entry point: [AGENTS.md](../AGENTS.md).
 - Roadmap and Spec Kit slices: [specs/tenancy-hub-platform/roadmap.md](../specs/tenancy-hub-platform/roadmap.md).
 - Engineering standards: [docs/build-quality.md](./build-quality.md), [docs/testing.md](./testing.md).
@@ -123,7 +124,23 @@ When the PR is opened, set the **issue** to `status/in-review` (remove `status/i
 | Draft | **Ready for review** (`draft: false`) when CI would pass and the change is complete. Use draft only when the branch is known to be incomplete or blocked. |
 | Assignee | `markheydon`. |
 | Reviewers | Do **not** assign Copilot (or equivalent bot) as reviewer or assignee. |
-| Milestone | Copy from the linked issue when present. |
+| Milestone | See [milestone-strategy.md](./milestone-strategy.md). Copy from the linked issue when present. If there is no issue, set from the cited roadmap row (**R1**–**R15**) → **POC**, **Go-live**, or **Later**. Leave unset for Dependabot and for repo-wide chores with no roadmap row. |
+
+---
+
+## Milestones
+
+Delivery-phase milestones (**POC**, **Go-live**, **Later**) are defined in [milestone-strategy.md](./milestone-strategy.md). They align with [product-vision.md](./product-vision.md#delivery-phases) and the **Phase** column in [roadmap.md](../specs/tenancy-hub-platform/roadmap.md).
+
+| Rule | Detail |
+|------|--------|
+| Source of truth | [milestone-strategy.md](./milestone-strategy.md) — do not invent milestone names (for example “MVP”, “Sprint 2”) without updating that file first. |
+| PR default | Same milestone as the tracking issue. |
+| PR without issue | Derive from **Roadmap / Spec Kit** (**R#** → phase). Example: **R1** → **POC**. |
+| Dependabot | No milestone. |
+| Epics | Milestone = phase of the primary roadmap row (not `type/epic` label). |
+
+When opening a PR, set milestone via `gh pr edit <n> --milestone "POC"` (or **Go-live** / **Later**) after labels and assignee.
 
 ---
 
@@ -164,9 +181,10 @@ Before opening a PR:
 3. Body includes every template heading, completed in UK English.
 4. `Closes #N` or `References #N` is present when an issue exists; roadmap row cited when applicable.
 5. Labels include `type/*`, `priority/*`, `status/in-review`, and `area/*` when known.
-6. Assignee is `markheydon`; Copilot is not assigned.
-7. The PR is not draft unless the work is incomplete.
-8. `dotnet build TenancyHub.slnx` and `dotnet test TenancyHub.slnx` succeed for code changes (or CI equivalent).
+6. **Milestone** is set per [milestone-strategy.md](./milestone-strategy.md) (from issue or roadmap **R#**), except Dependabot and untracked chores.
+7. Assignee is `markheydon`; Copilot is not assigned.
+8. The PR is not draft unless the work is incomplete.
+9. `dotnet build TenancyHub.slnx` and `dotnet test TenancyHub.slnx` succeed for code changes (or CI equivalent).
 
 ---
 
