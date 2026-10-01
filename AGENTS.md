@@ -45,6 +45,15 @@ Follow these when writing or reviewing C# and tests:
 
 Do not contradict these documents unless the user explicitly overrides them for a task.
 
+## GitHub issues and pull requests
+
+When creating or updating GitHub issues and pull requests, follow the canonical taxonomy and PR metadata rules (UK English, template headings, labels on both issue and PR):
+
+- [docs/label-strategy.md](docs/label-strategy.md) — `type/`, `priority/`, `status/`, `area/` (mapped to roadmap **R1–R15** in [specs/tenancy-hub-platform/roadmap.md](specs/tenancy-hub-platform/roadmap.md)), and `size/`.
+- [docs/pull-request-policy.md](docs/pull-request-policy.md) — PR title shape `[<Type>] <Imperative summary> (#N)`, [`.github/pull_request_template.md`](.github/pull_request_template.md), linking (`Closes` / `References`), and Dependabot label set.
+
+Apply at least one `type/` and one `priority/` label on every issue and PR; add `area/*` when the roadmap slice or cross-cutting area is known. When this document’s taxonomy changes, update GitHub labels via the maintainer’s cross-repo label sync—not ad-hoc one-off labels outside [label-strategy.md](docs/label-strategy.md).
+
 ## Agent checklist
 
 ### C#
@@ -72,6 +81,7 @@ Do not contradict these documents unless the user explicitly overrides them for 
 
 - Minimize diff scope; match existing project conventions.
 - Do not commit unless the user asks.
+- Opening a PR: follow [docs/pull-request-policy.md](docs/pull-request-policy.md) (not Conventional Commits titles or vendor draft defaults when the work is ready for review).
 - Nullable reference types and **warnings as errors** are enabled solution-wide via `Directory.Build.props` (see [docs/build-quality.md](docs/build-quality.md)).
 
 ## Common commands
