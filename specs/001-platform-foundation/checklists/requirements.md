@@ -47,4 +47,5 @@
 - Validation pass 14 (2026-09-30, post-clarify round 10 cont.): All items still pass after clarification answer (platform operators grant/revoke **platform operator** status in-product).
 - Validation pass 15 (2026-09-30, post-clarify round 10 cont.): All items still pass after clarification answer (block revoke that would leave zero **platform operators**).
 - Validation pass 16 (2026-09-30, post-clarify round 11): All items still pass after five clarification answers (archived membership lock, agency lifecycle notifications, operator diagnostics summary, invite decline, English-only UI).
+- Validation pass 17 (2026-10-01, targeted FR-010): All items still pass after clarification (invite-pending delivery via invitation-acceptance experience; agency notification bell only with active shell context).
 - Ready for `/speckit-plan`.

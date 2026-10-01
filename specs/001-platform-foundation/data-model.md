@@ -100,7 +100,7 @@ Append-only.
 | AgencyId | uuid? | Null for global operator-only events if needed |
 | OccurredAt | timestamptz | |
 | ActorUserIdentityId | uuid? | Null for system |
-| ActionType | string | Stable code, e.g. `membership.role_changed` |
+| ActionType | string | Stable code, e.g. `auth.sign_in_succeeded`, `auth.sign_in_failed`, `membership.role_changed` |
 | Summary | string | Human-readable English |
 | TargetUserIdentityId | uuid? | |
 | PayloadJson | jsonb? | Structured details; no secrets |

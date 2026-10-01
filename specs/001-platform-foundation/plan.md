@@ -26,7 +26,7 @@ Deliver the R1 platform foundation as an Aspire-orchestrated distributed app: Po
 
 **Target Platform**: ASP.NET Core API + Blazor Server; local via `aspire run`; production direction Azure (Aspire publish)
 
-**Performance Goals**: POC-scale (small agencies); API p95 &lt; 500 ms for shell/API reads on local Aspire; not load-tested in R1
+**Performance Goals**: POC-scale (small agencies). Informal local-dev target: API p95 &lt; 500 ms for shell/API reads on Aspire—**not** a release gate, success criterion (SC-002 is manual sign-in timing only), or load-test obligation in R1; no performance tasks in [tasks.md](./tasks.md) unless product adds an explicit gate later.
 
 **Constraints**: Security-first tenant isolation; English-only UI; in-app notifications only; warnings as errors; XML docs on public library APIs
 
@@ -155,6 +155,8 @@ builder.AddDotnetProject("webfrontend", "../TenancyHub.Web/...")
     .WithHttpHealthCheck("/health");
 ```
 
+**Aspire resource names** (must match [quickstart.md](./quickstart.md) and `aspire wait` commands): `postgres`, `apiservice`, `webfrontend` — project paths point at `TenancyHub.ApiService` and `TenancyHub.Web` under `src/`.
+
 Entra parameters injected with `AddParameter(..., secret: true)` and environment mapping—details in [docs/operations-rebuild-runbook.md §3](../../docs/operations-rebuild-runbook.md#3-local-configuration-aspire-parameters).
 
 ### API service registration (implement)
@@ -178,11 +180,13 @@ Entra parameters injected with `AddParameter(..., secret: true)` and environment
 
 ---
 
-## Phase 2 — Tasks (next command)
+## Phase 2 — Tasks (complete)
 
-Run `/speckit-tasks` to generate dependency-ordered [tasks.md](./tasks.md). Implement via `/speckit-implement`.
+Dependency-ordered implementation tasks: [tasks.md](./tasks.md) (updated after `/speckit-analyze` remediation through **pass 8** on 2026-10-01—operator audit route `GET /operator/agencies/{agencyId}/audit`, quickstart §3.9 disabled-account / §3.10–§3.13 renumber, US1/quickstart joint gates, T090→T089, shell nav policy, FR-001 POC bound, §4.1 / §7 matrix, FR-008 sign-in audit).
 
-Suggested epic breakdown for tasks:
+**Next command**: `/speckit-implement` (or `/speckit-analyze` again after material spec/plan changes).
+
+Epic breakdown (maps to task phases):
 
 1. AppHost Postgres + parameters + project references  
 2. Domain + Infrastructure + initial migration  
@@ -198,4 +202,4 @@ Suggested epic breakdown for tasks:
 
 ## Post-design Constitution Check
 
-Re-evaluated after Phase 1: design stays within clean architecture, Aspire integration-first hosting, DI-only infrastructure access, and documented rebuild paths. Ready for task generation.
+Re-evaluated after Phase 1: design stays within clean architecture, Aspire integration-first hosting, DI-only infrastructure access, and documented rebuild paths. Ready for implementation per [tasks.md](./tasks.md).

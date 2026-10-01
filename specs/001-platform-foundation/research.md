@@ -43,6 +43,21 @@ Resolves technical unknowns from the implementation plan. User constraint: **use
 
 **Manual rebuild**: Entra app registration steps are **not** fully automatable in git; [docs/operations-rebuild-runbook.md](../../docs/operations-rebuild-runbook.md) documents portal steps for humans and AI implementers.
 
+**Session expiry and clock skew (FR-001)**: Idle (30 minutes) and absolute (12 hours from initial sign-in) limits are enforced per `UserSession` row and cookie/auth ticket metadata. Use ASP.NET Core cookie validation plus server-side session checks; allow **reasonable clock skew** (default framework/token validation tolerances—typically a few minutes) when comparing expiry timestamps—no custom NTP logic in R1.
+
+**Per-session sign-out (FR-001 / FR-011)**: Sign-out removes or invalidates only the current session’s `UserSession` row and auth cookie; it MUST NOT revoke other concurrent sessions for the same user.
+
+**Disabled directory account (FR-001)**: Tenancy Hub MUST deny access when Entra rejects authentication or token validation for the work account, even if product membership remains.
+
+| Layer | R1 behavior |
+|-------|-------------|
+| **API** | Validate bearer JWT on every request via Microsoft.Identity.Web; invalid or rejected tokens → 401, session termination, auditable failed access (T033, T044). Successful authentication that establishes or resumes a session MUST write a **successful sign-in** audit event (FR-008); failed interactive or token validation attempts MUST write **failed sign-in** (nullable `AgencyId` when no shell agency context yet). |
+| **Web** | On cookie authentication validation (including periodic refresh via Identity.Web `GetAccessTokenForUserAsync` / equivalent), failed Entra response → sign-out, clear cookie, discard client state. |
+| **Graph** | No Microsoft Graph `accountEnabled` polling in R1. Rely on Entra sign-in and token refresh failure for disabled accounts. |
+| **POC tuning** | Document in [docs/operations-rebuild-runbook.md](../../docs/operations-rebuild-runbook.md): keep Entra **access token lifetime** modest (for example ≤ 60 minutes) so disabled accounts lose API access within one refresh cycle without custom Graph integration. |
+
+**Pairing**: T032 documents this section; T033 implements API/Web enforcement.
+
 ---
 
 ## Application architecture (clean boundaries)
