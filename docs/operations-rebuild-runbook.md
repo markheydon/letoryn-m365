@@ -83,6 +83,8 @@ The AppHost should wire these with `AddParameter(..., secret: true)` and `WithEn
 
 Parameter names and mapping must match what `TenancyHub.AppHost` declares after implement—if they differ, update this section in the same PR as the AppHost change.
 
+**Disabled directory accounts (FR-001)**: In Entra, keep **access token lifetime** ≤ 60 minutes for POC so revoked/disabled users lose API access within a refresh cycle without Microsoft Graph integration (see [research.md](../specs/001-platform-foundation/research.md)).
+
 ---
 
 ## 4. PostgreSQL via Aspire (reset / rebuild)
@@ -124,10 +126,10 @@ R1 allows seeding **outside** the product before the “at least one operator”
 After database is migrated:
 
 1. Identify your Entra **object id** (`oid` claim) after first sign-in attempt or from Entra user profile.
-2. Run the documented seed script/SQL (location noted in implement—typically under `docs/` or `scripts/`) **or** use a one-time dev-only bootstrap endpoint if provided.
+2. Edit and run [scripts/r1/seed-platform-operator.sql](../scripts/r1/seed-platform-operator.sql) against the Aspire Postgres database (connection string from `aspire describe postgres` or dashboard). Replace placeholder `oid` and email. After EF migrations land, align script table/column names with the migration (task T102).
 3. Verify: sign in → operator global flows visible per platform foundation spec User Story 1.
 
-Document the chosen seed mechanism in the repo when implement lands; this section links to that script by name once added.
+**Access token lifetime (FR-001)**: For POC, set Entra access token lifetime to ≤ 60 minutes so disabled directory accounts lose API access within a refresh cycle without Microsoft Graph polling (see [specs/001-platform-foundation/research.md](../specs/001-platform-foundation/research.md)).
 
 ---
 

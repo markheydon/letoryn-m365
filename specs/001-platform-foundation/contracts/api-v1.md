@@ -57,9 +57,15 @@ Returns signed-in identity, platform operator flag, agency memberships summary, 
 
 **Body**: `{ "agencyId": "uuid" }`
 
-**Effects**: Sets active agency for session; discards incompatible in-flight server state; auditable if policy requires.
+**Effects**: Sets active agency for session; discards incompatible in-flight server state. **Not** a separate FR-008 audit event in R1 (agency switch is context only; auditable actions occur under the new agency).
 
 **403**: Agency not active, membership not active, or not assigned (operators).
+
+### POST `/api/v1/me/sign-out`
+
+Ends the **current** authenticated session only (FR-001): invalidates the server-side `UserSession` row for this session and clears the Web auth cookie. Other concurrent sessions for the same user remain valid.
+
+**Response 204**: No content.
 
 ---
 
@@ -95,10 +101,6 @@ Creates agency (FR-016); auto-assigns creator.
 }
 ```
 
-### PATCH `/api/v1/operator/agencies/{agencyId}`
-
-Update display name / contact fields (allowed on assigned agencies per lifecycle rules).
-
 ### POST `/api/v1/operator/agencies/{agencyId}/lifecycle`
 
 **Body**: `{ "targetStatus": "Suspended" | "Active" | "Archived" }`
@@ -126,17 +128,42 @@ Base: `/api/v1/agencies/{agencyId}/memberships` with assignment/admin checks.
 
 ### PATCH `/api/v1/agencies/{agencyId}/settings`
 
+**Canonical** settings update for R1 (FR-015). One route; authorization differs by caller:
+
+| Caller | Allowed when |
+|--------|----------------|
+| Agency **administrator** with **active** membership | Agency lifecycle is **Active** |
+| **Platform operator** assigned to `{agencyId}` | Agency is **Active** or **Suspended** (not **Archived**) |
+
 **Body**: `{ "displayName", "primaryContactEmail", "primaryContactPhone" }` (partial allowed).
+
+Operators MUST use this path (not a separate `/operator/agencies/{agencyId}` settings route). Implement shared handler logic in `AgencySettingsEndpoints` per [tasks.md](./tasks.md) T060.
 
 ---
 
 ## Audit
 
+Shared response shape for both routes below: `{ "items": [ { "occurredAt", "actorEmail", "actionType", "summary" } ], "nextCursor": "..." }` with query `?cursor=&limit=50`.
+
 ### GET `/api/v1/agencies/{agencyId}/audit`
 
-Query: `?cursor=&limit=50` — agency administrators (active agency) or operators (assigned).
+**Agency administrators only (FR-009, T068, T071)**:
 
-**Response**: `{ "items": [ { "occurredAt", "actorEmail", "actionType", "summary" } ], "nextCursor": "..." }`
+| Caller | Allowed when |
+|--------|----------------|
+| Agency **administrator** | Agency lifecycle is **Active** and caller has **Active** membership in that agency |
+
+Requires routine agency context: header **`X-TenancyHub-Agency-Id`** MUST match `{agencyId}` (FR-002, T050). Standard and read-only members: **403** (tenant-safe).
+
+### GET `/api/v1/operator/agencies/{agencyId}/audit`
+
+**Platform operators only (FR-009, T068, T072)**:
+
+| Caller | Allowed when |
+|--------|----------------|
+| **Platform operator** assigned to `{agencyId}` | Any lifecycle (**Active**, **Suspended**, or **Archived**) for that assigned agency |
+
+Operator cross-agency route: **does not** require `X-TenancyHub-Agency-Id` to match `{agencyId}` or agency to be **Active**; server verifies operator assignment only (same pattern as `GET /operator/agencies/{agencyId}/summary`). Operator access is auditable (T073). Agency administrators MUST use the agency route above, not this path.
 
 ---
 
@@ -144,7 +171,7 @@ Query: `?cursor=&limit=50` — agency administrators (active agency) or operator
 
 ### GET `/api/v1/operator/agencies/{agencyId}/summary`
 
-FR-009 read-only summary + link to audit.
+FR-009 read-only summary + link to **`GET /api/v1/operator/agencies/{agencyId}/audit`** for operators.
 
 ---
 
