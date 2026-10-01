@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using TenancyHub.Domain.Identities;
 using TenancyHub.Domain.Sessions;
 
 namespace TenancyHub.Infrastructure.Persistence.Configurations;
@@ -13,5 +14,9 @@ public sealed class UserSessionConfiguration : IEntityTypeConfiguration<UserSess
         builder.ToTable("UserSessions");
         builder.HasKey(s => s.Id);
         builder.HasIndex(s => s.UserIdentityId);
+        builder.HasOne<UserIdentity>()
+            .WithMany()
+            .HasForeignKey(s => s.UserIdentityId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

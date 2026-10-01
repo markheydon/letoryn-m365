@@ -14,7 +14,10 @@ public sealed class RequestValidationFilter<TRequest>(IRequestValidator<TRequest
         var request = context.Arguments.OfType<TRequest>().FirstOrDefault();
         if (request is null)
         {
-            return await next(context);
+            return ValidationProblemResults.FromResult(
+                RequestValidationResult.Failure([
+                    new ValidationFailure("$", "Request body is required.")
+                ]));
         }
 
         var validation = validator.Validate(request);

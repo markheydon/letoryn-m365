@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using TenancyHub.Domain.Agencies;
+using TenancyHub.Domain.Identities;
 using TenancyHub.Domain.Memberships;
 
 namespace TenancyHub.Infrastructure.Persistence.Configurations;
@@ -15,7 +17,16 @@ public sealed class AgencyMembershipConfiguration : IEntityTypeConfiguration<Age
         builder.Property(m => m.Status).HasConversion<string>().HasMaxLength(32);
         builder.Property(m => m.AgencyRole).HasConversion<string>().HasMaxLength(32);
         builder.Property(m => m.InvitedRoleSnapshot).HasConversion<string>().HasMaxLength(32);
+        builder.HasIndex(m => new { m.AgencyId, m.UserIdentityId }).IsUnique();
         builder.HasIndex(m => new { m.AgencyId, m.Status });
         builder.HasIndex(m => new { m.UserIdentityId, m.Status });
+        builder.HasOne<Agency>()
+            .WithMany()
+            .HasForeignKey(m => m.AgencyId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<UserIdentity>()
+            .WithMany()
+            .HasForeignKey(m => m.UserIdentityId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

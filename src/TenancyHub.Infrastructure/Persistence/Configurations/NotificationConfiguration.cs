@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using TenancyHub.Domain.Agencies;
+using TenancyHub.Domain.Identities;
 using TenancyHub.Domain.Notifications;
 
 namespace TenancyHub.Infrastructure.Persistence.Configurations;
@@ -16,5 +18,13 @@ public sealed class NotificationConfiguration : IEntityTypeConfiguration<Notific
         builder.Property(n => n.Title).HasMaxLength(256).IsRequired();
         builder.Property(n => n.Body).HasMaxLength(2048).IsRequired();
         builder.HasIndex(n => new { n.UserIdentityId, n.AgencyId, n.CreatedAt });
+        builder.HasOne<Agency>()
+            .WithMany()
+            .HasForeignKey(n => n.AgencyId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<UserIdentity>()
+            .WithMany()
+            .HasForeignKey(n => n.UserIdentityId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

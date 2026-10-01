@@ -1,8 +1,12 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Identity.Web;
 using TenancyHub.ApiService.Infrastructure;
 using TenancyHub.ApiService.Middleware;
 using TenancyHub.ApiService.Tenancy;
 using TenancyHub.ApiService.Validation;
+using TenancyHub.Application.Abstractions.Authorization;
 using TenancyHub.Application.Abstractions.Tenancy;
+using TenancyHub.Application.Authorization;
 using TenancyHub.Infrastructure;
 using TenancyHub.Infrastructure.Persistence;
 
@@ -13,9 +17,17 @@ builder.AddServiceDefaults();
 builder.AddNpgsqlDbContext<TenancyHubDbContext>(connectionName: "tenancyhub");
 builder.Services.AddTenancyHubInfrastructure();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<CurrentUserSnapshotCache>();
 builder.Services.AddScoped<AgencyContextAccessor>();
 builder.Services.AddScoped<IAgencyContext>(sp => sp.GetRequiredService<AgencyContextAccessor>());
 builder.Services.AddScoped<ICurrentUser, HttpCurrentUser>();
+builder.Services.AddScoped<IAgencyAuthorizationService, AgencyAuthorizationService>();
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddMicrosoftIdentityWebApi(builder.Configuration);
+
+builder.Services.AddAuthorization();
 
 builder.Services.AddProblemDetails(options =>
 {
@@ -31,6 +43,9 @@ builder.Services.AddOpenApi();
 var app = builder.Build();
 
 app.UseExceptionHandler();
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseMiddleware<CurrentUserMiddleware>();
 app.UseMiddleware<TenancyContextMiddleware>();
 
 if (app.Environment.IsDevelopment())

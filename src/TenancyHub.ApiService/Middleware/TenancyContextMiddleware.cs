@@ -2,8 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using TenancyHub.ApiService.Infrastructure;
 using TenancyHub.ApiService.Tenancy;
 using TenancyHub.Application.Abstractions.Tenancy;
-using TenancyHub.Domain.Agencies;
-using TenancyHub.Domain.Memberships;
+using TenancyHub.Application.Agencies;
 using TenancyHub.Infrastructure.Persistence;
 
 namespace TenancyHub.ApiService.Middleware;
@@ -17,6 +16,8 @@ public sealed class TenancyContextMiddleware(
 {
     /// <summary>Agency context request header name.</summary>
     public const string AgencyHeaderName = "X-TenancyHub-Agency-Id";
+
+    private static readonly PathString OperatorApiPrefix = new("/api/v1/operator");
 
     /// <inheritdoc />
     public async Task InvokeAsync(
@@ -34,7 +35,17 @@ public sealed class TenancyContextMiddleware(
 
         if (currentUser.UserIdentityId == Guid.Empty)
         {
-            await next(context);
+            if (context.User.Identity?.IsAuthenticated != true)
+            {
+                await Results.Problem(
+                    title: "Unauthorized",
+                    detail: "Authentication is required.",
+                    statusCode: StatusCodes.Status401Unauthorized,
+                    type: "https://tools.ietf.org/html/rfc9110#section-15.5.2").ExecuteAsync(context);
+                return;
+            }
+
+            await TenantSafeResults.NotFoundOrForbidden().ExecuteAsync(context);
             return;
         }
 
@@ -60,7 +71,7 @@ public sealed class TenancyContextMiddleware(
                 a => a.AgencyId == agencyId && a.UserIdentityId == currentUser.UserIdentityId,
                 context.RequestAborted);
 
-        if (membership is null && !operatorAssigned && !currentUser.IsPlatformOperator)
+        if (membership is null && !operatorAssigned)
         {
             await TenantSafeResults.NotFoundOrForbidden().ExecuteAsync(context);
             return;
@@ -77,18 +88,20 @@ public sealed class TenancyContextMiddleware(
             agencyContext.ActiveAgencyRole = membership.AgencyRole;
         }
 
-        if (agency.LifecycleStatus == AgencyLifecycleStatus.Archived
-            && context.Request.Path.StartsWithSegments("/api/v1/agencies", StringComparison.OrdinalIgnoreCase)
-            && !context.Request.Path.StartsWithSegments("/api/v1/operator", StringComparison.OrdinalIgnoreCase))
-        {
-            logger.LogDebug("Blocked agency-scoped request for archived agency {AgencyId}", agencyId);
-            await TenantSafeResults.Forbidden().ExecuteAsync(context);
-            return;
-        }
+        var isOperatorRoute = context.Request.Path.StartsWithSegments(OperatorApiPrefix, StringComparison.OrdinalIgnoreCase);
+        var access = AgencyAccessRules.EvaluateAgencyHeaderAccess(
+            agency.LifecycleStatus,
+            agencyContext.ActiveMembershipStatus,
+            operatorAssigned,
+            isOperatorRoute);
 
-        if (membership?.Status == MembershipStatus.Suspended)
+        if (!access.IsAuthorized)
         {
-            await TenantSafeResults.Forbidden().ExecuteAsync(context);
+            logger.LogDebug(
+                "Blocked agency header request for agency {AgencyId} on path {Path}",
+                agencyId,
+                context.Request.Path);
+            await access.ExecuteFailureAsync(context);
             return;
         }
 
