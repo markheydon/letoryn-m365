@@ -27,15 +27,15 @@ Per [plan.md](./plan.md): `src/TenancyHub.*` libraries, `tests/TenancyHub.*` tes
 
 **Purpose**: Solution layout, packages, and Aspire integration baseline before domain work.
 
-- [ ] T001 Add `TenancyHub.Domain`, `TenancyHub.Application`, and `TenancyHub.Infrastructure` projects under `src/` and include them in `TenancyHub.slnx`
-- [ ] T002 Add `TenancyHub.Application.UnitTests` under `tests/` and include it in `TenancyHub.slnx`
-- [ ] T003 [P] Wire project references: `Infrastructure` → `Domain` + `Application`; `Application` → `Domain`; `ApiService` → `Application` + `Infrastructure`; `Web` → `Application` (DTOs/contracts only, no Infrastructure)
-- [ ] T004 [P] Add central package versions in `Directory.Packages.props` for EF Core 10, `Aspire.Npgsql.EntityFrameworkCore.PostgreSQL`, `Microsoft.Identity.Web`, and EF design tools per [research.md](./research.md)
-- [ ] T005 [P] Enable XML documentation and nullable settings on new library projects matching `Directory.Build.props` in `docs/build-quality.md`
-- [ ] T006 Run Aspire package wiring from repo root: add PostgreSQL hosting to `src/TenancyHub.AppHost/` and Npgsql EF client to `src/TenancyHub.ApiService/` per `.agents/skills/aspireify/` (no hand-rolled connection strings)
-- [ ] T007 Update `src/TenancyHub.AppHost/AppHost.cs` with `AddPostgres("postgres").AddDatabase("tenancyhub")`, `WithReference(postgres)` on **apiservice**, and `AddDotnetProject` v2 for **`apiservice`** → `TenancyHub.ApiService` and **`webfrontend`** → `TenancyHub.Web` (resource names MUST match [quickstart.md](./quickstart.md) `aspire wait` targets)
-- [ ] T008 [P] Add Entra-related `AddParameter(..., secret: true)` placeholders in `src/TenancyHub.AppHost/AppHost.cs` and map to Web/API environment variables per [docs/operations-rebuild-runbook.md](../../docs/operations-rebuild-runbook.md)
-- [ ] T009 [P] Verify `specs/001-platform-foundation/ops-runbook.md` points to `docs/operations-rebuild-runbook.md` only (no duplicated steps; update link text if anchors change)
+- [x] T001 Add `TenancyHub.Domain`, `TenancyHub.Application`, and `TenancyHub.Infrastructure` projects under `src/` and include them in `TenancyHub.slnx`
+- [x] T002 Add `TenancyHub.Application.UnitTests` under `tests/` and include it in `TenancyHub.slnx`
+- [x] T003 [P] Wire project references: `Infrastructure` → `Domain` + `Application`; `Application` → `Domain`; `ApiService` → `Application` + `Infrastructure`; `Web` → `Application` (DTOs/contracts only, no Infrastructure)
+- [x] T004 [P] Add central package versions in `Directory.Packages.props` for EF Core 10, `Aspire.Npgsql.EntityFrameworkCore.PostgreSQL`, `Microsoft.Identity.Web`, and EF design tools per [research.md](./research.md)
+- [x] T005 [P] Enable XML documentation and nullable settings on new library projects matching `Directory.Build.props` in `docs/build-quality.md`
+- [x] T006 Run Aspire package wiring from repo root: add PostgreSQL hosting to `src/TenancyHub.AppHost/` and Npgsql EF client to `src/TenancyHub.ApiService/` per `.agents/skills/aspireify/` (no hand-rolled connection strings)
+- [x] T007 Update `src/TenancyHub.AppHost/AppHost.cs` with `AddPostgres("postgres").AddDatabase("tenancyhub")`, `WithReference(postgres)` on **apiservice**, and `AddDotnetProject` v2 for **`apiservice`** → `TenancyHub.ApiService` and **`webfrontend`** → `TenancyHub.Web` (resource names MUST match [quickstart.md](./quickstart.md) `aspire wait` targets)
+- [x] T008 [P] Add Entra-related `AddParameter(..., secret: true)` placeholders in `src/TenancyHub.AppHost/AppHost.cs` and map to Web/API environment variables per [docs/operations-rebuild-runbook.md](../../docs/operations-rebuild-runbook.md)
+- [x] T009 [P] Verify `specs/001-platform-foundation/ops-runbook.md` points to `docs/operations-rebuild-runbook.md` only (no duplicated steps; update link text if anchors change)
 
 ---
 
@@ -45,27 +45,27 @@ Per [plan.md](./plan.md): `src/TenancyHub.*` libraries, `tests/TenancyHub.*` tes
 
 **⚠️ CRITICAL**: No user story phases until this checkpoint passes (`dotnet build`, migration applies, health checks green).
 
-- [ ] T010 [P] Add agency lifecycle enum `Active`, `Suspended`, `Archived` in `src/TenancyHub.Domain/Agencies/AgencyLifecycleStatus.cs`
-- [ ] T011 [P] Add membership status enum `Invited`, `Active`, `Suspended`, `Removed` in `src/TenancyHub.Domain/Memberships/MembershipStatus.cs`
-- [ ] T012 [P] Add agency role enum `Administrator`, `StandardMember`, `ReadOnlyMember` in `src/TenancyHub.Domain/Memberships/AgencyRole.cs`
-- [ ] T013 [P] Implement `Agency` entity in `src/TenancyHub.Domain/Agencies/Agency.cs` with required `DisplayName`, `PrimaryContactEmail`, `PrimaryContactPhone`, `LifecycleStatus`, `CreatedAt`, `UpdatedAt`, `LastLifecycleChangeAt` per [data-model.md](./data-model.md)
-- [ ] T014 [P] Implement `UserIdentity` entity in `src/TenancyHub.Domain/Identities/UserIdentity.cs` with unique `EntraObjectId`, normalized `Email`, `IsPlatformOperator`, nullable `LastUsedAgencyId`, `CreatedAt`
-- [ ] T015 [P] Implement `AgencyMembership` entity in `src/TenancyHub.Domain/Memberships/AgencyMembership.cs` with exactly one `AgencyRole`, invite fields (`InvitedAt`, `ExpiresAt` = Created + 30 days for invites), and status rules from [data-model.md](./data-model.md)
-- [ ] T016 [P] Implement `PlatformOperatorAssignment`, `AuditEvent`, `Notification`, and optional `UserSession` entities in `src/TenancyHub.Domain/` matching [data-model.md](./data-model.md) field constraints
-- [ ] T017 Add domain guard helpers (last active administrator, last platform operator, archived-agency mutation block) in `src/TenancyHub.Domain/` per FR-006, FR-007, FR-004
-- [ ] T018 Implement `TenancyHubDbContext` and fluent EF configurations in `src/TenancyHub.Infrastructure/Persistence/` including indexes listed in [data-model.md](./data-model.md)
-- [ ] T019 Register `AddNpgsqlDbContext<TenancyHubDbContext>(connectionName: "tenancyhub")` in `src/TenancyHub.ApiService/Program.cs` and infrastructure DI extension in `src/TenancyHub.Infrastructure/DependencyInjection.cs`
-- [ ] T020 Create initial EF Core migration in `src/TenancyHub.Infrastructure/Persistence/Migrations/` and document apply command in [docs/operations-rebuild-runbook.md](../../docs/operations-rebuild-runbook.md)
-- [ ] T021 [P] Define `IAgencyContext`, `ICurrentUser`, and authorization result types in `src/TenancyHub.Application/Abstractions/`
-- [ ] T022 [P] Add application service interfaces for audit writing and notification writing in `src/TenancyHub.Application/Abstractions/`
-- [ ] T023 Implement EF-backed audit and notification writers in `src/TenancyHub.Infrastructure/Services/`
-- [ ] T024 Implement agency context resolution from `X-TenancyHub-Agency-Id` header + membership/assignment validation in `src/TenancyHub.ApiService/Middleware/TenancyContextMiddleware.cs`
-- [ ] T025 Add global ProblemDetails and safe 403/404 mapping in `src/TenancyHub.ApiService/Program.cs` per FR-013 and [contracts/api-v1.md](./contracts/api-v1.md)
-- [ ] T026 [P] Add API request validation at HTTP trust boundaries (membership invite/provision bodies, agency settings, operator agency create/lifecycle, platform operator grant/revoke/assignments) returning 400 ProblemDetails in `src/TenancyHub.ApiService/Validation/` per constitution Principle I and `docs/csharp-patterns.md` (pair with Web form validation in T099)
-- [ ] T027 [P] Add PostgreSQL health check via Aspire/EF in `src/TenancyHub.ApiService/Program.cs`
-- [ ] T028 Extend [docs/operations-rebuild-runbook.md](../../docs/operations-rebuild-runbook.md) §4–§5 with final Aspire parameter names, migration steps, and link to [scripts/r1/seed-platform-operator.sql](../../scripts/r1/seed-platform-operator.sql) (paired with T102)
-- [ ] T102 **(execute after T020)** Align [scripts/r1/seed-platform-operator.sql](../../scripts/r1/seed-platform-operator.sql) table/column names with EF migration output, document `psql`/Aspire connection usage in runbook §5, and verify seed grants `IsPlatformOperator` for a known Entra `oid` + email per [quickstart.md](./quickstart.md) §2
-- [ ] T029 [P] Document FR-012 tenancy seams (`IAgencyContext`, `ICurrentUser`, authorization entry points) with XML comments on public types in `src/TenancyHub.Application/Abstractions/` for downstream feature modules
+- [x] T010 [P] Add agency lifecycle enum `Active`, `Suspended`, `Archived` in `src/TenancyHub.Domain/Agencies/AgencyLifecycleStatus.cs`
+- [x] T011 [P] Add membership status enum `Invited`, `Active`, `Suspended`, `Removed` in `src/TenancyHub.Domain/Memberships/MembershipStatus.cs`
+- [x] T012 [P] Add agency role enum `Administrator`, `StandardMember`, `ReadOnlyMember` in `src/TenancyHub.Domain/Memberships/AgencyRole.cs`
+- [x] T013 [P] Implement `Agency` entity in `src/TenancyHub.Domain/Agencies/Agency.cs` with required `DisplayName`, `PrimaryContactEmail`, `PrimaryContactPhone`, `LifecycleStatus`, `CreatedAt`, `UpdatedAt`, `LastLifecycleChangeAt` per [data-model.md](./data-model.md)
+- [x] T014 [P] Implement `UserIdentity` entity in `src/TenancyHub.Domain/Identities/UserIdentity.cs` with unique `EntraObjectId`, normalized `Email`, `IsPlatformOperator`, nullable `LastUsedAgencyId`, `CreatedAt`
+- [x] T015 [P] Implement `AgencyMembership` entity in `src/TenancyHub.Domain/Memberships/AgencyMembership.cs` with exactly one `AgencyRole`, invite fields (`InvitedAt`, `ExpiresAt` = Created + 30 days for invites), and status rules from [data-model.md](./data-model.md)
+- [x] T016 [P] Implement `PlatformOperatorAssignment`, `AuditEvent`, `Notification`, and optional `UserSession` entities in `src/TenancyHub.Domain/` matching [data-model.md](./data-model.md) field constraints
+- [x] T017 Add domain guard helpers (last active administrator, last platform operator, archived-agency mutation block) in `src/TenancyHub.Domain/` per FR-006, FR-007, FR-004
+- [x] T018 Implement `TenancyHubDbContext` and fluent EF configurations in `src/TenancyHub.Infrastructure/Persistence/` including indexes listed in [data-model.md](./data-model.md)
+- [x] T019 Register `AddNpgsqlDbContext<TenancyHubDbContext>(connectionName: "tenancyhub")` in `src/TenancyHub.ApiService/Program.cs` and infrastructure DI extension in `src/TenancyHub.Infrastructure/DependencyInjection.cs`
+- [x] T020 Create initial EF Core migration in `src/TenancyHub.Infrastructure/Persistence/Migrations/` and document apply command in [docs/operations-rebuild-runbook.md](../../docs/operations-rebuild-runbook.md)
+- [x] T021 [P] Define `IAgencyContext`, `ICurrentUser`, and authorization result types in `src/TenancyHub.Application/Abstractions/`
+- [x] T022 [P] Add application service interfaces for audit writing and notification writing in `src/TenancyHub.Application/Abstractions/`
+- [x] T023 Implement EF-backed audit and notification writers in `src/TenancyHub.Infrastructure/Services/`
+- [x] T024 Implement agency context resolution from `X-TenancyHub-Agency-Id` header + membership/assignment validation in `src/TenancyHub.ApiService/Middleware/TenancyContextMiddleware.cs`
+- [x] T025 Add global ProblemDetails and safe 403/404 mapping in `src/TenancyHub.ApiService/Program.cs` per FR-013 and [contracts/api-v1.md](./contracts/api-v1.md)
+- [x] T026 [P] Add API request validation at HTTP trust boundaries (membership invite/provision bodies, agency settings, operator agency create/lifecycle, platform operator grant/revoke/assignments) returning 400 ProblemDetails in `src/TenancyHub.ApiService/Validation/` per constitution Principle I and `docs/csharp-patterns.md` (pair with Web form validation in T099)
+- [x] T027 [P] Add PostgreSQL health check via Aspire/EF in `src/TenancyHub.ApiService/Program.cs`
+- [x] T028 Extend [docs/operations-rebuild-runbook.md](../../docs/operations-rebuild-runbook.md) §4–§5 with final Aspire parameter names, migration steps, and link to [scripts/r1/seed-platform-operator.sql](../../scripts/r1/seed-platform-operator.sql) (paired with T102)
+- [x] T102 **(execute after T020)** Align [scripts/r1/seed-platform-operator.sql](../../scripts/r1/seed-platform-operator.sql) table/column names with EF migration output, document `psql`/Aspire connection usage in runbook §5, and verify seed grants `IsPlatformOperator` for a known Entra `oid` + email per [quickstart.md](./quickstart.md) §2
+- [x] T029 [P] Document FR-012 tenancy seams (`IAgencyContext`, `ICurrentUser`, authorization entry points) with XML comments on public types in `src/TenancyHub.Application/Abstractions/` for downstream feature modules
 
 **Checkpoint**: Foundation ready — user story work may proceed in parallel.
 

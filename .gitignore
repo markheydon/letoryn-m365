@@ -3,6 +3,9 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
+# Local .NET tools (e.g. dotnet-ef installed with --tool-path)
+.tools/
+
 # User-specific files
 *.rsuser
 *.suo

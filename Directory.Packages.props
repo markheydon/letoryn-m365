@@ -13,6 +13,23 @@
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.10.0" />
     <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.10.0" />
   </ItemGroup>
+  <!-- Aspire hosting integrations (13.6 family; AppHost SDK uses 13.6 preview) -->
+  <ItemGroup>
+    <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="13.6.0" />
+    <PackageVersion Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="13.6.0" />
+  </ItemGroup>
+  <!-- Data access (EF Core 10) -->
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.12" />
+    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
+  </ItemGroup>
+  <!-- Authentication -->
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.Identity.Web" Version="4.15.0" />
+  </ItemGroup>
   <!-- Fluent UI -->
   <ItemGroup>
     <PackageVersion Include="Microsoft.FluentUI.AspNetCore.Components" Version="5.0.0" />

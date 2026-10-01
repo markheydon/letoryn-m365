@@ -76,7 +76,7 @@ Details: [docs/local-development.md](docs/local-development.md).
 
 ## Spec-driven work
 
-POC, go-live, and later milestones (including **R15** complaints): [product vision — delivery phases](docs/product-vision.md#delivery-phases). Pick the next slice from the [roadmap](specs/tenancy-hub-platform/roadmap.md) by dependency and status.
+POC, go-live, and later delivery phases (including **R15** complaints): [product vision — delivery phases](docs/product-vision.md#delivery-phases). GitHub milestone rules: [milestone-strategy.md](docs/milestone-strategy.md). Pick the next slice from the [roadmap](specs/tenancy-hub-platform/roadmap.md) by dependency and status.
 
 CI: Release build, format check, and tests on push/PR to `main` (`.github/workflows/ci.yml`).
 
