@@ -62,7 +62,7 @@ Implement Graph and payment integrations as **backend concerns** with typed HTTP
 - **PostgreSQL**: Access from API (and future workers), not from the Blazor front end. Migrations and schema ownership TBD when the database project is added.
 - **SharePoint / documents & media**: Graph-backed libraries for tenancy documents and **operational media** (property photos, repair/cleaning evidence, etc.). Metadata and relationships in PostgreSQL; binaries in SharePoint unless a sub-spec documents otherwise.
 - **WordPress showcase** (roadmap R13): Server-side API and/or WordPress plugin: property data flows to an **existing** agency site; not a full website builder in v1.
-- **Property syndication feed** (roadmap R14): Outbound property export compatible with aggregators such as [Data Export](https://dataexport.co.uk/): Letoryn replaces the CRM-as-feed-source; **not** a replacement for Data Export or portal contracts.
+- **Property syndication feed** (roadmap R14): Outbound property export compatible with aggregators such as [Data Export](https://dataexport.co.uk/). The catalogue is the listing source for that feed. This does not replace Data Export, portal contracts, or the agency's CRM and other specialist systems.
 - **Payments / banking** (planned): Stripe, GoCardless, open banking, etc.: server-side only, secrets via configuration, no keys in the web client.
 - **Observability**: Continue using ServiceDefaults / OpenTelemetry patterns; extend as new services are added to the AppHost.
 
