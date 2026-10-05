@@ -11,7 +11,26 @@ var builder = WebApplication.CreateBuilder(args);
 
 const string azureAdConfigurationSection = "AzureAd";
 const string placeholderClientId = "00000000-0000-0000-0000-000000000000";
+const string placeholderScopeSegment = "00000000-0000-0000-0000-000000000000";
 var azureAdSection = builder.Configuration.GetSection(azureAdConfigurationSection);
+
+static string? ResolveApiScope(IConfiguration configuration) =>
+    configuration["TenancyHub:ApiScope"]
+    ?? (string.IsNullOrWhiteSpace(configuration["AzureAd:Audience"])
+        ? null
+        : $"{configuration["AzureAd:Audience"]}/access_as_user");
+
+static IEnumerable<string> ResolveInitialDownstreamScopes(IConfiguration configuration)
+{
+    var apiScope = ResolveApiScope(configuration);
+    if (string.IsNullOrWhiteSpace(apiScope)
+        || apiScope.Contains(placeholderScopeSegment, StringComparison.OrdinalIgnoreCase))
+    {
+        return [];
+    }
+
+    return [apiScope];
+}
 
 builder.AddServiceDefaults();
 
@@ -23,7 +42,7 @@ builder.Services.AddCascadingAuthenticationState();
 
 builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
     .AddMicrosoftIdentityWebApp(azureAdSection)
-    .EnableTokenAcquisitionToCallDownstreamApi()
+    .EnableTokenAcquisitionToCallDownstreamApi(ResolveInitialDownstreamScopes(builder.Configuration))
     .AddInMemoryTokenCaches();
 
 builder.Services.AddOptions<MicrosoftIdentityOptions>()
@@ -66,8 +85,12 @@ builder.Services.AddOptions<CookieAuthenticationOptions>(CookieAuthenticationDef
             {
                 var tokenAcquisition = context.HttpContext.RequestServices.GetRequiredService<ITokenAcquisition>();
                 var configuration = context.HttpContext.RequestServices.GetRequiredService<IConfiguration>();
-                var scope = configuration["TenancyHub:ApiScope"]
-                    ?? $"{configuration["AzureAd:Audience"]}/access_as_user";
+                var scope = ResolveApiScope(configuration);
+                if (string.IsNullOrWhiteSpace(scope))
+                {
+                    return;
+                }
+
                 await tokenAcquisition.GetAccessTokenForUserAsync([scope], user: context.Principal);
             }
             catch
