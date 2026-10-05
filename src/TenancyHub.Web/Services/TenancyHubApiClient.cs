@@ -106,8 +106,10 @@ public sealed class TenancyHubApiClient(
         }
 
         // After interactive sign-in, prefer establishing a new API session over a persisted id that may be stale.
-        var shouldEstablishSession = httpContextAccessor.HttpContext?.Request.Cookies
-            .ContainsKey(SessionEstablishmentCookie.Name) == true;
+        // Sign-out must still send the current session id so the API can end the server-side session.
+        var shouldEstablishSession = !IsMeSignOutRequest(request)
+            && httpContextAccessor.HttpContext?.Request.Cookies
+                .ContainsKey(SessionEstablishmentCookie.Name) == true;
 
         if (shouldEstablishSession)
         {
@@ -154,6 +156,20 @@ public sealed class TenancyHubApiClient(
         {
             request.Headers.TryAddWithoutValidation(TenancyHttpHeaders.InternalAuditKey, auditKey);
         }
+    }
+
+    private static bool IsMeSignOutRequest(HttpRequestMessage request)
+    {
+        if (request.Method != HttpMethod.Post)
+        {
+            return false;
+        }
+
+        var path = request.RequestUri?.IsAbsoluteUri == true
+            ? request.RequestUri.AbsolutePath
+            : request.RequestUri?.OriginalString ?? string.Empty;
+
+        return path.EndsWith("/api/v1/me/sign-out", StringComparison.OrdinalIgnoreCase);
     }
 
     private void ClearEstablishSessionCookieIfPresent()
