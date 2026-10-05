@@ -15,10 +15,14 @@ public sealed record MeMembershipSummary(
     Guid AgencyId,
     string DisplayName,
     string Status,
-    string Role);
+    string Role,
+    string AgencyLifecycleStatus);
 
 /// <summary>Platform operator assignment summary.</summary>
-public sealed record MeOperatorAssignmentSummary(Guid AgencyId, string DisplayName);
+public sealed record MeOperatorAssignmentSummary(
+    Guid AgencyId,
+    string DisplayName,
+    string AgencyLifecycleStatus);
 
 /// <summary>Pending invitation visible to the invitee.</summary>
 public sealed record MePendingInviteSummary(Guid MembershipId, Guid AgencyId, string DisplayName, string Role);

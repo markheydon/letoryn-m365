@@ -180,11 +180,13 @@ R1 allows seeding **outside** the product before the “at least one operator”
 After database is migrated:
 
 1. Identify your Entra **object id** (`oid` claim) after first sign-in attempt or from Entra user profile.
-2. Run [scripts/r1/seed-platform-operator.sql](../scripts/r1/seed-platform-operator.sql) against the Aspire Postgres database:
+2. Run [scripts/r1/seed-platform-operator.sql](../scripts/r1/seed-platform-operator.sql) against the **`tenancyhub`** database (same as `TenancyHubDbContext` / EF migrations—not the parent `postgres` server connection alone):
 
    ```bash
-   aspire describe postgres   # connection string for psql
-   psql "<connection-string>" -f scripts/r1/seed-platform-operator.sql
+   # From repo root while Aspire is running. Do not use `aspire describe postgres` for seeding:
+   # that connection may target the server default database, not `tenancyhub`.
+   aspire describe apiservice --format Json   # ConnectionStrings__tenancyhub or TENANCYHUB_URI
+   psql "<tenancyhub-connection-string>" -f scripts/r1/seed-platform-operator.sql
    ```
 
    Edit the script placeholders `REPLACE_WITH_ENTRA_OID` and `REPLACE_WITH_EMAIL` before running. The script upserts into `"UserIdentities"` on unique `"EntraObjectId"` and sets `"IsPlatformOperator" = TRUE`.

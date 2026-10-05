@@ -1,3 +1,4 @@
+using TenancyHub.Application.Agencies;
 using TenancyHub.Application.Me;
 
 namespace TenancyHub.Web.Services;
@@ -52,6 +53,10 @@ public sealed class AgencyContextState
     public bool HasActiveMembership =>
         Profile?.Memberships.Any(m => string.Equals(m.Status, "Active", StringComparison.Ordinal)) == true;
 
+    /// <summary>Whether the user has at least one suspended agency membership.</summary>
+    public bool HasSuspendedMembership =>
+        Profile?.Memberships.Any(m => string.Equals(m.Status, "Suspended", StringComparison.Ordinal)) == true;
+
     /// <summary>Whether the user has pending invitations.</summary>
     public bool HasPendingInvites => Profile?.PendingInvites.Count > 0;
 
@@ -62,11 +67,70 @@ public sealed class AgencyContextState
     public bool RequiresInviteOnlyGate =>
         HasPendingInvites && !HasActiveMembership && Profile?.IsPlatformOperator != true;
 
+    /// <summary>Whether routine shell work has a valid active agency (FR-002, FR-004).</summary>
+    public bool HasValidRoutineShellContext =>
+        ActiveAgencyId is not null && IsRoutineShellAgency(ActiveAgencyId.Value);
+
+    /// <summary>Whether the user may enter routine shell via membership (active membership in an active agency).</summary>
+    public bool HasSelectableRoutineMemberAgency =>
+        Profile?.Memberships.Any(IsRoutineMemberAgency) == true;
+
+    /// <summary>UK English message when active memberships exist but none qualify for routine shell.</summary>
+    public string? RoutineShellBlockedMessage
+    {
+        get
+        {
+            if (Profile is null || !HasActiveMembership || HasSelectableRoutineMemberAgency)
+            {
+                return null;
+            }
+
+            var activeMemberships = Profile.Memberships
+                .Where(m => string.Equals(m.Status, "Active", StringComparison.Ordinal))
+                .ToList();
+
+            if (activeMemberships.All(m =>
+                    string.Equals(m.AgencyLifecycleStatus, "Archived", StringComparison.Ordinal)))
+            {
+                return AgencyAccessRules.AgencyArchivedMemberMessage;
+            }
+
+            if (activeMemberships.Any(m =>
+                    string.Equals(m.AgencyLifecycleStatus, "Suspended", StringComparison.Ordinal)))
+            {
+                return AgencyAccessRules.AgencySuspendedMemberMessage;
+            }
+
+            return AgencyAccessRules.AgencySuspendedMemberMessage;
+        }
+    }
+
+    /// <summary>Whether the agency id is valid for routine member shell work.</summary>
+    public bool IsRoutineShellAgency(Guid agencyId)
+    {
+        if (Profile is null)
+        {
+            return false;
+        }
+
+        var membership = Profile.Memberships.FirstOrDefault(m => m.AgencyId == agencyId);
+        if (membership is not null && IsRoutineMemberAgency(membership))
+        {
+            return true;
+        }
+
+        if (Profile.IsPlatformOperator)
+        {
+            var assignment = Profile.OperatorAssignments.FirstOrDefault(a => a.AgencyId == agencyId);
+            return assignment is not null && IsOperatorSelectableAgency(assignment);
+        }
+
+        return false;
+    }
+
     private void ApplyDefaultAgency(MeProfileResponse profile)
     {
-        var candidates = profile.Memberships
-            .Where(m => string.Equals(m.Status, "Active", StringComparison.Ordinal))
-            .ToList();
+        var candidates = profile.Memberships.Where(IsRoutineMemberAgency).ToList();
 
         if (candidates.Count > 0)
         {
@@ -80,7 +144,7 @@ public sealed class AgencyContextState
             return;
         }
 
-        var operatorAgencies = profile.OperatorAssignments;
+        var operatorAgencies = profile.OperatorAssignments.Where(IsOperatorSelectableAgency).ToList();
         if (operatorAgencies.Count == 0)
         {
             return;
@@ -94,4 +158,11 @@ public sealed class AgencyContextState
         ActiveAgencyId = operatorAgency.AgencyId;
         ActiveAgencyDisplayName = operatorAgency.DisplayName;
     }
+
+    private static bool IsRoutineMemberAgency(MeMembershipSummary membership) =>
+        string.Equals(membership.Status, "Active", StringComparison.Ordinal)
+        && string.Equals(membership.AgencyLifecycleStatus, "Active", StringComparison.Ordinal);
+
+    private static bool IsOperatorSelectableAgency(MeOperatorAssignmentSummary assignment) =>
+        !string.Equals(assignment.AgencyLifecycleStatus, "Archived", StringComparison.Ordinal);
 }

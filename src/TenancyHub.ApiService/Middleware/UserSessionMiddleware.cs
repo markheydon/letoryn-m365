@@ -2,6 +2,7 @@ using TenancyHub.ApiService.Auth;
 using TenancyHub.Application.Abstractions.Sessions;
 using TenancyHub.Application.Abstractions.Tenancy;
 using TenancyHttpHeaders = TenancyHub.Application.Abstractions.Tenancy.TenancyHttpHeaders;
+using UserSessionTerminationReason = TenancyHub.Application.Abstractions.Sessions.UserSessionTerminationReason;
 
 namespace TenancyHub.ApiService.Middleware;
 
@@ -77,7 +78,8 @@ public sealed class UserSessionMiddleware(RequestDelegate next)
 
         if (!validation.IsValid)
         {
-            if (validation.Reason is not null)
+            if (validation.Reason is UserSessionTerminationReason.IdleTimeout
+                or UserSessionTerminationReason.AbsoluteTimeout)
             {
                 await signInAudit.WriteSessionTerminatedAsync(
                     currentUser.UserIdentityId,

@@ -9,16 +9,15 @@
 
 <FluentLayout>
     <FluentLayoutItem Area="LayoutArea.Header">
-        <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="16" VerticalAlignment="VerticalAlignment.Center">
+        <FluentStack Orientation="Orientation.Horizontal"
+                     HorizontalGap="16"
+                     VerticalAlignment="VerticalAlignment.Center"
+                     Padding="Padding12">
             <FluentLayoutHamburger />
             <FluentLabel Typo="Typography.H5">Tenancy Hub</FluentLabel>
-            @if (!string.IsNullOrWhiteSpace(AgencyContext.ActiveAgencyDisplayName))
-            {
-                <FluentLabel>@AgencyContext.ActiveAgencyDisplayName</FluentLabel>
-            }
             <AgencySwitcher />
             <FluentSpacer />
-            <FluentButton OnClick="SignOutAsync">Sign out</FluentButton>
+            <FluentButton Appearance="ButtonAppearance.Transparent" OnClick="SignOutAsync">Sign out</FluentButton>
         </FluentStack>
     </FluentLayoutItem>
     <FluentLayoutItem Area="LayoutArea.Navigation">

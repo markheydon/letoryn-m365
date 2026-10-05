@@ -3,7 +3,9 @@ using TenancyHub.Application.Abstractions.Audit;
 using TenancyHub.Application.Abstractions.Identities;
 using TenancyHub.Application.Abstractions.Me;
 using TenancyHub.Application.Abstractions.Notifications;
+using TenancyHub.Application.Abstractions.Operators;
 using TenancyHub.Application.Abstractions.Sessions;
+using TenancyHub.Application.Operators;
 using TenancyHub.Infrastructure.Services;
 
 namespace TenancyHub.Infrastructure;
@@ -19,6 +21,8 @@ public static class DependencyInjection
         services.AddScoped<IEnsureUserIdentityService, EnsureUserIdentityService>();
         services.AddScoped<IUserSessionService, UserSessionService>();
         services.AddScoped<IMeProfileService, MeProfileService>();
+        services.AddScoped<IOperatorAssignmentStore, OperatorAssignmentStore>();
+        services.AddScoped<IOperatorAssignmentService, OperatorAssignmentService>();
         return services;
     }
 }
