@@ -105,8 +105,9 @@ public sealed class TenancyHubApiClient(
             return false;
         }
 
-        var shouldEstablishSession = sessionState.SessionId is null
-            && httpContextAccessor.HttpContext?.Request.Cookies.ContainsKey(SessionEstablishmentCookie.Name) == true;
+        // After interactive sign-in, prefer establishing a new API session over a persisted id that may be stale.
+        var shouldEstablishSession = httpContextAccessor.HttpContext?.Request.Cookies
+            .ContainsKey(SessionEstablishmentCookie.Name) == true;
 
         if (shouldEstablishSession)
         {
