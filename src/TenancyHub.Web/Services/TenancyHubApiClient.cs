@@ -73,12 +73,12 @@ public sealed class TenancyHubApiClient(
 
         if (sessionState.SessionId is Guid sessionId)
         {
-            request.Headers.Add(TenancyHttpHeaders.SessionId, sessionId.ToString());
+            request.Headers.TryAddWithoutValidation(TenancyHttpHeaders.SessionId, sessionId.ToString());
         }
 
         if (agencyContext.ActiveAgencyId is Guid agencyId)
         {
-            request.Headers.Add(TenancyHttpHeaders.AgencyId, agencyId.ToString());
+            request.Headers.TryAddWithoutValidation(TenancyHttpHeaders.AgencyId, agencyId.ToString());
         }
     }
 

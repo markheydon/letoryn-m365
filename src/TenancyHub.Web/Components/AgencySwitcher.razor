@@ -1,6 +1,6 @@
 @implements IDisposable
 
-@if (AgencyContext.Profile?.Memberships.Count > 0)
+@if (_options.Count > 1)
 {
     <FluentSelect TOption="AgencyOption"
                   TValue="string"
@@ -36,13 +36,36 @@
 
     private void RefreshOptions()
     {
-        _options = AgencyContext.Profile?.Memberships
-            .Where(m => string.Equals(m.Status, "Active", StringComparison.Ordinal))
-            .Select(m => new AgencyOption(m.AgencyId.ToString(), m.DisplayName))
-            .ToList() ?? [];
+        if (AgencyContext.Profile is null)
+        {
+            _options = [];
+            _selectedValue = null;
+            return;
+        }
+
+        var profile = AgencyContext.Profile;
+        var membershipAgencyIds = new HashSet<Guid>();
+        var options = new List<AgencyOption>();
+
+        foreach (var membership in profile.Memberships.Where(m =>
+                     string.Equals(m.Status, "Active", StringComparison.Ordinal)))
+        {
+            membershipAgencyIds.Add(membership.AgencyId);
+            options.Add(new AgencyOption(membership.AgencyId.ToString(), membership.DisplayName));
+        }
+
+        foreach (var assignment in profile.OperatorAssignments)
+        {
+            if (membershipAgencyIds.Add(assignment.AgencyId))
+            {
+                options.Add(new AgencyOption(assignment.AgencyId.ToString(), assignment.DisplayName));
+            }
+        }
+
+        _options = options;
 
         _selectedValue = AgencyContext.ActiveAgencyId?.ToString()
-            ?? AgencyContext.Profile?.LastUsedAgencyId?.ToString()
+            ?? profile.LastUsedAgencyId?.ToString()
             ?? _options.FirstOrDefault()?.Value;
     }
 
