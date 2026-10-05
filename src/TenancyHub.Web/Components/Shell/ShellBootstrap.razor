@@ -6,28 +6,16 @@
 @inject NavigationManager Navigation
 
 @code {
-    private MeProfileResponse? _profilePendingRoute;
-
     protected override async Task OnInitializedAsync()
     {
         Navigation.LocationChanged += OnLocationChanged;
 
-        if (AgencyContext.Profile is null)
-        {
-            _profilePendingRoute = await ApiClient.GetMeAsync();
-        }
-    }
-
-    protected override void OnAfterRender(bool firstRender)
-    {
-        if (!firstRender)
+        if (AgencyContext.Profile is not null)
         {
             return;
         }
 
-        var profile = _profilePendingRoute ?? AgencyContext.Profile;
-        _profilePendingRoute = null;
-
+        var profile = await ApiClient.GetMeAsync();
         if (profile is not null)
         {
             ApplyRouting(profile);

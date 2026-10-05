@@ -11,7 +11,7 @@ public interface IMeProfileService
     /// <summary>
     /// Sets last-used agency when the caller may use that agency context (membership or operator assignment).
     /// </summary>
-    Task<SetActiveAgencyResult> SetActiveAgencyAsync(
+    Task<SetActiveAgencyOutcome> SetActiveAgencyAsync(
         Guid userIdentityId,
         Guid agencyId,
         CancellationToken cancellationToken = default);

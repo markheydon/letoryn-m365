@@ -26,12 +26,33 @@ public static class AgencyAccessRules
         "Active agency membership is required for this action. Accept a pending invitation or contact your administrator.";
 
     /// <summary>
+    /// Evaluates whether a member may select an agency as their active shell context (sign-in / switch).
+    /// </summary>
+    public static AuthorizationResult EvaluateMemberActiveAgencySelection(
+        AgencyLifecycleStatus agencyStatus,
+        MembershipStatus? membershipStatus,
+        bool isOperatorAssigned)
+    {
+        if (isOperatorAssigned && agencyStatus != AgencyLifecycleStatus.Archived)
+        {
+            return AuthorizationResult.Succeeded();
+        }
+
+        if (membershipStatus is null)
+        {
+            return AuthorizationResult.NotFound();
+        }
+
+        return EvaluateAgencyHeaderAccess(
+            agencyStatus,
+            membershipStatus,
+            isOperatorAssigned,
+            isOperatorRoute: false);
+    }
+
+    /// <summary>
     /// Evaluates whether the caller may proceed with the request given agency header context (middleware).
     /// </summary>
-    /// <param name="agencyStatus">Lifecycle status of the header agency.</param>
-    /// <param name="membershipStatus">Caller membership status when a row exists.</param>
-    /// <param name="isOperatorAssigned">Whether the caller is assigned to the agency as a platform operator.</param>
-    /// <param name="isOperatorRoute">Whether the request targets operator-only API routes.</param>
     public static AuthorizationResult EvaluateAgencyHeaderAccess(
         AgencyLifecycleStatus agencyStatus,
         MembershipStatus? membershipStatus,

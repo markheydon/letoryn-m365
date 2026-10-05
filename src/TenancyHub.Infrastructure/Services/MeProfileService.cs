@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using TenancyHub.Application.Abstractions.Authorization;
 using TenancyHub.Application.Abstractions.Me;
+using TenancyHub.Application.Agencies;
 using TenancyHub.Application.Me;
 using TenancyHub.Domain.Agencies;
 using TenancyHub.Domain.Memberships;
@@ -73,7 +75,7 @@ public sealed class MeProfileService(TenancyHubDbContext dbContext) : IMeProfile
     }
 
     /// <inheritdoc />
-    public async Task<SetActiveAgencyResult> SetActiveAgencyAsync(
+    public async Task<SetActiveAgencyOutcome> SetActiveAgencyAsync(
         Guid userIdentityId,
         Guid agencyId,
         CancellationToken cancellationToken = default)
@@ -84,7 +86,7 @@ public sealed class MeProfileService(TenancyHubDbContext dbContext) : IMeProfile
 
         if (agency is null)
         {
-            return SetActiveAgencyResult.NotFound;
+            return new SetActiveAgencyOutcome(SetActiveAgencyResult.NotFound);
         }
 
         var membership = await dbContext.AgencyMemberships
@@ -99,24 +101,36 @@ public sealed class MeProfileService(TenancyHubDbContext dbContext) : IMeProfile
                 a => a.AgencyId == agencyId && a.UserIdentityId == userIdentityId,
                 cancellationToken);
 
+        if (membership is null && !operatorAssigned)
+        {
+            return new SetActiveAgencyOutcome(SetActiveAgencyResult.NotFound);
+        }
+
+        var access = AgencyAccessRules.EvaluateMemberActiveAgencySelection(
+            agency.LifecycleStatus,
+            membership?.Status,
+            operatorAssigned);
+
+        if (!access.IsAuthorized)
+        {
+            return access.FailureKind == AuthorizationFailureKind.NotFound
+                ? new SetActiveAgencyOutcome(SetActiveAgencyResult.NotFound)
+                : new SetActiveAgencyOutcome(SetActiveAgencyResult.Forbidden, access.UserMessage);
+        }
+
         if (membership?.Status == MembershipStatus.Active && agency.LifecycleStatus == AgencyLifecycleStatus.Active)
         {
             await UpdateLastUsedAsync(userIdentityId, agencyId, cancellationToken);
-            return SetActiveAgencyResult.Succeeded;
+            return new SetActiveAgencyOutcome(SetActiveAgencyResult.Succeeded);
         }
 
         if (operatorAssigned && agency.LifecycleStatus != AgencyLifecycleStatus.Archived)
         {
             await UpdateLastUsedAsync(userIdentityId, agencyId, cancellationToken);
-            return SetActiveAgencyResult.Succeeded;
+            return new SetActiveAgencyOutcome(SetActiveAgencyResult.Succeeded);
         }
 
-        if (membership is null && !operatorAssigned)
-        {
-            return SetActiveAgencyResult.NotFound;
-        }
-
-        return SetActiveAgencyResult.Forbidden;
+        return new SetActiveAgencyOutcome(SetActiveAgencyResult.Forbidden, access.UserMessage);
     }
 
     private async Task UpdateLastUsedAsync(

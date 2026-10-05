@@ -1,4 +1,5 @@
 using TenancyHub.ApiService.Auth;
+using TenancyHub.ApiService.Infrastructure;
 using TenancyHub.ApiService.Middleware;
 using TenancyHub.Application.Abstractions.Me;
 using TenancyHub.Application.Abstractions.Sessions;
@@ -123,16 +124,16 @@ public static class MeEndpoints
             request.AgencyId,
             cancellationToken);
 
-        return result switch
+        return result.Result switch
         {
             SetActiveAgencyResult.Succeeded => Results.NoContent(),
             SetActiveAgencyResult.Forbidden => Results.Problem(
                 title: "Forbidden",
-                detail: "You cannot use this agency.",
+                detail: result.UserMessage ?? "You cannot use this agency.",
                 statusCode: StatusCodes.Status403Forbidden),
             _ => Results.Problem(
-                title: "Not found",
-                detail: "The requested resource was not found.",
+                title: TenantSafeResults.ResourceNotAvailableTitle,
+                detail: TenantSafeResults.ResourceNotAvailableDetail,
                 statusCode: StatusCodes.Status404NotFound),
         };
     }

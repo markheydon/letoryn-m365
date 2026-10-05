@@ -111,13 +111,13 @@ Per [plan.md](./plan.md): `src/TenancyHub.*` libraries, `tests/TenancyHub.*` tes
 
 ### Implementation for User Story 2
 
-- [ ] T046 [US2] [FR-003] Centralize `IAuthorizationService` / policy checks in `src/TenancyHub.Application/Authorization/AgencyAuthorizationService.cs` for agency `LifecycleStatus` and membership status (`Active`, `Invited`, `Suspended`, `Removed`)—**Suspended** membership MUST block agency shell/API access with a clear UK English message while other agencies remain usable
-- [ ] T047 [US2] [FR-003] Enforce member sign-in and active-context denial for agency `LifecycleStatus` **Suspended** and **Archived**, and for membership **Suspended**, with clear UK English messages in `src/TenancyHub.Application/Agencies/AgencyAccessRules.cs` (distinct copy for agency vs membership suspension)
-- [ ] T048 [US2] [FR-003] Apply authorization filters to all agency-scoped minimal API groups in `src/TenancyHub.ApiService/Program.cs`
-- [ ] T049 [US2] [FR-013] Return identical outward shape for cross-tenant not-found vs forbidden in `src/TenancyHub.ApiService/Infrastructure/TenantSafeResults.cs` per FR-013 (supports FR-003 isolation without leakage)
-- [ ] T050 [US2] [FR-003] Block agency-scoped routes when active header agency does not match route `agencyId` in `src/TenancyHub.ApiService/Middleware/TenancyContextMiddleware.cs`
-- [ ] T051 [US2] [FR-003] Implement operator assignment verification for `/api/v1/operator/agencies/{agencyId}/...` in `src/TenancyHub.Application/Operators/OperatorAssignmentService.cs`
-- [ ] T052 [P] [US2] [FR-003] Add integration-focused unit tests for isolation matrix (cross-tenant access, membership **Suspended**, agency **Suspended**/**Archived**) in `tests/TenancyHub.Application.UnitTests/Authorization/AgencyIsolationTests.cs`
+- [x] T046 [US2] [FR-003] Centralize `IAuthorizationService` / policy checks in `src/TenancyHub.Application/Authorization/AgencyAuthorizationService.cs` for agency `LifecycleStatus` and membership status (`Active`, `Invited`, `Suspended`, `Removed`)—**Suspended** membership MUST block agency shell/API access with a clear UK English message while other agencies remain usable
+- [x] T047 [US2] [FR-003] Enforce member sign-in and active-context denial for agency `LifecycleStatus` **Suspended** and **Archived**, and for membership **Suspended**, with clear UK English messages in `src/TenancyHub.Application/Agencies/AgencyAccessRules.cs` (distinct copy for agency vs membership suspension)
+- [x] T048 [US2] [FR-003] Apply authorization filters to all agency-scoped minimal API groups in `src/TenancyHub.ApiService/Program.cs`
+- [x] T049 [US2] [FR-013] Return identical outward shape for cross-tenant not-found vs forbidden in `src/TenancyHub.ApiService/Infrastructure/TenantSafeResults.cs` per FR-013 (supports FR-003 isolation without leakage)
+- [x] T050 [US2] [FR-003] Block agency-scoped routes when active header agency does not match route `agencyId` in `src/TenancyHub.ApiService/Middleware/TenancyContextMiddleware.cs`
+- [x] T051 [US2] [FR-003] Implement operator assignment verification for `/api/v1/operator/agencies/{agencyId}/...` in `src/TenancyHub.Application/Operators/OperatorAssignmentService.cs`
+- [x] T052 [P] [US2] [FR-003] Add integration-focused unit tests for isolation matrix (cross-tenant access, membership **Suspended**, agency **Suspended**/**Archived**) in `tests/TenancyHub.Application.UnitTests/Authorization/AgencyIsolationTests.cs`
 
 **Checkpoint**: User Story 2 independently testable via quickstart §4.
 

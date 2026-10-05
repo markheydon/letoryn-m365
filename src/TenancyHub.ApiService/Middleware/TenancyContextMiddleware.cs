@@ -26,10 +26,26 @@ public sealed class TenancyContextMiddleware(
         ICurrentUser currentUser,
         TenancyHubDbContext dbContext)
     {
+        if (AgencyRoutePath.TryGetRoutineAgencyId(context.Request.Path, out var routeAgencyId)
+            && context.Request.Headers.TryGetValue(AgencyHeaderName, out var routeHeaderValues)
+            && Guid.TryParse(routeHeaderValues.FirstOrDefault(), out var headerForRoute)
+            && headerForRoute != routeAgencyId)
+        {
+            await TenantSafeResults.NotFoundOrForbidden().ExecuteAsync(context);
+            return;
+        }
+
         if (!context.Request.Headers.TryGetValue(AgencyHeaderName, out var headerValues)
             || !Guid.TryParse(headerValues.FirstOrDefault(), out var agencyId))
         {
             await next(context);
+            return;
+        }
+
+        if (AgencyRoutePath.TryGetRoutineAgencyId(context.Request.Path, out routeAgencyId)
+            && routeAgencyId != agencyId)
+        {
+            await TenantSafeResults.NotFoundOrForbidden().ExecuteAsync(context);
             return;
         }
 

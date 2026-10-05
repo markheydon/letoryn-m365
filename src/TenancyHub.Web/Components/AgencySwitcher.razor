@@ -1,15 +1,27 @@
 @implements IDisposable
 
-@if (_options.Count > 1)
+@if (_options.Count == 1)
 {
-    <FluentSelect TOption="AgencyOption"
-                  TValue="string"
-                  Label="Agency"
-                  Items="@_options"
-                  OptionText="@(item => item.Label)"
-                  OptionValue="@(item => item.Value)"
-                  @bind-Value="_selectedValue"
-                  @bind-Value:after="OnAgencyChangedAsync" />
+    <FluentLabel Typo="Typography.Body" Margin="Margin0">
+        @_options[0].Label
+    </FluentLabel>
+}
+else if (_options.Count > 1)
+{
+    <FluentStack Orientation="Orientation.Horizontal"
+                 HorizontalGap="8"
+                 VerticalAlignment="VerticalAlignment.Center"
+                 Margin="Margin0">
+        <FluentLabel Typo="Typography.Body" Margin="Margin0">Agency</FluentLabel>
+        <FluentSelect TOption="AgencyOption"
+                      TValue="string"
+                      Width="220px"
+                      Items="@_options"
+                      OptionText="@(item => item.Label)"
+                      OptionValue="@(item => item.Value)"
+                      @bind-Value="_selectedValue"
+                      @bind-Value:after="OnAgencyChangedAsync" />
+    </FluentStack>
 }
 
 @code {
