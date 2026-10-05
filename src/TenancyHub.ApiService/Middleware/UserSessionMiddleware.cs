@@ -1,8 +1,8 @@
 using TenancyHub.ApiService.Auth;
 using TenancyHub.Application.Abstractions.Sessions;
-using UserSessionTerminationReason = TenancyHub.Application.Abstractions.Sessions.UserSessionTerminationReason;
 using TenancyHub.Application.Abstractions.Tenancy;
 using TenancyHttpHeaders = TenancyHub.Application.Abstractions.Tenancy.TenancyHttpHeaders;
+using UserSessionTerminationReason = TenancyHub.Application.Abstractions.Sessions.UserSessionTerminationReason;
 
 namespace TenancyHub.ApiService.Middleware;
 
