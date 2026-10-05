@@ -21,6 +21,14 @@ updates:
         update-types:
           - version-update:semver-major
     groups:
+      entity-framework:
+        patterns:
+          - Microsoft.EntityFrameworkCore.*
+          - Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore
+          - Npgsql.EntityFrameworkCore.*
+        update-types:
+          - minor
+          - patch
       microsoft-extensions:
         patterns:
           - Microsoft.Extensions.*
@@ -46,6 +54,12 @@ updates:
           - coverlet.*
           - Microsoft.NET.Test.Sdk
           - xunit.*
+        update-types:
+          - minor
+          - patch
+      identity:
+        patterns:
+          - Microsoft.Identity.Web*
         update-types:
           - minor
           - patch
