@@ -2,9 +2,9 @@ using TenancyHub.ApiService.Auth;
 using TenancyHub.ApiService.Middleware;
 using TenancyHub.Application.Abstractions.Me;
 using TenancyHub.Application.Abstractions.Sessions;
-using UserSessionTerminationReason = TenancyHub.Application.Abstractions.Sessions.UserSessionTerminationReason;
 using TenancyHub.Application.Abstractions.Tenancy;
 using TenancyHub.Application.Me;
+using UserSessionTerminationReason = TenancyHub.Application.Abstractions.Sessions.UserSessionTerminationReason;
 namespace TenancyHub.ApiService.Endpoints;
 
 /// <summary>Session and identity endpoints for the signed-in user.</summary>
