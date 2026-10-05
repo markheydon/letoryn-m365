@@ -108,18 +108,22 @@ public sealed class TenancyHubApiClient(
         }
 
         // After interactive sign-in, GET /me may bootstrap a new API session while the cookie is present,
-        // even if ProtectedSessionStorage still holds a stale id. Other calls (and sign-out) must send the session id.
+        // even if ProtectedSessionStorage still holds a stale id. Other calls send the session id once bootstrap
+        // succeeds; sign-out still sends a persisted id so the API can end the prior server session.
+        var hasEstablishCookie = httpContextAccessor.HttpContext?.Request.Cookies
+            .ContainsKey(SessionEstablishmentCookie.Name) == true;
+
         var shouldEstablishSession = IsMeBootstrapRequest(request)
             && !sessionState.ApiSessionEstablished
-            && httpContextAccessor.HttpContext?.Request.Cookies
-                .ContainsKey(SessionEstablishmentCookie.Name) == true;
+            && hasEstablishCookie;
 
         if (shouldEstablishSession)
         {
             request.Headers.TryAddWithoutValidation(TenancyHttpHeaders.EstablishSession, "true");
             TryAddInternalAuditKeyHeader(request);
         }
-        else if (sessionState.SessionId is Guid sessionId)
+        else if (ShouldSendPersistedSessionId(request, hasEstablishCookie)
+            && sessionState.SessionId is Guid sessionId)
         {
             request.Headers.TryAddWithoutValidation(TenancyHttpHeaders.SessionId, sessionId.ToString());
         }
@@ -161,8 +165,26 @@ public sealed class TenancyHubApiClient(
         }
     }
 
+    private bool ShouldSendPersistedSessionId(HttpRequestMessage request, bool hasEstablishCookie)
+    {
+        if (sessionState.SessionId is null)
+        {
+            return false;
+        }
+
+        if (sessionState.ApiSessionEstablished || !hasEstablishCookie)
+        {
+            return true;
+        }
+
+        return IsMeSignOutRequest(request);
+    }
+
     private static bool IsMeBootstrapRequest(HttpRequestMessage request) =>
         IsMePath(request, HttpMethod.Get, "/api/v1/me");
+
+    private static bool IsMeSignOutRequest(HttpRequestMessage request) =>
+        IsMePath(request, HttpMethod.Post, "/api/v1/me/sign-out");
 
     private static bool IsMePath(HttpRequestMessage request, HttpMethod method, string pathSuffix)
     {
