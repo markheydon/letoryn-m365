@@ -15,7 +15,8 @@ public sealed class TenancyHubApiClient(
     AgencyContextState agencyContext,
     UserSessionState sessionState,
     IHttpContextAccessor httpContextAccessor,
-    ExpiredApiSessionHandler expiredApiSessionHandler)
+    ExpiredApiSessionHandler expiredApiSessionHandler,
+    WebSignInAuditReporter signInAuditReporter)
 {
     /// <summary>Loads the signed-in user profile.</summary>
     public async Task<MeProfileResponse?> GetMeAsync(CancellationToken cancellationToken = default)
@@ -23,7 +24,10 @@ public sealed class TenancyHubApiClient(
         await sessionState.EnsureLoadedFromBrowserAsync(cancellationToken);
 
         using var request = new HttpRequestMessage(HttpMethod.Get, "/api/v1/me");
-        await PrepareRequestAsync(request, cancellationToken);
+        if (!await TryPrepareRequestAsync(request, cancellationToken))
+        {
+            return null;
+        }
 
         using var response = await httpClient.SendAsync(request, cancellationToken);
         if (!response.IsSuccessStatusCode)
@@ -65,22 +69,46 @@ public sealed class TenancyHubApiClient(
     public async Task SignOutAsync(CancellationToken cancellationToken = default)
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/me/sign-out");
-        await PrepareRequestAsync(request, cancellationToken);
+        if (!await TryPrepareRequestAsync(request, cancellationToken))
+        {
+            return;
+        }
+
         using var response = await httpClient.SendAsync(request, cancellationToken);
         response.EnsureSuccessStatusCode();
         sessionState.SessionId = null;
         await sessionState.PersistToBrowserAsync(cancellationToken);
     }
 
-    private async Task PrepareRequestAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    private async Task<bool> TryPrepareRequestAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         await sessionState.EnsureLoadedFromBrowserAsync(cancellationToken);
         var scope = configuration["TenancyHub:ApiScope"]
             ?? $"{configuration["AzureAd:Audience"]}/access_as_user";
-        var token = await tokenAcquisition.GetAccessTokenForUserAsync([scope]);
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-        if (httpContextAccessor.HttpContext?.Request.Cookies.ContainsKey(SessionEstablishmentCookie.Name) == true)
+        try
+        {
+            var token = await tokenAcquisition.GetAccessTokenForUserAsync([scope]);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
+        catch (Exception ex) when (EntraTokenErrors.RequiresInteractiveSignIn(ex))
+        {
+            await expiredApiSessionHandler.HandleAsync(cancellationToken);
+            return false;
+        }
+        catch (Exception)
+        {
+            await signInAuditReporter.ReportCookieValidationFailedAsync(
+                httpContextAccessor.HttpContext?.User,
+                cancellationToken);
+            await expiredApiSessionHandler.HandleAsync(cancellationToken);
+            return false;
+        }
+
+        var shouldEstablishSession = sessionState.SessionId is null
+            && httpContextAccessor.HttpContext?.Request.Cookies.ContainsKey(SessionEstablishmentCookie.Name) == true;
+
+        if (shouldEstablishSession)
         {
             request.Headers.TryAddWithoutValidation(TenancyHttpHeaders.EstablishSession, "true");
             TryAddInternalAuditKeyHeader(request);
@@ -94,6 +122,8 @@ public sealed class TenancyHubApiClient(
         {
             request.Headers.TryAddWithoutValidation(TenancyHttpHeaders.AgencyId, agencyId.ToString());
         }
+
+        return true;
     }
 
     private async Task<HttpResponseMessage> SendWithSessionRecoveryAsync(
@@ -101,7 +131,11 @@ public sealed class TenancyHubApiClient(
         CancellationToken cancellationToken)
     {
         using var request = requestFactory();
-        await PrepareRequestAsync(request, cancellationToken);
+        if (!await TryPrepareRequestAsync(request, cancellationToken))
+        {
+            return new HttpResponseMessage(System.Net.HttpStatusCode.Unauthorized);
+        }
+
         var response = await httpClient.SendAsync(request, cancellationToken);
 
         if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
@@ -129,6 +163,10 @@ public sealed class TenancyHubApiClient(
             return;
         }
 
-        httpContext.Response.Cookies.Delete(SessionEstablishmentCookie.Name);
+        // Blazor Server circuits often run after the HTTP response has started; cookie writes then fault the circuit.
+        if (!httpContext.Response.HasStarted)
+        {
+            httpContext.Response.Cookies.Delete(SessionEstablishmentCookie.Name);
+        }
     }
 }

@@ -101,29 +101,9 @@ builder.Services.AddOptions<CookieAuthenticationOptions>(CookieAuthenticationDef
         options.SlidingExpiration = true;
         options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
         options.Cookie.MaxAge = TimeSpan.FromHours(12);
-        options.Events.OnValidatePrincipal = async context =>
-        {
-            try
-            {
-                var tokenAcquisition = context.HttpContext.RequestServices.GetRequiredService<ITokenAcquisition>();
-                var configuration = context.HttpContext.RequestServices.GetRequiredService<IConfiguration>();
-                var scope = ResolveApiScope(configuration);
-                if (string.IsNullOrWhiteSpace(scope))
-                {
-                    return;
-                }
-
-                await tokenAcquisition.GetAccessTokenForUserAsync([scope], user: context.Principal);
-            }
-            catch
-            {
-                var auditReporter = context.HttpContext.RequestServices.GetRequiredService<WebSignInAuditReporter>();
-                await auditReporter.ReportCookieValidationFailedAsync(context.Principal, context.HttpContext.RequestAborted);
-
-                // Reject only — SignOut during OnValidatePrincipal re-enters cookie/OIDC auth and can stack-overflow.
-                context.RejectPrincipal();
-            }
-        };
+        // Downstream API calls acquire and validate Entra tokens (see TenancyHubApiClient). Validating on every
+        // cookie principal refresh multiplies MSAL noise after webfrontend restarts and wraps user_null as
+        // MicrosoftIdentityWebChallengeUserException, which produced false sign-in-failed audit rows.
     });
 
 builder.Services.AddControllersWithViews()
