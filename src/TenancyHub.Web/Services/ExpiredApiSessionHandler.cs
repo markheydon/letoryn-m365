@@ -19,6 +19,7 @@ public sealed class ExpiredApiSessionHandler(
         }
 
         sessionState.SessionId = null;
+        sessionState.ApiSessionEstablished = false;
         await sessionState.PersistToBrowserAsync(cancellationToken);
         agencyContext.Clear();
         navigation.NavigateTo("MicrosoftIdentity/Account/SignOut", forceLoad: true);

@@ -12,6 +12,9 @@ public sealed class UserSessionState(ProtectedSessionStorage sessionStorage)
     /// <summary>Current API session id, if established.</summary>
     public Guid? SessionId { get; set; }
 
+    /// <summary>True after the API has returned a session id for this interactive circuit.</summary>
+    public bool ApiSessionEstablished { get; set; }
+
     /// <summary>Loads a persisted session id from the browser session store.</summary>
     public async Task EnsureLoadedFromBrowserAsync(CancellationToken cancellationToken = default)
     {

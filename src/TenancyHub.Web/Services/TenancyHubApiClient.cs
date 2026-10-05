@@ -44,6 +44,7 @@ public sealed class TenancyHubApiClient(
             && Guid.TryParse(sessionValues.FirstOrDefault(), out var sessionId))
         {
             sessionState.SessionId = sessionId;
+            sessionState.ApiSessionEstablished = true;
             await sessionState.PersistToBrowserAsync(cancellationToken);
         }
 
@@ -77,6 +78,7 @@ public sealed class TenancyHubApiClient(
         using var response = await httpClient.SendAsync(request, cancellationToken);
         response.EnsureSuccessStatusCode();
         sessionState.SessionId = null;
+        sessionState.ApiSessionEstablished = false;
         await sessionState.PersistToBrowserAsync(cancellationToken);
     }
 
@@ -105,9 +107,10 @@ public sealed class TenancyHubApiClient(
             return false;
         }
 
-        // After interactive sign-in, prefer establishing a new API session over a persisted id that may be stale.
-        // Sign-out must still send the current session id so the API can end the server-side session.
-        var shouldEstablishSession = !IsMeSignOutRequest(request)
+        // After interactive sign-in, GET /me may bootstrap a new API session while the cookie is present,
+        // even if ProtectedSessionStorage still holds a stale id. Other calls (and sign-out) must send the session id.
+        var shouldEstablishSession = IsMeBootstrapRequest(request)
+            && !sessionState.ApiSessionEstablished
             && httpContextAccessor.HttpContext?.Request.Cookies
                 .ContainsKey(SessionEstablishmentCookie.Name) == true;
 
@@ -158,9 +161,12 @@ public sealed class TenancyHubApiClient(
         }
     }
 
-    private static bool IsMeSignOutRequest(HttpRequestMessage request)
+    private static bool IsMeBootstrapRequest(HttpRequestMessage request) =>
+        IsMePath(request, HttpMethod.Get, "/api/v1/me");
+
+    private static bool IsMePath(HttpRequestMessage request, HttpMethod method, string pathSuffix)
     {
-        if (request.Method != HttpMethod.Post)
+        if (request.Method != method)
         {
             return false;
         }
@@ -169,7 +175,7 @@ public sealed class TenancyHubApiClient(
             ? request.RequestUri.AbsolutePath
             : request.RequestUri?.OriginalString ?? string.Empty;
 
-        return path.EndsWith("/api/v1/me/sign-out", StringComparison.OrdinalIgnoreCase);
+        return path.EndsWith(pathSuffix, StringComparison.OrdinalIgnoreCase);
     }
 
     private void ClearEstablishSessionCookieIfPresent()
