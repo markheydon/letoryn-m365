@@ -1,7 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.Identity.Web;
+using Microsoft.IdentityModel.Tokens;
 using TenancyHub.ApiService.Auth;
 using TenancyHub.ApiService.Endpoints;
 using TenancyHub.ApiService.Infrastructure;
