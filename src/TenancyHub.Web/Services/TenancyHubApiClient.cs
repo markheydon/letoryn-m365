@@ -44,13 +44,13 @@ public sealed class TenancyHubApiClient(
     /// <summary>Sets the active agency on the server.</summary>
     public async Task<bool> SetActiveAgencyAsync(Guid agencyId, CancellationToken cancellationToken = default)
     {
-        using var request = new HttpRequestMessage(HttpMethod.Put, "/api/v1/me/active-agency")
-        {
-            Content = JsonContent.Create(new SetActiveAgencyRequest(agencyId)),
-        };
-        await PrepareRequestAsync(request, cancellationToken);
+        using var response = await SendWithSessionRecoveryAsync(
+            () => new HttpRequestMessage(HttpMethod.Put, "/api/v1/me/active-agency")
+            {
+                Content = JsonContent.Create(new SetActiveAgencyRequest(agencyId)),
+            },
+            cancellationToken);
 
-        using var response = await httpClient.SendAsync(request, cancellationToken);
         return response.IsSuccessStatusCode;
     }
 
@@ -80,5 +80,35 @@ public sealed class TenancyHubApiClient(
         {
             request.Headers.Add(TenancyHttpHeaders.AgencyId, agencyId.ToString());
         }
+    }
+
+    /// <summary>
+    /// Sends an API request and, on 401, re-establishes the server session via GET /me (bootstrap path).
+    /// </summary>
+    private async Task<HttpResponseMessage> SendWithSessionRecoveryAsync(
+        Func<HttpRequestMessage> requestFactory,
+        CancellationToken cancellationToken)
+    {
+        using var request = requestFactory();
+        await PrepareRequestAsync(request, cancellationToken);
+        var response = await httpClient.SendAsync(request, cancellationToken);
+
+        if (response.StatusCode != System.Net.HttpStatusCode.Unauthorized)
+        {
+            return response;
+        }
+
+        response.Dispose();
+        sessionState.SessionId = null;
+
+        var profile = await GetMeAsync(cancellationToken);
+        if (profile is null)
+        {
+            return new HttpResponseMessage(System.Net.HttpStatusCode.Unauthorized);
+        }
+
+        var retryRequest = requestFactory();
+        await PrepareRequestAsync(retryRequest, cancellationToken);
+        return await httpClient.SendAsync(retryRequest, cancellationToken);
     }
 }
