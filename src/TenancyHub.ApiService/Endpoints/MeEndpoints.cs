@@ -42,6 +42,7 @@ public static class MeEndpoints
         }
 
         Guid sessionId;
+        var recordSignInSucceededAudit = false;
         if (httpContext.Items.TryGetValue(UserSessionMiddleware.SessionHeaderName, out var validatedSession)
             && validatedSession is Guid validatedId)
         {
@@ -53,7 +54,7 @@ public static class MeEndpoints
         {
             var created = await sessionService.CreateSessionAsync(currentUser.UserIdentityId, cancellationToken);
             sessionId = created.SessionId;
-            await signInAudit.WriteSignInSucceededAsync(currentUser.UserIdentityId, cancellationToken);
+            recordSignInSucceededAudit = true;
         }
         else if (httpContext.Request.Headers.TryGetValue(UserSessionMiddleware.SessionHeaderName, out var sessionHeader)
             && Guid.TryParse(sessionHeader.FirstOrDefault(), out var existingSessionId))
@@ -83,10 +84,20 @@ public static class MeEndpoints
         var profile = await meProfile.GetProfileAsync(currentUser.UserIdentityId, cancellationToken);
         if (profile is null)
         {
+            if (recordSignInSucceededAudit)
+            {
+                await sessionService.EndSessionAsync(sessionId, currentUser.UserIdentityId, cancellationToken);
+            }
+
             return Results.Problem(
                 title: "Unauthorized",
                 detail: "Authentication is required.",
                 statusCode: StatusCodes.Status401Unauthorized);
+        }
+
+        if (recordSignInSucceededAudit)
+        {
+            await signInAudit.WriteSignInSucceededAsync(currentUser.UserIdentityId, cancellationToken);
         }
 
         httpContext.Response.Headers.Append(UserSessionMiddleware.SessionHeaderName, sessionId.ToString());

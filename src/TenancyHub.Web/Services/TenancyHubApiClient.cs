@@ -21,8 +21,6 @@ public sealed class TenancyHubApiClient(
     /// <summary>Loads the signed-in user profile.</summary>
     public async Task<MeProfileResponse?> GetMeAsync(CancellationToken cancellationToken = default)
     {
-        await sessionState.EnsureLoadedFromBrowserAsync(cancellationToken);
-
         using var request = new HttpRequestMessage(HttpMethod.Get, "/api/v1/me");
         if (!await TryPrepareRequestAsync(request, cancellationToken))
         {
@@ -40,6 +38,12 @@ public sealed class TenancyHubApiClient(
             return null;
         }
 
+        var profile = await response.Content.ReadFromJsonAsync<MeProfileResponse>(cancellationToken);
+        if (profile is null)
+        {
+            return null;
+        }
+
         if (response.Headers.TryGetValues(TenancyHttpHeaders.SessionId, out var sessionValues)
             && Guid.TryParse(sessionValues.FirstOrDefault(), out var sessionId))
         {
@@ -50,7 +54,7 @@ public sealed class TenancyHubApiClient(
 
         ClearEstablishSessionCookieIfPresent();
 
-        return await response.Content.ReadFromJsonAsync<MeProfileResponse>(cancellationToken);
+        return profile;
     }
 
     /// <summary>Sets the active agency on the server.</summary>
