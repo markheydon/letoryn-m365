@@ -86,7 +86,10 @@ dotnet user-secrets set "Parameters:EntraWebClientCertificatePfx" "$(base64 -w0 
 dotnet user-secrets set "Parameters:EntraWebClientCertificatePassword" "<pfx-password>"
 dotnet user-secrets set "Parameters:EntraApiClientId" "<api-client-id>"
 dotnet user-secrets set "Parameters:EntraApiAudience" "api://<api-client-id>"
+dotnet user-secrets set "Parameters:TenancyHubInternalSignInAuditKey" "<random-shared-secret>"
 ```
+
+Use any long random string for `TenancyHubInternalSignInAuditKey` (same value on **apiservice** and **webfrontend** via AppHost). The Web app sends it when establishing an API session and reporting sign-in audit events; the API rejects those calls without a matching key.
 
 Alternatively, from the repository root: `aspire secret set "Parameters:EntraWebClientCertificatePfx" "$(base64 -w0 /path/to/entra-web-dev.pfx)"` (and the same for other parameters).
 
@@ -105,6 +108,7 @@ AppHost parameter names (secret parameters via `AddParameter`):
 | `EntraWebClientCertificatePfx` | — | `AzureAd__ClientCredentials__0__Base64EncodedValue` |
 | `EntraWebClientCertificatePassword` | — | `AzureAd__ClientCredentials__0__CertificatePassword` |
 | `EntraApiAudience` | — | `TenancyHub__ApiScope` = `{EntraApiAudience}/access_as_user` (AppHost expression) |
+| `TenancyHubInternalSignInAuditKey` | `TenancyHub__InternalSignInAuditKey` | `TenancyHub__InternalSignInAuditKey` |
 
 `webfrontend` also receives `AzureAd__ClientCredentials__0__SourceType` = `Base64Encoded` (fixed in AppHost).
 
