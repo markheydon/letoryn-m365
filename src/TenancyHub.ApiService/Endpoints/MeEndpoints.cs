@@ -53,22 +53,29 @@ public static class MeEndpoints
                 existingSessionId,
                 currentUser.UserIdentityId,
                 cancellationToken);
-            if (validation.IsValid)
+            if (!validation.IsValid)
             {
-                sessionId = existingSessionId;
+                return Results.Problem(
+                    title: "Unauthorized",
+                    detail: "Your session has ended. Sign in again.",
+                    statusCode: StatusCodes.Status401Unauthorized);
             }
-            else
-            {
-                var created = await sessionService.CreateSessionAsync(currentUser.UserIdentityId, cancellationToken);
-                sessionId = created.SessionId;
-                await signInAudit.WriteSignInSucceededAsync(currentUser.UserIdentityId, cancellationToken);
-            }
+
+            sessionId = existingSessionId;
         }
-        else
+        else if (httpContext.Request.Headers.TryGetValue(TenancyHttpHeaders.EstablishSession, out var establishHeader)
+            && string.Equals(establishHeader.FirstOrDefault(), "true", StringComparison.OrdinalIgnoreCase))
         {
             var created = await sessionService.CreateSessionAsync(currentUser.UserIdentityId, cancellationToken);
             sessionId = created.SessionId;
             await signInAudit.WriteSignInSucceededAsync(currentUser.UserIdentityId, cancellationToken);
+        }
+        else
+        {
+            return Results.Problem(
+                title: "Unauthorized",
+                detail: "A valid session is required.",
+                statusCode: StatusCodes.Status401Unauthorized);
         }
 
         var profile = await meProfile.GetProfileAsync(currentUser.UserIdentityId, cancellationToken);

@@ -1,4 +1,5 @@
 @using TenancyHub.Application.Me
+@implements IDisposable
 @inject TenancyHubApiClient ApiClient
 @inject ShellNavigationService ShellNavigation
 @inject AgencyContextState AgencyContext
@@ -9,23 +10,45 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (AgencyContext.Profile is not null)
-        {
-            return;
-        }
+        Navigation.LocationChanged += OnLocationChanged;
 
-        _profilePendingRoute = await ApiClient.GetMeAsync();
+        if (AgencyContext.Profile is null)
+        {
+            _profilePendingRoute = await ApiClient.GetMeAsync();
+        }
     }
 
     protected override void OnAfterRender(bool firstRender)
     {
-        if (!firstRender || _profilePendingRoute is null)
+        if (!firstRender)
         {
             return;
         }
 
-        var profile = _profilePendingRoute;
+        var profile = _profilePendingRoute ?? AgencyContext.Profile;
         _profilePendingRoute = null;
-        ShellNavigation.ApplyProfileAndRoute(profile, Navigation.ToBaseRelativePath(Navigation.Uri));
+
+        if (profile is not null)
+        {
+            ApplyRouting(profile);
+        }
     }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        if (AgencyContext.Profile is not MeProfileResponse profile)
+        {
+            return;
+        }
+
+        ApplyRouting(profile, e.Location);
+    }
+
+    private void ApplyRouting(MeProfileResponse profile, string? uri = null)
+    {
+        var relative = Navigation.ToBaseRelativePath(uri ?? Navigation.Uri);
+        ShellNavigation.ApplyProfileAndRoute(profile, relative);
+    }
+
+    public void Dispose() => Navigation.LocationChanged -= OnLocationChanged;
 }

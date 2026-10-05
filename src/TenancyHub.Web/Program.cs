@@ -44,6 +44,29 @@ builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
     .EnableTokenAcquisitionToCallDownstreamApi(ResolveInitialDownstreamScopes(builder.Configuration))
     .AddInMemoryTokenCaches();
 
+builder.Services.PostConfigure<OpenIdConnectOptions>(OpenIdConnectDefaults.AuthenticationScheme, options =>
+{
+    var previous = options.Events.OnTokenValidated;
+    options.Events.OnTokenValidated = async context =>
+    {
+        if (previous is not null)
+        {
+            await previous(context);
+        }
+
+        context.HttpContext.Response.Cookies.Append(
+            SessionEstablishmentCookie.Name,
+            SessionEstablishmentCookie.Value,
+            new CookieOptions
+            {
+                HttpOnly = true,
+                IsEssential = true,
+                MaxAge = TimeSpan.FromMinutes(5),
+                SameSite = SameSiteMode.Lax,
+            });
+    };
+});
+
 builder.Services.AddOptions<MicrosoftIdentityOptions>()
     .Bind(azureAdSection)
     .Validate(
@@ -108,6 +131,7 @@ builder.Services.AddAuthorization(options =>
     options.FallbackPolicy = options.DefaultPolicy;
 });
 
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<AgencyContextState>();
 builder.Services.AddScoped<UserSessionState>();
 builder.Services.AddScoped<ShellNavigationService>();

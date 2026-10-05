@@ -13,11 +13,14 @@ public sealed class TenancyHubApiClient(
     ITokenAcquisition tokenAcquisition,
     IConfiguration configuration,
     AgencyContextState agencyContext,
-    UserSessionState sessionState)
+    UserSessionState sessionState,
+    IHttpContextAccessor httpContextAccessor)
 {
     /// <summary>Loads the signed-in user profile.</summary>
     public async Task<MeProfileResponse?> GetMeAsync(CancellationToken cancellationToken = default)
     {
+        await sessionState.EnsureLoadedFromBrowserAsync(cancellationToken);
+
         using var request = new HttpRequestMessage(HttpMethod.Get, "/api/v1/me");
         await PrepareRequestAsync(request, cancellationToken);
 
@@ -27,6 +30,7 @@ public sealed class TenancyHubApiClient(
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 sessionState.SessionId = null;
+                await sessionState.PersistToBrowserAsync(cancellationToken);
             }
 
             return null;
@@ -36,7 +40,10 @@ public sealed class TenancyHubApiClient(
             && Guid.TryParse(sessionValues.FirstOrDefault(), out var sessionId))
         {
             sessionState.SessionId = sessionId;
+            await sessionState.PersistToBrowserAsync(cancellationToken);
         }
+
+        ClearEstablishSessionCookieIfPresent();
 
         return await response.Content.ReadFromJsonAsync<MeProfileResponse>(cancellationToken);
     }
@@ -62,10 +69,12 @@ public sealed class TenancyHubApiClient(
         using var response = await httpClient.SendAsync(request, cancellationToken);
         response.EnsureSuccessStatusCode();
         sessionState.SessionId = null;
+        await sessionState.PersistToBrowserAsync(cancellationToken);
     }
 
     private async Task PrepareRequestAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        await sessionState.EnsureLoadedFromBrowserAsync(cancellationToken);
         var scope = configuration["TenancyHub:ApiScope"]
             ?? $"{configuration["AzureAd:Audience"]}/access_as_user";
         var token = await tokenAcquisition.GetAccessTokenForUserAsync([scope]);
@@ -75,6 +84,10 @@ public sealed class TenancyHubApiClient(
         {
             request.Headers.TryAddWithoutValidation(TenancyHttpHeaders.SessionId, sessionId.ToString());
         }
+        else if (httpContextAccessor.HttpContext?.Request.Cookies.ContainsKey(SessionEstablishmentCookie.Name) == true)
+        {
+            request.Headers.TryAddWithoutValidation(TenancyHttpHeaders.EstablishSession, "true");
+        }
 
         if (agencyContext.ActiveAgencyId is Guid agencyId)
         {
@@ -82,9 +95,6 @@ public sealed class TenancyHubApiClient(
         }
     }
 
-    /// <summary>
-    /// Sends an API request and, on 401, re-establishes the server session via GET /me (bootstrap path).
-    /// </summary>
     private async Task<HttpResponseMessage> SendWithSessionRecoveryAsync(
         Func<HttpRequestMessage> requestFactory,
         CancellationToken cancellationToken)
@@ -93,22 +103,23 @@ public sealed class TenancyHubApiClient(
         await PrepareRequestAsync(request, cancellationToken);
         var response = await httpClient.SendAsync(request, cancellationToken);
 
-        if (response.StatusCode != System.Net.HttpStatusCode.Unauthorized)
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
-            return response;
+            sessionState.SessionId = null;
+            await sessionState.PersistToBrowserAsync(cancellationToken);
         }
 
-        response.Dispose();
-        sessionState.SessionId = null;
+        return response;
+    }
 
-        var profile = await GetMeAsync(cancellationToken);
-        if (profile is null)
+    private void ClearEstablishSessionCookieIfPresent()
+    {
+        var httpContext = httpContextAccessor.HttpContext;
+        if (httpContext?.Request.Cookies.ContainsKey(SessionEstablishmentCookie.Name) != true)
         {
-            return new HttpResponseMessage(System.Net.HttpStatusCode.Unauthorized);
+            return;
         }
 
-        var retryRequest = requestFactory();
-        await PrepareRequestAsync(retryRequest, cancellationToken);
-        return await httpClient.SendAsync(retryRequest, cancellationToken);
+        httpContext.Response.Cookies.Delete(SessionEstablishmentCookie.Name);
     }
 }

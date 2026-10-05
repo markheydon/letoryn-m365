@@ -8,4 +8,7 @@ public static class TenancyHttpHeaders
 
     /// <summary>Server-side session correlation header (FR-001).</summary>
     public const string SessionId = "X-TenancyHub-Session-Id";
+
+    /// <summary>Signals interactive sign-in completed and a new server session may be created.</summary>
+    public const string EstablishSession = "X-TenancyHub-Establish-Session";
 }

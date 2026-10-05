@@ -76,6 +76,7 @@
         }
 
         SessionState.SessionId = null;
+        await SessionState.PersistToBrowserAsync();
         AgencyContext.Clear();
         Navigation.NavigateTo("MicrosoftIdentity/Account/SignOut", forceLoad: true);
     }
