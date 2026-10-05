@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.Identity.Web;
 using TenancyHub.ApiService.Auth;
 using TenancyHub.ApiService.Endpoints;
@@ -53,7 +54,12 @@ builder.Services.PostConfigure<JwtBearerOptions>(
                 await priorAuthenticationFailed(context).ConfigureAwait(false);
             }
 
-            // Entra rejects tokens for disabled accounts, expiry, and other validation failures (research.md).
+            if (context.Exception is SecurityTokenExpiredException)
+            {
+                return;
+            }
+
+            // Entra rejects tokens for disabled accounts, invalid signatures, and other validation failures (research.md).
             var audit = context.HttpContext.RequestServices.GetRequiredService<SignInAuditService>();
             await audit.WriteSignInFailedAsync(
                 null,
@@ -69,6 +75,12 @@ builder.Services.AddOptions<MicrosoftIdentityOptions>()
             && !string.IsNullOrWhiteSpace(options.ClientId),
         "AzureAd:TenantId and AzureAd:ClientId must be configured (Aspire maps Entra parameters per runbook).")
     .ValidateOnStart();
+
+if (string.IsNullOrWhiteSpace(azureAdSection["Audience"]))
+{
+    throw new InvalidOperationException(
+        "AzureAd:Audience must be configured (Aspire maps EntraApiAudience per runbook).");
+}
 
 builder.Services.AddAuthorization();
 
