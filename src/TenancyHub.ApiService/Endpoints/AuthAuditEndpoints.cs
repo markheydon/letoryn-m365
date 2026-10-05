@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TenancyHub.ApiService.Auth;
+using TenancyHub.Application.Abstractions.Tenancy;
 using TenancyHub.Infrastructure.Persistence;
 
 namespace TenancyHub.ApiService.Endpoints;
@@ -10,18 +11,27 @@ public static class AuthAuditEndpoints
     /// <summary>Maps auth audit routes.</summary>
     public static IEndpointRouteBuilder MapAuthAuditEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapPost("/api/v1/auth/sign-in-failed", ReportSignInFailedAsync)
-            .AllowAnonymous();
+        endpoints.MapPost("/api/v1/auth/sign-in-failed", ReportSignInFailedAsync);
 
         return endpoints;
     }
 
     private static async Task<IResult> ReportSignInFailedAsync(
+        HttpContext httpContext,
+        IConfiguration configuration,
         ReportSignInFailedRequest? request,
         TenancyHubDbContext dbContext,
         SignInAuditService signInAudit,
         CancellationToken cancellationToken)
     {
+        var expectedKey = configuration["TenancyHub:InternalSignInAuditKey"];
+        if (string.IsNullOrWhiteSpace(expectedKey)
+            || !httpContext.Request.Headers.TryGetValue(TenancyHttpHeaders.InternalAuditKey, out var providedKey)
+            || !string.Equals(providedKey.FirstOrDefault(), expectedKey, StringComparison.Ordinal))
+        {
+            return Results.NotFound();
+        }
+
         Guid? userIdentityId = null;
         if (!string.IsNullOrWhiteSpace(request?.EntraObjectId))
         {

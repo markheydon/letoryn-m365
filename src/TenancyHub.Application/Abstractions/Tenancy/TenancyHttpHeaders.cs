@@ -11,4 +11,7 @@ public static class TenancyHttpHeaders
 
     /// <summary>Signals interactive sign-in completed and a new server session may be created.</summary>
     public const string EstablishSession = "X-TenancyHub-Establish-Session";
+
+    /// <summary>Shared secret header for trusted Web-to-API audit calls.</summary>
+    public const string InternalAuditKey = "X-TenancyHub-Internal-Audit-Key";
 }

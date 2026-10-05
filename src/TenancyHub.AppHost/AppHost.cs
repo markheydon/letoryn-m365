@@ -8,6 +8,7 @@ var entraWebClientCertificatePfx = builder.AddParameter("EntraWebClientCertifica
 var entraWebClientCertificatePassword = builder.AddParameter("EntraWebClientCertificatePassword", secret: true);
 var entraApiClientId = builder.AddParameter("EntraApiClientId", secret: true);
 var entraApiAudience = builder.AddParameter("EntraApiAudience", secret: true);
+var internalSignInAuditKey = builder.AddParameter("TenancyHubInternalSignInAuditKey", secret: true);
 
 var postgres = builder.AddPostgres("postgres")
     .WithDataVolume("pg-data")
@@ -21,7 +22,8 @@ var apiService = builder.AddDotnetProject("apiservice", "../TenancyHub.ApiServic
     .WithEnvironment("AzureAd__Instance", azureAdInstance)
     .WithEnvironment("AzureAd__TenantId", entraTenantId)
     .WithEnvironment("AzureAd__ClientId", entraApiClientId)
-    .WithEnvironment("AzureAd__Audience", entraApiAudience);
+    .WithEnvironment("AzureAd__Audience", entraApiAudience)
+    .WithEnvironment("TenancyHub__InternalSignInAuditKey", internalSignInAuditKey);
 
 var migrations = apiService
     .AddEFMigrations("tenancyhub-migrations", "TenancyHub.Infrastructure.Persistence.TenancyHubDbContext")
@@ -46,6 +48,7 @@ builder.AddDotnetProject("webfrontend", "../TenancyHub.Web/TenancyHub.Web.csproj
     .WithEnvironment("AzureAd__ClientCredentials__0__SourceType", "Base64Encoded")
     .WithEnvironment("AzureAd__ClientCredentials__0__Base64EncodedValue", entraWebClientCertificatePfx)
     .WithEnvironment("AzureAd__ClientCredentials__0__CertificatePassword", entraWebClientCertificatePassword)
-    .WithEnvironment("TenancyHub__ApiScope", tenancyHubApiScope);
+    .WithEnvironment("TenancyHub__ApiScope", tenancyHubApiScope)
+    .WithEnvironment("TenancyHub__InternalSignInAuditKey", internalSignInAuditKey);
 
 builder.Build().Run();
