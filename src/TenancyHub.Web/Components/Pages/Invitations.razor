@@ -1,6 +1,7 @@
 @page "/invitations"
 @attribute [Authorize]
 @layout TenancyHub.Web.Components.Layout.MinimalLayout
+@implements IDisposable
 
 <PageTitle>Pending invitations</PageTitle>
 
@@ -28,10 +29,24 @@
 
     protected override void OnInitialized()
     {
+        AgencyContext.Changed += OnContextChanged;
+        RefreshInvites();
+    }
+
+    private void OnContextChanged()
+    {
+        RefreshInvites();
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void RefreshInvites()
+    {
         _invites = AgencyContext.Profile?.PendingInvites
             .Select(i => new InviteRow(i.DisplayName, i.Role))
             .ToList() ?? [];
     }
+
+    public void Dispose() => AgencyContext.Changed -= OnContextChanged;
 
     private sealed record InviteRow(string DisplayName, string Role);
 }
