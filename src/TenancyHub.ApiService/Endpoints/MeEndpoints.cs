@@ -46,6 +46,13 @@ public static class MeEndpoints
         {
             sessionId = validatedId;
         }
+        else if (httpContext.Request.Headers.TryGetValue(TenancyHttpHeaders.EstablishSession, out var establishHeader)
+            && string.Equals(establishHeader.FirstOrDefault(), "true", StringComparison.OrdinalIgnoreCase))
+        {
+            var created = await sessionService.CreateSessionAsync(currentUser.UserIdentityId, cancellationToken);
+            sessionId = created.SessionId;
+            await signInAudit.WriteSignInSucceededAsync(currentUser.UserIdentityId, cancellationToken);
+        }
         else if (httpContext.Request.Headers.TryGetValue(UserSessionMiddleware.SessionHeaderName, out var sessionHeader)
             && Guid.TryParse(sessionHeader.FirstOrDefault(), out var existingSessionId))
         {
@@ -62,13 +69,6 @@ public static class MeEndpoints
             }
 
             sessionId = existingSessionId;
-        }
-        else if (httpContext.Request.Headers.TryGetValue(TenancyHttpHeaders.EstablishSession, out var establishHeader)
-            && string.Equals(establishHeader.FirstOrDefault(), "true", StringComparison.OrdinalIgnoreCase))
-        {
-            var created = await sessionService.CreateSessionAsync(currentUser.UserIdentityId, cancellationToken);
-            sessionId = created.SessionId;
-            await signInAudit.WriteSignInSucceededAsync(currentUser.UserIdentityId, cancellationToken);
         }
         else
         {

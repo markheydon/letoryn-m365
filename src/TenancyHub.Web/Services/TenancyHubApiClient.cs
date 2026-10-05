@@ -80,13 +80,13 @@ public sealed class TenancyHubApiClient(
         var token = await tokenAcquisition.GetAccessTokenForUserAsync([scope]);
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-        if (sessionState.SessionId is Guid sessionId)
-        {
-            request.Headers.TryAddWithoutValidation(TenancyHttpHeaders.SessionId, sessionId.ToString());
-        }
-        else if (httpContextAccessor.HttpContext?.Request.Cookies.ContainsKey(SessionEstablishmentCookie.Name) == true)
+        if (httpContextAccessor.HttpContext?.Request.Cookies.ContainsKey(SessionEstablishmentCookie.Name) == true)
         {
             request.Headers.TryAddWithoutValidation(TenancyHttpHeaders.EstablishSession, "true");
+        }
+        else if (sessionState.SessionId is Guid sessionId)
+        {
+            request.Headers.TryAddWithoutValidation(TenancyHttpHeaders.SessionId, sessionId.ToString());
         }
 
         if (agencyContext.ActiveAgencyId is Guid agencyId)
