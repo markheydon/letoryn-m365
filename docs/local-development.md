@@ -58,6 +58,8 @@ aspire start --apphost src/TenancyHub.AppHost/TenancyHub.AppHost.csproj
 
 Use `--isolated` when another Aspire session might be running or you are in a git worktree.
 
+On startup, AppHost applies EF Core migrations for `TenancyHubDbContext` (migrations project: `TenancyHub.Infrastructure`) before `apiservice` becomes healthy. You do not need `dotnet ef database update` for normal local runs. Use that command for CI or when working without Aspire; use `dotnet ef migrations add` as before when authoring migrations (`DesignTimeDbContextFactory` in Infrastructure).
+
 Stop:
 
 ```bash

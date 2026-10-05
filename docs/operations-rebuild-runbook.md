@@ -125,7 +125,9 @@ Register redirect URIs in Entra for each `webfrontend` HTTPS port from `aspire d
 
 **API scope for Web → API calls**: configure `TenancyHub:ApiScope` (for example `api://{api-client-id}/access_as_user`) on `webfrontend` to match the exposed API scope granted to the web app registration.
 
-PostgreSQL resource: AppHost `AddPostgres("postgres").AddDatabase("tenancyhub")`; API uses `AddNpgsqlDbContext<TenancyHubDbContext>(connectionName: "tenancyhub")`.
+PostgreSQL resource: AppHost `AddPostgres("postgres").WithDataVolume("pg-data").AddDatabase("tenancyhub")`; API uses `AddNpgsqlDbContext<TenancyHubDbContext>(connectionName: "tenancyhub")`. The named Docker volume **`pg-data`** keeps database files across AppHost restarts (schema and data survive; you do not need to re-apply migrations after every stop/start when the volume is intact).
+
+**EF migrations (local Aspire)**: AppHost wires `AddEFMigrations` on `apiservice` with `WithMigrationsProject` → `TenancyHub.Infrastructure`, `RunDatabaseUpdateOnStart()`, and `apiservice.WaitForCompletion(migrations)` after `migrations.WaitFor(postgres)`. Pending migrations apply automatically on `aspire run` before the API serves traffic.
 
 **Disabled directory accounts (FR-001)**: In Entra, keep **access token lifetime** ≤ 60 minutes for POC so revoked/disabled users lose API access within a refresh cycle without Microsoft Graph integration (see [research.md](../specs/001-platform-foundation/research.md)).
 
@@ -139,24 +141,28 @@ PostgreSQL resource: AppHost `AddPostgres("postgres").AddDatabase("tenancyhub")`
 aspire run
 ```
 
-AppHost adds PostgreSQL with generated credentials; the API receives connection settings through `WithReference` and the Aspire Npgsql EF client integration.
+AppHost adds PostgreSQL with generated credentials and a persistent data volume (`pg-data`); the API receives connection settings through `WithReference` and the Aspire Npgsql EF client integration.
+
+To **wipe local Postgres data** (fresh database, re-run migrations and seed): `aspire stop`, then `docker volume rm pg-data` (or remove the volume in Docker Desktop). On the next `aspire run`, Aspire recreates the volume and credentials.
 
 ### 4.2 Apply schema
 
-After EF migrations exist:
+**Local Aspire (`aspire run`)**: schema is applied automatically by the `tenancyhub-migrations` resource (see section 3). No separate step is required for day-to-day development after a fresh volume or new migration merge.
+
+**CI, scripts, or offline** (no AppHost): apply pending migrations explicitly:
 
 ```bash
 dotnet ef database update --project src/TenancyHub.Infrastructure --startup-project src/TenancyHub.ApiService
 ```
 
-Adjust project paths if the repository layout changes; keep this command aligned with [local-development.md](./local-development.md).
+Creating new migrations is unchanged: `dotnet ef migrations add <Name> --project src/TenancyHub.Infrastructure --startup-project src/TenancyHub.ApiService` (requires `DesignTimeDbContextFactory` in Infrastructure). Adjust project paths if the repository layout changes; keep this command aligned with [local-development.md](./local-development.md).
 
 ### 4.3 Fix password / volume mismatch
 
 Symptoms: `password authentication failed` for Postgres in Aspire logs after AppHost recreation.
 
 1. Stop Aspire: `aspire stop`
-2. Remove the Postgres container **and** its volume (Docker Desktop → Volumes, or `docker volume ls` / `docker volume rm` for the Aspire postgres volume name shown in the dashboard).
+2. Remove the Postgres container **and** its volume (Docker Desktop → Volumes, or `docker volume rm pg-data` — see §4.1 if the dashboard shows a different generated name on older runs).
 3. Start again: `aspire run` — the integration generates fresh credentials.
 
 See `.agents/skills/aspireify/references/apphost-wiring.md` (stale volume section).
@@ -207,7 +213,7 @@ Use this sequence after a major loss (new tenant, wiped laptop, corrupted Docker
 2. Section 2 — Entra (web + API registrations)  
 3. Section 3 — AppHost user secrets  
 4. Section 4 — Postgres (include 4.3 if auth errors persist)  
-5. Section 4.2 — migrations  
+5. Section 4.2 — migrations (automatic on `aspire run`; use manual `dotnet ef database update` only when not using AppHost)  
 6. Section 5 — platform operator seed  
 7. Section 6 — smoke test  
 

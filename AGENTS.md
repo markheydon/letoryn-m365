@@ -78,6 +78,37 @@ Apply at least one `type/` and one `priority/` label on every issue and PR; add 
 - Do not add tests for AppHost resource graphs.
 - E2E: **Playwright C#**, few high-value journey tests—not TS Playwright, not UI micro-tests.
 
+### Aspire (local dev)
+
+Start at [`.agents/skills/aspire/SKILL.md`](.agents/skills/aspire/SKILL.md) (routes to orchestration vs monitoring). Run CLI commands from the **repo root** with `--apphost src/TenancyHub.AppHost/TenancyHub.AppHost.csproj` when discovery is ambiguous. Resource names in this AppHost: **`webfrontend`**, **`apiservice`**, **`postgres`**.
+
+**Read logs before guessing** — when the user reports dashboard/console errors, auth failures, or “the app is broken”, **inspect telemetry first**; do not ask them to paste logs if Aspire is running. Follow [`.agents/skills/aspire-monitoring/SKILL.md`](.agents/skills/aspire-monitoring/SKILL.md) and [monitoring.md](.agents/skills/aspire-monitoring/references/monitoring.md):
+
+1. `aspire describe` — state, health, URLs (not `aspire ps` for per-resource status).
+2. `aspire otel logs <resource>` (optionally `--search "error"`) — structured logs first.
+3. `aspire logs <resource>` — console stdout/stderr second (`webfrontend`, `apiservice`, `postgres`).
+4. AppHost session file under `~/.aspire/logs/cli_*.log` for DCP/`crit` noise when the dashboard is unclear.
+
+Tenancy Hub: many postgres **ERROR** / **FATAL** lines at cold start are **benign** (DB create race, brief window before `tenancyhub-migrations` finishes); treat **Finished** resources and repeated **Unhealthy** after warm-up as real failures. AppHost applies EF migrations on start—use manual `dotnet ef database update` only off Aspire/CI. Connection strings for tools: `aspire describe apiservice --format Json` → `ConnectionStrings__tenancyhub` / `TENANCYHUB_URI` (not `tcp://…` from the postgres table alone).
+
+**Rebuild vs full restart** — see [`.agents/skills/aspire-orchestration/SKILL.md`](.agents/skills/aspire-orchestration/SKILL.md) and [resource-management.md](.agents/skills/aspire-orchestration/references/resource-management.md):
+
+| Change | Action |
+|--------|--------|
+| `TenancyHub.Web` / `TenancyHub.ApiService` code | `aspire resource <name> rebuild` (recompile + restart); `restart` if process-only |
+| `TenancyHub.AppHost` (parameters, env wiring, new resources) | `aspire stop` then `aspire run` / `aspire start` |
+| Stack already running and you changed Web/API | **Prefer `rebuild` on that resource** — do not tell the user to restart manually if you can run rebuild |
+
+Example after editing the web project:
+
+```bash
+aspire resource webfrontend rebuild --non-interactive \
+  --apphost src/TenancyHub.AppHost/TenancyHub.AppHost.csproj
+aspire wait webfrontend --status healthy
+```
+
+Do not `dotnet run` projects under Aspire orchestration while the AppHost holds locks; do not stop the whole stack for a single-project code fix.
+
 ### Scope and changes
 
 - Minimize diff scope; match existing project conventions.
@@ -95,4 +126,4 @@ aspire run                   # from repo root; see docs/local-development.md
 
 CI runs Release **lint** (`dotnet format --verify-no-changes`), **build**, and **test** on push/PR to `main` (`.github/workflows/ci.yml`).
 
-For `aspire run`, `stop`, resource restart/rebuild, `describe`, and `logs`, read [`.agents/skills/aspire/SKILL.md`](.agents/skills/aspire/SKILL.md) first (routes to orchestration and monitoring)—do not `dotnet run` the AppHost or stop the whole stack when a single-resource command is enough. AppHost wiring and deployment stay in the same skill tree.
+See **Aspire (local dev)** above for logs, `rebuild`, and skill entry points.

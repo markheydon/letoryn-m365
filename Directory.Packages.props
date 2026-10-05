@@ -15,6 +15,8 @@
   </ItemGroup>
   <!-- Aspire hosting integrations (13.6 family; AppHost SDK uses 13.6 preview) -->
   <ItemGroup>
+    <!-- No stable 13.6.0 on NuGet yet; align preview with Aspire.Hosting.Dotnet -->
+    <PackageVersion Include="Aspire.Hosting.EntityFrameworkCore" Version="13.6.0-preview.1.26479.8" />
     <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="13.6.0" />
     <PackageVersion Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="13.6.0" />
   </ItemGroup>

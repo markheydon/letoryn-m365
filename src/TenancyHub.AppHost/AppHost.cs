@@ -10,8 +10,11 @@ var entraApiClientId = builder.AddParameter("EntraApiClientId", secret: true);
 var entraApiAudience = builder.AddParameter("EntraApiAudience", secret: true);
 
 var postgres = builder.AddPostgres("postgres")
+    .WithDataVolume("pg-data")
     .AddDatabase("tenancyhub");
 
+#pragma warning disable ASPIREDOTNETPROJECT001 // Project v2 (AddDotnetProject) is the approved AppHost pattern for this repo.
+#pragma warning disable ASPIREPROJECTS001 // AddEFMigrations on IDotnetProgramResource requires this paired suppression.
 var apiService = builder.AddDotnetProject("apiservice", "../TenancyHub.ApiService/TenancyHub.ApiService.csproj")
     .WithReference(postgres)
     .WithHttpHealthCheck("/health")
@@ -19,6 +22,16 @@ var apiService = builder.AddDotnetProject("apiservice", "../TenancyHub.ApiServic
     .WithEnvironment("AzureAd__TenantId", entraTenantId)
     .WithEnvironment("AzureAd__ClientId", entraApiClientId)
     .WithEnvironment("AzureAd__Audience", entraApiAudience);
+
+var migrations = apiService
+    .AddEFMigrations("tenancyhub-migrations", "TenancyHub.Infrastructure.Persistence.TenancyHubDbContext")
+    .WithMigrationsProject("../TenancyHub.Infrastructure/TenancyHub.Infrastructure.csproj")
+    .RunDatabaseUpdateOnStart()
+    .WaitFor(postgres);
+
+apiService.WaitForCompletion(migrations);
+#pragma warning restore ASPIREPROJECTS001
+#pragma warning restore ASPIREDOTNETPROJECT001
 
 var tenancyHubApiScope = ReferenceExpression.Create($"{entraApiAudience}/access_as_user");
 

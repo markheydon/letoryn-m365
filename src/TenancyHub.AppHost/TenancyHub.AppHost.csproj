@@ -11,7 +11,9 @@
 
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.Dotnet" />
+    <PackageReference Include="Aspire.Hosting.EntityFrameworkCore" />
     <PackageReference Include="Aspire.Hosting.PostgreSQL" />
   </ItemGroup>
+
 
 </Project>
