@@ -14,7 +14,8 @@ public sealed class TenancyHubApiClient(
     IConfiguration configuration,
     AgencyContextState agencyContext,
     UserSessionState sessionState,
-    IHttpContextAccessor httpContextAccessor)
+    IHttpContextAccessor httpContextAccessor,
+    ExpiredApiSessionHandler expiredApiSessionHandler)
 {
     /// <summary>Loads the signed-in user profile.</summary>
     public async Task<MeProfileResponse?> GetMeAsync(CancellationToken cancellationToken = default)
@@ -29,8 +30,7 @@ public sealed class TenancyHubApiClient(
         {
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
-                sessionState.SessionId = null;
-                await sessionState.PersistToBrowserAsync(cancellationToken);
+                await expiredApiSessionHandler.HandleAsync(cancellationToken);
             }
 
             return null;
@@ -105,8 +105,7 @@ public sealed class TenancyHubApiClient(
 
         if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
-            sessionState.SessionId = null;
-            await sessionState.PersistToBrowserAsync(cancellationToken);
+            await expiredApiSessionHandler.HandleAsync(cancellationToken);
         }
 
         return response;

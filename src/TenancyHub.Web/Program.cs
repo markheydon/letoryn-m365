@@ -134,6 +134,7 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<AgencyContextState>();
 builder.Services.AddScoped<UserSessionState>();
+builder.Services.AddScoped<ExpiredApiSessionHandler>();
 builder.Services.AddScoped<ShellNavigationService>();
 builder.Services.AddHttpClient<TenancyHubApiClient>(static client =>
     client.BaseAddress = new Uri("https+http://apiservice"));
