@@ -69,6 +69,11 @@ public static class AgencyAccessRules
             return AuthorizationResult.Succeeded();
         }
 
+        if (isOperatorAssigned && agencyStatus != AgencyLifecycleStatus.Archived)
+        {
+            return AuthorizationResult.Succeeded();
+        }
+
         if (agencyStatus == AgencyLifecycleStatus.Archived)
         {
             return AuthorizationResult.Denied(

@@ -47,6 +47,18 @@ public sealed class AgencyAccessRulesTests
     }
 
     [Fact]
+    public void EvaluateAgencyHeaderAccess_SuspendedAgencyWithOperatorAssignment_SucceedsOnMemberRoute()
+    {
+        var result = AgencyAccessRules.EvaluateAgencyHeaderAccess(
+            AgencyLifecycleStatus.Suspended,
+            membershipStatus: null,
+            isOperatorAssigned: true,
+            isOperatorRoute: false);
+
+        Assert.True(result.IsAuthorized);
+    }
+
+    [Fact]
     public void EvaluateAgencyHeaderAccess_ArchivedAgencyOnMemberRoute_Denies()
     {
         var result = AgencyAccessRules.EvaluateAgencyHeaderAccess(
