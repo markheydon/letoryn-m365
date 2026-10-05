@@ -95,4 +95,4 @@ aspire run                   # from repo root; see docs/local-development.md
 
 CI runs Release **lint** (`dotnet format --verify-no-changes`), **build**, and **test** on push/PR to `main` (`.github/workflows/ci.yml`).
 
-Refer to `.agents/skills/aspire/SKILL.md` for Aspire lifecycle (start/stop, wiring, deployment).
+For `aspire run`, `stop`, resource restart/rebuild, `describe`, and `logs`, read [`.agents/skills/aspire/SKILL.md`](.agents/skills/aspire/SKILL.md) first (routes to orchestration and monitoring)—do not `dotnet run` the AppHost or stop the whole stack when a single-resource command is enough. AppHost wiring and deployment stay in the same skill tree.
