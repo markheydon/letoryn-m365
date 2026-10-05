@@ -52,7 +52,11 @@
         RefreshBanner();
     }
 
-    private void OnContextChanged() => RefreshBanner();
+    private void OnContextChanged()
+    {
+        RefreshBanner();
+        InvokeAsync(StateHasChanged);
+    }
 
     private void RefreshBanner()
     {

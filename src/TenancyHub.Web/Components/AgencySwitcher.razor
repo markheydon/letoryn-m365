@@ -28,7 +28,11 @@
         RefreshOptions();
     }
 
-    private void OnContextChanged() => RefreshOptions();
+    private void OnContextChanged()
+    {
+        RefreshOptions();
+        InvokeAsync(StateHasChanged);
+    }
 
     private void RefreshOptions()
     {

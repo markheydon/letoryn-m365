@@ -15,5 +15,4 @@
     <PackageReference Include="Aspire.Hosting.PostgreSQL" />
   </ItemGroup>
 
-
 </Project>
