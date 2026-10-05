@@ -83,6 +83,7 @@ public sealed class TenancyHubApiClient(
         if (httpContextAccessor.HttpContext?.Request.Cookies.ContainsKey(SessionEstablishmentCookie.Name) == true)
         {
             request.Headers.TryAddWithoutValidation(TenancyHttpHeaders.EstablishSession, "true");
+            TryAddInternalAuditKeyHeader(request);
         }
         else if (sessionState.SessionId is Guid sessionId)
         {
@@ -109,6 +110,15 @@ public sealed class TenancyHubApiClient(
         }
 
         return response;
+    }
+
+    private void TryAddInternalAuditKeyHeader(HttpRequestMessage request)
+    {
+        var auditKey = configuration["TenancyHub:InternalSignInAuditKey"];
+        if (!string.IsNullOrWhiteSpace(auditKey))
+        {
+            request.Headers.TryAddWithoutValidation(TenancyHttpHeaders.InternalAuditKey, auditKey);
+        }
     }
 
     private void ClearEstablishSessionCookieIfPresent()

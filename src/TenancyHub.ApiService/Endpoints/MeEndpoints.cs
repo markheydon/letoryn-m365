@@ -30,6 +30,7 @@ public static class MeEndpoints
         IMeProfileService meProfile,
         IUserSessionService sessionService,
         SignInAuditService signInAudit,
+        IConfiguration configuration,
         CancellationToken cancellationToken)
     {
         if (currentUser.UserIdentityId == Guid.Empty)
@@ -47,7 +48,8 @@ public static class MeEndpoints
             sessionId = validatedId;
         }
         else if (httpContext.Request.Headers.TryGetValue(TenancyHttpHeaders.EstablishSession, out var establishHeader)
-            && string.Equals(establishHeader.FirstOrDefault(), "true", StringComparison.OrdinalIgnoreCase))
+            && string.Equals(establishHeader.FirstOrDefault(), "true", StringComparison.OrdinalIgnoreCase)
+            && WebInternalRequestValidation.IsTrustedWebRequest(httpContext, configuration))
         {
             var created = await sessionService.CreateSessionAsync(currentUser.UserIdentityId, cancellationToken);
             sessionId = created.SessionId;

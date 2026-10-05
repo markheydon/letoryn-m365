@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using TenancyHub.ApiService.Auth;
-using TenancyHub.Application.Abstractions.Tenancy;
 using TenancyHub.Infrastructure.Persistence;
 
 namespace TenancyHub.ApiService.Endpoints;
@@ -24,10 +23,7 @@ public static class AuthAuditEndpoints
         SignInAuditService signInAudit,
         CancellationToken cancellationToken)
     {
-        var expectedKey = configuration["TenancyHub:InternalSignInAuditKey"];
-        if (string.IsNullOrWhiteSpace(expectedKey)
-            || !httpContext.Request.Headers.TryGetValue(TenancyHttpHeaders.InternalAuditKey, out var providedKey)
-            || !string.Equals(providedKey.FirstOrDefault(), expectedKey, StringComparison.Ordinal))
+        if (!WebInternalRequestValidation.IsTrustedWebRequest(httpContext, configuration))
         {
             return Results.NotFound();
         }
