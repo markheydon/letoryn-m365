@@ -29,7 +29,7 @@ Resolves technical unknowns from the implementation plan. User constraint: **use
 
 ## Microsoft Entra ID (organizational sign-in)
 
-**Decision**: Use **Microsoft.Identity.Web** (not a separate Aspire Entra hosting package—none exists in `aspire integration search`) with configuration supplied from the AppHost via **`AddParameter`** / user secrets for tenant ID, client IDs, and client secrets. **Web** registers interactive sign-in (`AddAuthentication().AddMicrosoftIdentityWebApp`); **API** validates bearer tokens (`AddMicrosoftIdentityWebApi`) for the same Entra app registration or a dedicated API app per security review.
+**Decision**: Use **Microsoft.Identity.Web** (not a separate Aspire Entra hosting package—none exists in `aspire integration search`) with configuration supplied from the AppHost via **`AddParameter`** / user secrets for tenant ID, client IDs, and a **client certificate** for the web confidential client (`AzureAd:ClientCredentials` with `SourceType: Base64Encoded` locally; Key Vault or managed identity in production per runbook §7). **Web** registers interactive sign-in (`AddAuthentication().AddMicrosoftIdentityWebApp`); **API** validates bearer tokens (`AddMicrosoftIdentityWebApi`) for the same Entra app registration or a dedicated API app per security review. Client secrets are not used—many Entra tenants block them by policy.
 
 **Rationale**: FR-001 requires Microsoft 365 work-account sign-in; Identity.Web is the maintained ASP.NET Core stack and integrates with DI (`ITokenAcquisition` when Graph is added later). Aspire’s role is **orchestration and secret injection**, not replacing Entra.
 

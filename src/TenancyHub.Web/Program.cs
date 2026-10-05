@@ -9,6 +9,10 @@ using TenancyHub.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+const string azureAdConfigurationSection = "AzureAd";
+const string placeholderClientId = "00000000-0000-0000-0000-000000000000";
+var azureAdSection = builder.Configuration.GetSection(azureAdConfigurationSection);
+
 builder.AddServiceDefaults();
 
 builder.Services.AddRazorComponents()
@@ -18,9 +22,37 @@ builder.Services.AddFluentUIComponents();
 builder.Services.AddCascadingAuthenticationState();
 
 builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"))
+    .AddMicrosoftIdentityWebApp(azureAdSection)
     .EnableTokenAcquisitionToCallDownstreamApi()
     .AddInMemoryTokenCaches();
+
+builder.Services.AddOptions<MicrosoftIdentityOptions>()
+    .Bind(azureAdSection)
+    .Validate(
+        options => !string.IsNullOrWhiteSpace(options.TenantId)
+            && !string.IsNullOrWhiteSpace(options.ClientId),
+        "AzureAd:TenantId and AzureAd:ClientId must be configured (Aspire maps Entra parameters per docs/operations-rebuild-runbook.md §3).")
+    .Validate(
+        options =>
+        {
+            if (string.Equals(options.ClientId, placeholderClientId, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (!string.IsNullOrWhiteSpace(options.ClientSecret))
+            {
+                return false;
+            }
+
+            var credentialSection = builder.Configuration.GetSection($"{azureAdConfigurationSection}:ClientCredentials:0");
+            var sourceType = credentialSection["SourceType"];
+            var base64Value = credentialSection["Base64EncodedValue"];
+            return string.Equals(sourceType, "Base64Encoded", StringComparison.OrdinalIgnoreCase)
+                && !string.IsNullOrWhiteSpace(base64Value);
+        },
+        "AzureAd client certificate credentials are required. Set Parameters:EntraWebClientCertificatePfx and Parameters:EntraWebClientCertificatePassword on the AppHost (see docs/operations-rebuild-runbook.md §3). Client secrets are not supported.")
+    .ValidateOnStart();
 
 builder.Services.AddOptions<CookieAuthenticationOptions>(CookieAuthenticationDefaults.AuthenticationScheme)
     .Configure(options =>

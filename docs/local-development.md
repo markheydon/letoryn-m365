@@ -79,6 +79,7 @@ VS Code tasks: **aspire start**, **build**, **test** (`.vscode/tasks.json`).
 - Use `dotnet user-secrets` on the AppHost or individual service projects as integrations are added.
 - Do **not** commit secrets, `.env` files with credentials, or connection strings in `appsettings*.json`.
 - Prefer Aspire parameters and user secrets for local dev; Azure Key Vault / managed identity patterns for deployment (document when introduced).
+- **Entra client certificate** (dev): generate/upload per [operations-rebuild-runbook.md §2.4–§3](./operations-rebuild-runbook.md#24-client-certificate-confidential-client); helper script [scripts/r1/create-entra-web-client-certificate.sh](../scripts/r1/create-entra-web-client-certificate.sh).
 - **Rebuild after loss or incident** (Entra, Postgres volumes, operator seed): [operations-rebuild-runbook.md](./operations-rebuild-runbook.md).
 
 ## Troubleshooting

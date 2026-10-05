@@ -26,7 +26,7 @@
 
 ## 2. Microsoft Entra app registration (dev)
 
-Repeat when the registration is deleted or client secrets expire.
+Repeat when the registration is deleted or client certificates are rotated.
 
 ### 2.1 Register the web application
 
@@ -54,10 +54,18 @@ Either **single app** or **two registrations** (recommended for production parit
 3. Add scope e.g. `access_as_user`.
 4. On the **web** registration, **API permissions** → add permission to the API scope → **Grant admin consent** for dev tenant.
 
-### 2.4 Client secret (confidential client)
+### 2.4 Client certificate (confidential client)
 
-1. **Certificates & secrets** → **New client secret** → record **Value** immediately (shown once).
-2. Store in AppHost user secrets (section 3)—never commit.
+Tenancy Hub uses a **client certificate** for the web app (auth-code exchange and token refresh). Do **not** use client secrets—many Entra tenants block secret creation by admin policy.
+
+1. Generate a dev certificate (see [scripts/r1/create-entra-web-client-certificate.sh](../scripts/r1/create-entra-web-client-certificate.sh) or your own PKI process). You need:
+   - **`.cer`** (public key only) for Entra
+   - **`.pfx`** (private key + cert) for the app—never commit; `*.pfx` is gitignored
+2. Entra admin center → web app registration → **Certificates & secrets** → **Upload certificate** → select the **`.cer`** file.
+3. Store the Base64-encoded `.pfx` and its password in AppHost secrets (section 3)—never commit.
+4. **Rotation**: Entra allows multiple certificates. Upload the new `.cer`, update AppHost secrets, verify sign-in, then remove the old certificate from Entra.
+
+**Troubleshooting**: If sign-in fails at the token step with client authentication errors, confirm the thumbprint of the cert in Entra matches the `.pfx` you encoded (Entra portal shows thumbprints for uploaded certs). Wrong password on the PFX or stale Base64 in user secrets are the other common causes.
 
 ### 2.5 Product roles vs Entra
 
@@ -74,10 +82,15 @@ cd src/TenancyHub.AppHost
 dotnet user-secrets init  # once per machine
 dotnet user-secrets set "Parameters:EntraTenantId" "<tenant-id>"
 dotnet user-secrets set "Parameters:EntraWebClientId" "<web-client-id>"
-dotnet user-secrets set "Parameters:EntraWebClientSecret" "<secret>"
+dotnet user-secrets set "Parameters:EntraWebClientCertificatePfx" "$(base64 -w0 ~/.local/share/tenancy-hub/certs/entra-web-dev.pfx)"
+dotnet user-secrets set "Parameters:EntraWebClientCertificatePassword" "<pfx-password>"
 dotnet user-secrets set "Parameters:EntraApiClientId" "<api-client-id>"
 dotnet user-secrets set "Parameters:EntraApiAudience" "api://<api-client-id>"
 ```
+
+Alternatively, from the repository root: `aspire secret set "Parameters:EntraWebClientCertificatePfx" "$(base64 -w0 /path/to/entra-web-dev.pfx)"` (and the same for other parameters).
+
+On macOS, use `base64 -i entra-web-dev.pfx` (no `-w0`) to produce a single line for the PFX parameter.
 
 The AppHost should wire these with `AddParameter(..., secret: true)` and `WithEnvironment` / configuration mapping on `webfrontend` and `apiservice`. **Do not** paste secrets into `appsettings.json`.
 
@@ -89,9 +102,15 @@ AppHost parameter names (secret parameters via `AddParameter`):
 | `EntraApiClientId` | `AzureAd__ClientId` | — |
 | `EntraApiAudience` | `AzureAd__Audience` | — |
 | `EntraWebClientId` | — | `AzureAd__ClientId` |
-| `EntraWebClientSecret` | — | `AzureAd__ClientSecret` |
+| `EntraWebClientCertificatePfx` | — | `AzureAd__ClientCredentials__0__Base64EncodedValue` |
+| `EntraWebClientCertificatePassword` | — | `AzureAd__ClientCredentials__0__CertificatePassword` |
+| `EntraApiAudience` | — | `TenancyHub__ApiScope` = `{EntraApiAudience}/access_as_user` (AppHost expression) |
+
+`webfrontend` also receives `AzureAd__ClientCredentials__0__SourceType` = `Base64Encoded` (fixed in AppHost).
 
 Both apps also receive `AzureAd__Instance` = `https://login.microsoftonline.com/`.
+
+**Migration from client secrets**: Remove `Parameters:EntraWebClientSecret` from AppHost user secrets after setting the certificate parameters above and uploading the matching `.cer` to Entra.
 
 **Web OIDC paths** (Microsoft.Identity.Web defaults; confirm in `src/TenancyHub.Web/appsettings.json`):
 
@@ -176,7 +195,7 @@ After database is migrated:
 
 ## 7. Production / Azure (pointer)
 
-Production Entra apps, Key Vault, and Azure Database for PostgreSQL use Aspire publish and Azure provisioning integrations when deployment is documented. Mirror the Entra steps in section 2 for production redirect URIs, managed identities, and secret storage in Key Vault. Follow `.agents/skills/aspire-deployment/` when publishing; extend **this runbook** with environment-specific sections rather than scattering steps in feature specs.
+Production Entra apps, Key Vault, and Azure Database for PostgreSQL use Aspire publish and Azure provisioning integrations when deployment is documented. Mirror the Entra steps in section 2 for production redirect URIs (including **client certificates**, not secrets). For hosted environments, prefer Microsoft.Identity.Web **`ClientCredentials`** with **`SourceType: KeyVault`** or certificateless **`SignedAssertionFromManagedIdentity`**—not Base64 PFX in app settings. Follow `.agents/skills/aspire-deployment/` when publishing; extend **this runbook** with environment-specific sections rather than scattering steps in feature specs.
 
 ---
 
