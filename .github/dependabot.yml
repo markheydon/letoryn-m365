@@ -24,6 +24,14 @@ updates:
         update-types:
           - minor
           - patch
+      azure:
+        patterns:
+          - Azure.*
+          - Microsoft.Azure.*
+          - Aspire.*
+        update-types:
+          - minor
+          - patch
       opentelemetry:
         patterns:
           - OpenTelemetry.*
