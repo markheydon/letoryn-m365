@@ -93,6 +93,19 @@ AppHost parameter names (secret parameters via `AddParameter`):
 
 Both apps also receive `AzureAd__Instance` = `https://login.microsoftonline.com/`.
 
+**Web OIDC paths** (Microsoft.Identity.Web defaults; confirm in `src/TenancyHub.Web/appsettings.json`):
+
+| Setting | Value |
+|---------|--------|
+| Sign-in callback | `/signin-oidc` |
+| Sign-out callback | `/signout-callback-oidc` |
+| Microsoft Identity UI sign-in | `/MicrosoftIdentity/Account/SignIn` |
+| Microsoft Identity UI sign-out | `/MicrosoftIdentity/Account/SignOut` |
+
+Register redirect URIs in Entra for each `webfrontend` HTTPS port from `aspire describe webfrontend` (section 2.1).
+
+**API scope for Web → API calls**: configure `TenancyHub:ApiScope` (for example `api://{api-client-id}/access_as_user`) on `webfrontend` to match the exposed API scope granted to the web app registration.
+
 PostgreSQL resource: AppHost `AddPostgres("postgres").AddDatabase("tenancyhub")`; API uses `AddNpgsqlDbContext<TenancyHubDbContext>(connectionName: "tenancyhub")`.
 
 **Disabled directory accounts (FR-001)**: In Entra, keep **access token lifetime** ≤ 60 minutes for POC so revoked/disabled users lose API access within a refresh cycle without Microsoft Graph integration (see [research.md](../specs/001-platform-foundation/research.md)).

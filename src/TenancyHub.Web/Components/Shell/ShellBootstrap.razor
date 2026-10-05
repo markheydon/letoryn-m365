@@ -1,0 +1,22 @@
+@inject TenancyHubApiClient ApiClient
+@inject ShellNavigationService ShellNavigation
+@inject AgencyContextState AgencyContext
+@inject NavigationManager Navigation
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        if (AgencyContext.Profile is not null)
+        {
+            return;
+        }
+
+        var profile = await ApiClient.GetMeAsync();
+        if (profile is null)
+        {
+            return;
+        }
+
+        ShellNavigation.ApplyProfileAndRoute(profile, Navigation.ToBaseRelativePath(Navigation.Uri));
+    }
+}

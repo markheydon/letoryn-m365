@@ -1,7 +1,6 @@
 using System.Security.Claims;
-using Microsoft.EntityFrameworkCore;
 using TenancyHub.ApiService.Tenancy;
-using TenancyHub.Infrastructure.Persistence;
+using TenancyHub.Application.Abstractions.Identities;
 
 namespace TenancyHub.ApiService.Middleware;
 
@@ -13,7 +12,7 @@ public sealed class CurrentUserMiddleware(RequestDelegate next)
     /// <inheritdoc />
     public async Task InvokeAsync(
         HttpContext context,
-        TenancyHubDbContext dbContext,
+        IEnsureUserIdentityService ensureUserIdentity,
         CurrentUserSnapshotCache cache)
     {
         var principal = context.User;
@@ -21,19 +20,23 @@ public sealed class CurrentUserMiddleware(RequestDelegate next)
         {
             var oid = principal.FindFirstValue("oid")
                 ?? principal.FindFirstValue(ClaimTypes.NameIdentifier);
+            var email = principal.FindFirstValue("preferred_username")
+                ?? principal.FindFirstValue(ClaimTypes.Email)
+                ?? principal.FindFirstValue(ClaimTypes.Upn)
+                ?? string.Empty;
+
             if (!string.IsNullOrWhiteSpace(oid))
             {
-                var identity = await dbContext.UserIdentities
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(u => u.EntraObjectId == oid, context.RequestAborted);
+                var ensured = await ensureUserIdentity.EnsureAsync(
+                    oid,
+                    string.IsNullOrWhiteSpace(email) ? $"{oid}@unknown.local" : email,
+                    context.RequestAborted);
 
-                cache.Set(identity is null
-                    ? new CurrentUserSnapshotCache.UserSnapshot(Guid.Empty, oid, string.Empty, false)
-                    : new CurrentUserSnapshotCache.UserSnapshot(
-                        identity.Id,
-                        identity.EntraObjectId,
-                        identity.Email,
-                        identity.IsPlatformOperator));
+                cache.Set(new CurrentUserSnapshotCache.UserSnapshot(
+                    ensured.UserIdentityId,
+                    ensured.EntraObjectId,
+                    ensured.Email,
+                    ensured.IsPlatformOperator));
             }
             else
             {

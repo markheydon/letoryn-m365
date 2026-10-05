@@ -1,0 +1,66 @@
+@implements IDisposable
+
+@if (AgencyContext.Profile?.Memberships.Count > 0)
+{
+    <FluentSelect TOption="AgencyOption"
+                  TValue="string"
+                  Label="Agency"
+                  Items="@_options"
+                  OptionText="@(item => item.Label)"
+                  OptionValue="@(item => item.Value)"
+                  @bind-Value="_selectedValue"
+                  @bind-Value:after="OnAgencyChangedAsync" />
+}
+
+@code {
+    [Inject]
+    private AgencyContextState AgencyContext { get; set; } = default!;
+
+    [Inject]
+    private TenancyHubApiClient ApiClient { get; set; } = default!;
+
+    private string? _selectedValue;
+    private IReadOnlyList<AgencyOption> _options = [];
+
+    protected override void OnInitialized()
+    {
+        AgencyContext.Changed += OnContextChanged;
+        RefreshOptions();
+    }
+
+    private void OnContextChanged() => RefreshOptions();
+
+    private void RefreshOptions()
+    {
+        _options = AgencyContext.Profile?.Memberships
+            .Where(m => string.Equals(m.Status, "Active", StringComparison.Ordinal))
+            .Select(m => new AgencyOption(m.AgencyId.ToString(), m.DisplayName))
+            .ToList() ?? [];
+
+        _selectedValue = AgencyContext.ActiveAgencyId?.ToString()
+            ?? AgencyContext.Profile?.LastUsedAgencyId?.ToString()
+            ?? _options.FirstOrDefault()?.Value;
+    }
+
+    private async Task OnAgencyChangedAsync()
+    {
+        if (!Guid.TryParse(_selectedValue, out var agencyId))
+        {
+            return;
+        }
+
+        var displayName = _options.FirstOrDefault(o => o.Value == _selectedValue)?.Label;
+        var ok = await ApiClient.SetActiveAgencyAsync(agencyId);
+        if (!ok)
+        {
+            RefreshOptions();
+            return;
+        }
+
+        AgencyContext.SetActiveAgency(agencyId, displayName);
+    }
+
+    public void Dispose() => AgencyContext.Changed -= OnContextChanged;
+
+    private sealed record AgencyOption(string Value, string Label);
+}

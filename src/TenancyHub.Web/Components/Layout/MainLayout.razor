@@ -1,14 +1,36 @@
 ﻿@inherits LayoutComponentBase
+@implements IDisposable
+@inject AgencyContextState AgencyContext
+@inject TenancyHubApiClient ApiClient
+@inject NavigationManager Navigation
+
+<ShellBootstrap />
 
 <FluentLayout>
     <FluentLayoutItem Area="LayoutArea.Header">
-        <FluentLayoutHamburger />
-        Tenancy Hub
+        <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="16" VerticalAlignment="VerticalAlignment.Center">
+            <FluentLayoutHamburger />
+            <FluentLabel Typo="Typography.H5">Tenancy Hub</FluentLabel>
+            @if (!string.IsNullOrWhiteSpace(AgencyContext.ActiveAgencyDisplayName))
+            {
+                <FluentLabel>@AgencyContext.ActiveAgencyDisplayName</FluentLabel>
+            }
+            <AgencySwitcher />
+            <FluentSpacer />
+            <FluentButton OnClick="SignOutAsync">Sign out</FluentButton>
+        </FluentStack>
     </FluentLayoutItem>
     <FluentLayoutItem Area="LayoutArea.Navigation">
         <NavMenu />
     </FluentLayoutItem>
     <FluentLayoutItem Area="LayoutArea.Content" Class="main">
+        @if (_showInviteBanner)
+        {
+            <FluentMessageBar Intent="MessageBarIntent.Info">
+                You have pending invitations.
+                <FluentLink Href="/invitations">Review invitations</FluentLink>
+            </FluentMessageBar>
+        }
         <div class="content">
             @Body
         </div>
@@ -20,3 +42,37 @@
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>
+
+@code {
+    private bool _showInviteBanner;
+
+    protected override void OnInitialized()
+    {
+        AgencyContext.Changed += OnContextChanged;
+        RefreshBanner();
+    }
+
+    private void OnContextChanged() => RefreshBanner();
+
+    private void RefreshBanner()
+    {
+        _showInviteBanner = AgencyContext.HasPendingInvites && AgencyContext.HasActiveMembership;
+    }
+
+    private async Task SignOutAsync()
+    {
+        try
+        {
+            await ApiClient.SignOutAsync();
+        }
+        catch
+        {
+            // Continue local sign-out even if API is unavailable.
+        }
+
+        AgencyContext.Clear();
+        Navigation.NavigateTo("MicrosoftIdentity/Account/SignOut", forceLoad: true);
+    }
+
+    public void Dispose() => AgencyContext.Changed -= OnContextChanged;
+}
