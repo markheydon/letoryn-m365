@@ -60,7 +60,7 @@ public sealed class AgencyContextState
 
     /// <summary>Whether invite-only routing applies (no active membership, no operator path).</summary>
     public bool RequiresInviteOnlyGate =>
-        HasPendingInvites && !HasActiveMembership && !(Profile?.IsPlatformOperator == true && HasOperatorAssignments);
+        HasPendingInvites && !HasActiveMembership && Profile?.IsPlatformOperator != true;
 
     private void ApplyDefaultAgency(MeProfileResponse profile)
     {

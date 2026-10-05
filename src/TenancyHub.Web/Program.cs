@@ -117,6 +117,9 @@ builder.Services.AddOptions<CookieAuthenticationOptions>(CookieAuthenticationDef
             }
             catch
             {
+                var auditReporter = context.HttpContext.RequestServices.GetRequiredService<WebSignInAuditReporter>();
+                await auditReporter.ReportCookieValidationFailedAsync(context.Principal, context.HttpContext.RequestAborted);
+
                 // Reject only — SignOut during OnValidatePrincipal re-enters cookie/OIDC auth and can stack-overflow.
                 context.RejectPrincipal();
             }
@@ -137,6 +140,8 @@ builder.Services.AddScoped<UserSessionState>();
 builder.Services.AddScoped<ExpiredApiSessionHandler>();
 builder.Services.AddScoped<ShellNavigationService>();
 builder.Services.AddHttpClient<TenancyHubApiClient>(static client =>
+    client.BaseAddress = new Uri("https+http://apiservice"));
+builder.Services.AddHttpClient<WebSignInAuditReporter>(static client =>
     client.BaseAddress = new Uri("https+http://apiservice"));
 
 var app = builder.Build();

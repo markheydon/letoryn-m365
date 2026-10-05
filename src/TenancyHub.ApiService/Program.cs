@@ -115,6 +115,7 @@ if (app.Environment.IsDevelopment())
 app.MapGet("/", () => Results.Ok(new { service = "TenancyHub.ApiService", status = "running" }));
 
 app.MapMeEndpoints();
+app.MapAuthAuditEndpoints();
 
 app.MapDefaultEndpoints();
 
