@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.FluentUI.AspNetCore.Components;
@@ -95,9 +94,8 @@ builder.Services.AddOptions<CookieAuthenticationOptions>(CookieAuthenticationDef
             }
             catch
             {
+                // Reject only — SignOut during OnValidatePrincipal re-enters cookie/OIDC auth and can stack-overflow.
                 context.RejectPrincipal();
-                await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                await context.HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
             }
         };
     });
