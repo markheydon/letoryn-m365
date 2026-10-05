@@ -1,9 +1,12 @@
+@using TenancyHub.Application.Me
 @inject TenancyHubApiClient ApiClient
 @inject ShellNavigationService ShellNavigation
 @inject AgencyContextState AgencyContext
 @inject NavigationManager Navigation
 
 @code {
+    private MeProfileResponse? _profilePendingRoute;
+
     protected override async Task OnInitializedAsync()
     {
         if (AgencyContext.Profile is not null)
@@ -11,12 +14,18 @@
             return;
         }
 
-        var profile = await ApiClient.GetMeAsync();
-        if (profile is null)
+        _profilePendingRoute = await ApiClient.GetMeAsync();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (!firstRender || _profilePendingRoute is null)
         {
             return;
         }
 
+        var profile = _profilePendingRoute;
+        _profilePendingRoute = null;
         ShellNavigation.ApplyProfileAndRoute(profile, Navigation.ToBaseRelativePath(Navigation.Uri));
     }
 }

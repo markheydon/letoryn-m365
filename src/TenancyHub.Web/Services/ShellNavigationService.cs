@@ -10,10 +10,11 @@ public sealed class ShellNavigationService(NavigationManager navigation, AgencyC
     public void ApplyProfileAndRoute(MeProfileResponse profile, string currentPath)
     {
         agencyContext.SetProfile(profile);
+        var path = NormalizePath(currentPath);
 
         if (agencyContext.RequiresInviteOnlyGate)
         {
-            if (!currentPath.StartsWith("/invitations", StringComparison.OrdinalIgnoreCase))
+            if (!path.StartsWith("/invitations", StringComparison.OrdinalIgnoreCase))
             {
                 navigation.NavigateTo("/invitations");
             }
@@ -27,7 +28,7 @@ public sealed class ShellNavigationService(NavigationManager navigation, AgencyC
 
         if (!hasActiveMembership && !isOperator)
         {
-            if (!currentPath.StartsWith("/access-not-configured", StringComparison.OrdinalIgnoreCase))
+            if (!path.StartsWith("/access-not-configured", StringComparison.OrdinalIgnoreCase))
             {
                 navigation.NavigateTo("/access-not-configured");
             }
@@ -37,7 +38,7 @@ public sealed class ShellNavigationService(NavigationManager navigation, AgencyC
 
         if (isOperator && !hasActiveMembership && !hasAssignments)
         {
-            if (!currentPath.StartsWith("/operator", StringComparison.OrdinalIgnoreCase))
+            if (!path.StartsWith("/operator", StringComparison.OrdinalIgnoreCase))
             {
                 navigation.NavigateTo("/operator");
             }
@@ -45,9 +46,19 @@ public sealed class ShellNavigationService(NavigationManager navigation, AgencyC
             return;
         }
 
-        if (currentPath is "/access-not-configured" or "/operator" or "/invitations")
+        if (path is "/access-not-configured" or "/operator" or "/invitations")
         {
             navigation.NavigateTo("/");
         }
+    }
+
+    private static string NormalizePath(string currentPath)
+    {
+        if (string.IsNullOrWhiteSpace(currentPath) || currentPath == "/")
+        {
+            return "/";
+        }
+
+        return currentPath.StartsWith('/') ? currentPath : $"/{currentPath}";
     }
 }
