@@ -36,11 +36,13 @@ public sealed class UserSessionMiddleware(RequestDelegate next)
 
         var isMeBootstrap = context.Request.Path.Equals("/api/v1/me", StringComparison.OrdinalIgnoreCase)
             && HttpMethods.IsGet(context.Request.Method);
+        var isMeSignOut = context.Request.Path.Equals("/api/v1/me/sign-out", StringComparison.OrdinalIgnoreCase)
+            && HttpMethods.IsPost(context.Request.Method);
 
         if (!context.Request.Headers.TryGetValue(SessionHeaderName, out var headerValues)
             || !Guid.TryParse(headerValues.FirstOrDefault(), out var sessionId))
         {
-            if (isMeBootstrap)
+            if (isMeBootstrap || isMeSignOut)
             {
                 await next(context);
                 return;
@@ -83,7 +85,7 @@ public sealed class UserSessionMiddleware(RequestDelegate next)
                     context.RequestAborted);
             }
 
-            if (isMeBootstrap)
+            if (isMeBootstrap || isMeSignOut)
             {
                 await next(context);
                 return;

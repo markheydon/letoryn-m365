@@ -68,17 +68,30 @@ public sealed class AgencyContextState
             .Where(m => string.Equals(m.Status, "Active", StringComparison.Ordinal))
             .ToList();
 
-        if (candidates.Count == 0)
+        if (candidates.Count > 0)
+        {
+            var selected = profile.LastUsedAgencyId is Guid lastUsed
+                && candidates.Any(c => c.AgencyId == lastUsed)
+                ? candidates.First(c => c.AgencyId == lastUsed)
+                : candidates[0];
+
+            ActiveAgencyId = selected.AgencyId;
+            ActiveAgencyDisplayName = selected.DisplayName;
+            return;
+        }
+
+        var operatorAgencies = profile.OperatorAssignments;
+        if (operatorAgencies.Count == 0)
         {
             return;
         }
 
-        var selected = profile.LastUsedAgencyId is Guid lastUsed
-            && candidates.Any(c => c.AgencyId == lastUsed)
-            ? candidates.First(c => c.AgencyId == lastUsed)
-            : candidates[0];
+        var operatorAgency = profile.LastUsedAgencyId is Guid operatorLastUsed
+            && operatorAgencies.Any(a => a.AgencyId == operatorLastUsed)
+            ? operatorAgencies.First(a => a.AgencyId == operatorLastUsed)
+            : operatorAgencies[0];
 
-        ActiveAgencyId = selected.AgencyId;
-        ActiveAgencyDisplayName = selected.DisplayName;
+        ActiveAgencyId = operatorAgency.AgencyId;
+        ActiveAgencyDisplayName = operatorAgency.DisplayName;
     }
 }
