@@ -29,7 +29,7 @@ Resolves technical unknowns from the implementation plan. User constraint: **use
 
 ## Microsoft Entra ID (organizational sign-in)
 
-**Decision**: Use **Microsoft.Identity.Web** (not a separate Aspire Entra hosting package—none exists in `aspire integration search`) with configuration supplied from the AppHost via **`AddParameter`** / user secrets for tenant ID, client IDs, and client secrets. **Web** registers interactive sign-in (`AddAuthentication().AddMicrosoftIdentityWebApp`); **API** validates bearer tokens (`AddMicrosoftIdentityWebApi`) for the same Entra app registration or a dedicated API app per security review.
+**Decision**: Use **Microsoft.Identity.Web** (not a separate Aspire Entra hosting package—none exists in `aspire integration search`) with configuration supplied from the AppHost via **`AddParameter`** / user secrets for tenant ID, client IDs, and a **client certificate** for the web confidential client (`AzureAd:ClientCredentials` with `SourceType: Base64Encoded` locally; Key Vault or managed identity in production per runbook §7). **Web** registers interactive sign-in (`AddAuthentication().AddMicrosoftIdentityWebApp`); **API** validates bearer tokens (`AddMicrosoftIdentityWebApi`) for the same Entra app registration or a dedicated API app per security review. Client secrets are not used—many Entra tenants block them by policy.
 
 **Rationale**: FR-001 requires Microsoft 365 work-account sign-in; Identity.Web is the maintained ASP.NET Core stack and integrates with DI (`ITokenAcquisition` when Graph is added later). Aspire’s role is **orchestration and secret injection**, not replacing Entra.
 
@@ -45,18 +45,18 @@ Resolves technical unknowns from the implementation plan. User constraint: **use
 
 **Session expiry and clock skew (FR-001)**: Idle (30 minutes) and absolute (12 hours from initial sign-in) limits are enforced per `UserSession` row and cookie/auth ticket metadata. Use ASP.NET Core cookie validation plus server-side session checks; allow **reasonable clock skew** (default framework/token validation tolerances—typically a few minutes) when comparing expiry timestamps—no custom NTP logic in R1.
 
-**Per-session sign-out (FR-001 / FR-011)**: Sign-out removes or invalidates only the current session’s `UserSession` row and auth cookie; it MUST NOT revoke other concurrent sessions for the same user.
+**Per-session sign-out (FR-001 / FR-011)**: Sign-out removes or invalidates only the current session’s `UserSession` row and auth cookie; it MUST NOT revoke other concurrent sessions for the same user (T094: `POST /api/v1/me/sign-out` and Web sign-out in shell chrome).
 
 **Disabled directory account (FR-001)**: Tenancy Hub MUST deny access when Entra rejects authentication or token validation for the work account, even if product membership remains.
 
-| Layer | R1 behavior |
-|-------|-------------|
-| **API** | Validate bearer JWT on every request via Microsoft.Identity.Web; invalid or rejected tokens → 401, session termination, auditable failed access (T033, T044). Successful authentication that establishes or resumes a session MUST write a **successful sign-in** audit event (FR-008); failed interactive or token validation attempts MUST write **failed sign-in** (nullable `AgencyId` when no shell agency context yet). |
-| **Web** | On cookie authentication validation (including periodic refresh via Identity.Web `GetAccessTokenForUserAsync` / equivalent), failed Entra response → sign-out, clear cookie, discard client state. |
-| **Graph** | No Microsoft Graph `accountEnabled` polling in R1. Rely on Entra sign-in and token refresh failure for disabled accounts. |
-| **POC tuning** | Document in [docs/operations-rebuild-runbook.md](../../docs/operations-rebuild-runbook.md): keep Entra **access token lifetime** modest (for example ≤ 60 minutes) so disabled accounts lose API access within one refresh cycle without custom Graph integration. |
+| Layer | R1 behaviour |
+|-------|--------------|
+| **API** | Validate bearer JWT on **every** request via Microsoft.Identity.Web; invalid or rejected tokens → 401, `UserSession` termination, auditable failed access (T033, T044). Pair with per-request `UserSession` checks (T034). Successful authentication that establishes or resumes a session MUST write a **successful sign-in** audit event (FR-008); failed interactive or token validation attempts MUST write **failed sign-in** (nullable `AgencyId` when no shell agency context yet). |
+| **Web** | On cookie authentication validation (including Entra **access-token refresh** via Identity.Web `GetAccessTokenForUserAsync` / equivalent), failed Entra response → sign-out, clear cookie, discard client state (T033). |
+| **Graph** | No Microsoft Graph `accountEnabled` polling in R1. Rely on Entra sign-in and access-token refresh failure for disabled accounts. |
+| **POC tuning** | Document in [docs/operations-rebuild-runbook.md §3](../../docs/operations-rebuild-runbook.md#3-local-configuration-aspire-parameters) (see also §5): keep Entra **access token lifetime** ≤ 60 minutes for POC so disabled accounts lose API access within one refresh cycle without custom Graph integration. |
 
-**Pairing**: T032 documents this section; T033 implements API/Web enforcement.
+**Pairing**: T032 documents this section; T033 implements API JWT and Web cookie refresh enforcement; T034 rejects ended `UserSession` rows on each API request; T044 audit rows per table above.
 
 ---
 
@@ -90,7 +90,9 @@ Resolves technical unknowns from the implementation plan. User constraint: **use
 
 ## Session lifetime (idle 30 min, absolute 12 h)
 
-**Decision**: ASP.NET Core cookie authentication with **sliding expiration** for idle (30 minutes) and **absolute** `ExpiresUtc` cap at 12 hours from initial sign-in stored in session record or auth properties; validate on each API call via `HttpContext.RequestAborted` and auth middleware. Concurrent sessions allowed (separate cookie sessions per browser).
+**Decision**: ASP.NET Core cookie authentication with **sliding expiration** for idle (30 minutes) and **absolute** `ExpiresUtc` cap at 12 hours from initial sign-in, tracked in each **`UserSession` row** (PostgreSQL, R1 session store) and cookie/auth properties. **Web** (T031) enforces idle/absolute via cookie options; **API** validates JWT plus **`UserSessionService` per-request** session state (idle, absolute cap, ended sessions) with framework-default clock-skew tolerance (see **Session expiry and clock skew** above). Concurrent sessions = multiple `UserSession` rows (separate browser cookies).
+
+**Pairing**: T032 documents; T031 Web cookies; T034 `UserSessionService`; T094 per-session sign-out only.
 
 **Rationale**: Matches clarified spec; standard cookie + server session metadata in PostgreSQL.
 

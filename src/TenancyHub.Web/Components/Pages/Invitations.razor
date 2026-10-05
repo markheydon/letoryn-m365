@@ -1,0 +1,52 @@
+@page "/invitations"
+@attribute [Authorize]
+@layout TenancyHub.Web.Components.Layout.MinimalLayout
+@implements IDisposable
+
+<PageTitle>Pending invitations</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
+    <FluentLabel Typo="Typography.H4">Pending invitations</FluentLabel>
+    <FluentLabel>
+        You have pending agency invitations. Accept or decline each invitation to continue.
+        Invitation actions will be wired when membership APIs are available.
+    </FluentLabel>
+
+    @if (_invites.Count > 0)
+    {
+        <FluentDataGrid Items="@_invites.AsQueryable()" GridTemplateColumns="2fr 1fr">
+            <PropertyColumn Property="@(invite => invite.DisplayName)" Title="Agency" />
+            <PropertyColumn Property="@(invite => invite.Role)" Title="Role" />
+        </FluentDataGrid>
+    }
+</FluentStack>
+
+@code {
+    [Inject]
+    private AgencyContextState AgencyContext { get; set; } = default!;
+
+    private IReadOnlyList<InviteRow> _invites = [];
+
+    protected override void OnInitialized()
+    {
+        AgencyContext.Changed += OnContextChanged;
+        RefreshInvites();
+    }
+
+    private void OnContextChanged()
+    {
+        RefreshInvites();
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void RefreshInvites()
+    {
+        _invites = AgencyContext.Profile?.PendingInvites
+            .Select(i => new InviteRow(i.DisplayName, i.Role))
+            .ToList() ?? [];
+    }
+
+    public void Dispose() => AgencyContext.Changed -= OnContextChanged;
+
+    private sealed record InviteRow(string DisplayName, string Role);
+}

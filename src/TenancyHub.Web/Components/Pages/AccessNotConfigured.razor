@@ -1,0 +1,13 @@
+@page "/access-not-configured"
+@attribute [Authorize]
+@layout TenancyHub.Web.Components.Layout.MinimalLayout
+
+<PageTitle>Access not configured</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
+    <FluentLabel Typo="Typography.H4">Access not configured</FluentLabel>
+    <FluentLabel>
+        Your work account is signed in, but you do not have an active agency membership or platform operator access yet.
+        Contact your administrator or a platform operator to be invited or provisioned.
+    </FluentLabel>
+</FluentStack>

@@ -1,0 +1,93 @@
+@implements IDisposable
+
+@if (_options.Count > 1)
+{
+    <FluentSelect TOption="AgencyOption"
+                  TValue="string"
+                  Label="Agency"
+                  Items="@_options"
+                  OptionText="@(item => item.Label)"
+                  OptionValue="@(item => item.Value)"
+                  @bind-Value="_selectedValue"
+                  @bind-Value:after="OnAgencyChangedAsync" />
+}
+
+@code {
+    [Inject]
+    private AgencyContextState AgencyContext { get; set; } = default!;
+
+    [Inject]
+    private TenancyHubApiClient ApiClient { get; set; } = default!;
+
+    private string? _selectedValue;
+    private IReadOnlyList<AgencyOption> _options = [];
+
+    protected override void OnInitialized()
+    {
+        AgencyContext.Changed += OnContextChanged;
+        RefreshOptions();
+    }
+
+    private void OnContextChanged()
+    {
+        RefreshOptions();
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void RefreshOptions()
+    {
+        if (AgencyContext.Profile is null)
+        {
+            _options = [];
+            _selectedValue = null;
+            return;
+        }
+
+        var profile = AgencyContext.Profile;
+        var membershipAgencyIds = new HashSet<Guid>();
+        var options = new List<AgencyOption>();
+
+        foreach (var membership in profile.Memberships.Where(m =>
+                     string.Equals(m.Status, "Active", StringComparison.Ordinal)))
+        {
+            membershipAgencyIds.Add(membership.AgencyId);
+            options.Add(new AgencyOption(membership.AgencyId.ToString(), membership.DisplayName));
+        }
+
+        foreach (var assignment in profile.OperatorAssignments)
+        {
+            if (membershipAgencyIds.Add(assignment.AgencyId))
+            {
+                options.Add(new AgencyOption(assignment.AgencyId.ToString(), assignment.DisplayName));
+            }
+        }
+
+        _options = options;
+
+        _selectedValue = AgencyContext.ActiveAgencyId?.ToString()
+            ?? profile.LastUsedAgencyId?.ToString()
+            ?? _options.FirstOrDefault()?.Value;
+    }
+
+    private async Task OnAgencyChangedAsync()
+    {
+        if (!Guid.TryParse(_selectedValue, out var agencyId))
+        {
+            return;
+        }
+
+        var displayName = _options.FirstOrDefault(o => o.Value == _selectedValue)?.Label;
+        var ok = await ApiClient.SetActiveAgencyAsync(agencyId);
+        if (!ok)
+        {
+            RefreshOptions();
+            return;
+        }
+
+        AgencyContext.SetActiveAgency(agencyId, displayName);
+    }
+
+    public void Dispose() => AgencyContext.Changed -= OnContextChanged;
+
+    private sealed record AgencyOption(string Value, string Label);
+}

@@ -1,6 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using TenancyHub.Application.Abstractions.Audit;
+using TenancyHub.Application.Abstractions.Identities;
+using TenancyHub.Application.Abstractions.Me;
 using TenancyHub.Application.Abstractions.Notifications;
+using TenancyHub.Application.Abstractions.Sessions;
 using TenancyHub.Infrastructure.Services;
 
 namespace TenancyHub.Infrastructure;
@@ -13,6 +16,9 @@ public static class DependencyInjection
     {
         services.AddScoped<IAuditWriter, AuditWriter>();
         services.AddScoped<INotificationWriter, NotificationWriter>();
+        services.AddScoped<IEnsureUserIdentityService, EnsureUserIdentityService>();
+        services.AddScoped<IUserSessionService, UserSessionService>();
+        services.AddScoped<IMeProfileService, MeProfileService>();
         return services;
     }
 }

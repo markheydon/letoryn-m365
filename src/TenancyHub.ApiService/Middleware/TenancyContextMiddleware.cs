@@ -15,7 +15,7 @@ public sealed class TenancyContextMiddleware(
     ILogger<TenancyContextMiddleware> logger)
 {
     /// <summary>Agency context request header name.</summary>
-    public const string AgencyHeaderName = "X-TenancyHub-Agency-Id";
+    public const string AgencyHeaderName = TenancyHttpHeaders.AgencyId;
 
     private static readonly PathString OperatorApiPrefix = new("/api/v1/operator");
 
