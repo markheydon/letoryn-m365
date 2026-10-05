@@ -83,6 +83,12 @@ public sealed class UserSessionMiddleware(RequestDelegate next)
                     context.RequestAborted);
             }
 
+            if (isMeBootstrap)
+            {
+                await next(context);
+                return;
+            }
+
             await Results.Problem(
                 title: "Unauthorized",
                 detail: "Your session has ended. Sign in again.",

@@ -24,6 +24,11 @@ public sealed class TenancyHubApiClient(
         using var response = await httpClient.SendAsync(request, cancellationToken);
         if (!response.IsSuccessStatusCode)
         {
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                sessionState.SessionId = null;
+            }
+
             return null;
         }
 

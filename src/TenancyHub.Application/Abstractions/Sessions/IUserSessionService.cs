@@ -40,4 +40,7 @@ public enum UserSessionTerminationReason
 
     /// <summary>12-hour absolute cap exceeded.</summary>
     AbsoluteTimeout,
+
+    /// <summary>User signed out of this session explicitly.</summary>
+    SignOut,
 }

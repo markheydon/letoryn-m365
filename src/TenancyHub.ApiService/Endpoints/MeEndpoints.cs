@@ -48,7 +48,20 @@ public static class MeEndpoints
         else if (httpContext.Request.Headers.TryGetValue(UserSessionMiddleware.SessionHeaderName, out var sessionHeader)
             && Guid.TryParse(sessionHeader.FirstOrDefault(), out var existingSessionId))
         {
-            sessionId = existingSessionId;
+            var validation = await sessionService.ValidateAndTouchAsync(
+                existingSessionId,
+                currentUser.UserIdentityId,
+                cancellationToken);
+            if (validation.IsValid)
+            {
+                sessionId = existingSessionId;
+            }
+            else
+            {
+                var created = await sessionService.CreateSessionAsync(currentUser.UserIdentityId, cancellationToken);
+                sessionId = created.SessionId;
+                await signInAudit.WriteSignInSucceededAsync(currentUser.UserIdentityId, cancellationToken);
+            }
         }
         else
         {
@@ -127,7 +140,7 @@ public static class MeEndpoints
             {
                 await signInAudit.WriteSessionTerminatedAsync(
                     currentUser.UserIdentityId,
-                    UserSessionTerminationReason.NotFound,
+                    UserSessionTerminationReason.SignOut,
                     cancellationToken);
             }
         }

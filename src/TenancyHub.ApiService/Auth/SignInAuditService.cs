@@ -37,6 +37,7 @@ public sealed class SignInAuditService(IAuditWriter auditWriter)
             UserSessionTerminationReason.IdleTimeout => "Session ended after idle timeout.",
             UserSessionTerminationReason.AbsoluteTimeout => "Session ended after the maximum session duration.",
             UserSessionTerminationReason.NotFound => "Session ended because it was invalid or already signed out.",
+            UserSessionTerminationReason.SignOut => "User signed out of the session.",
             _ => "Session ended.",
         };
 
