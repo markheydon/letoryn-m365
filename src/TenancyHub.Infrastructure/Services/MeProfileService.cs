@@ -42,7 +42,8 @@ public sealed class MeProfileService(TenancyHubDbContext dbContext) : IMeProfile
                 x.Agency.Id,
                 x.Agency.DisplayName,
                 x.Membership.Status.ToString(),
-                x.Membership.AgencyRole.ToString()))
+                x.Membership.AgencyRole.ToString(),
+                x.Agency.LifecycleStatus.ToString()))
             .ToList();
 
         var pendingInvites = memberships
@@ -61,7 +62,10 @@ public sealed class MeProfileService(TenancyHubDbContext dbContext) : IMeProfile
                 dbContext.Agencies.AsNoTracking(),
                 a => a.AgencyId,
                 ag => ag.Id,
-                (a, ag) => new MeOperatorAssignmentSummary(ag.Id, ag.DisplayName))
+                (a, ag) => new MeOperatorAssignmentSummary(
+                    ag.Id,
+                    ag.DisplayName,
+                    ag.LifecycleStatus.ToString()))
             .ToListAsync(cancellationToken);
 
         return new MeProfileResponse(

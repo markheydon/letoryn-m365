@@ -28,7 +28,14 @@ public sealed class ShellNavigationService(NavigationManager navigation, AgencyC
 
         if (!hasActiveMembership && !isOperator)
         {
-            if (!path.StartsWith("/access-not-configured", StringComparison.OrdinalIgnoreCase))
+            if (agencyContext.HasSuspendedMembership)
+            {
+                if (!path.StartsWith("/membership-suspended", StringComparison.OrdinalIgnoreCase))
+                {
+                    navigation.NavigateTo("/membership-suspended");
+                }
+            }
+            else if (!path.StartsWith("/access-not-configured", StringComparison.OrdinalIgnoreCase))
             {
                 navigation.NavigateTo("/access-not-configured");
             }
@@ -46,7 +53,38 @@ public sealed class ShellNavigationService(NavigationManager navigation, AgencyC
             return;
         }
 
-        if (path is "/access-not-configured" or "/operator" or "/invitations")
+        if (hasActiveMembership
+            && !agencyContext.HasSelectableRoutineMemberAgency
+            && !(isOperator && hasAssignments))
+        {
+            if (!path.StartsWith("/agency-access-blocked", StringComparison.OrdinalIgnoreCase))
+            {
+                navigation.NavigateTo("/agency-access-blocked");
+            }
+
+            return;
+        }
+
+        if (hasActiveMembership
+            || (isOperator && hasAssignments))
+        {
+            if (!agencyContext.HasValidRoutineShellContext
+                && !(isOperator && !hasActiveMembership && hasAssignments))
+            {
+                if (!path.StartsWith("/agency-access-blocked", StringComparison.OrdinalIgnoreCase))
+                {
+                    navigation.NavigateTo("/agency-access-blocked");
+                }
+
+                return;
+            }
+        }
+
+        if (path is "/access-not-configured"
+            or "/operator"
+            or "/invitations"
+            or "/membership-suspended"
+            or "/agency-access-blocked")
         {
             navigation.NavigateTo("/");
         }

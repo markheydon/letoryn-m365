@@ -60,13 +60,15 @@ else if (_options.Count > 1)
         var options = new List<AgencyOption>();
 
         foreach (var membership in profile.Memberships.Where(m =>
-                     string.Equals(m.Status, "Active", StringComparison.Ordinal)))
+                     string.Equals(m.Status, "Active", StringComparison.Ordinal)
+                     && string.Equals(m.AgencyLifecycleStatus, "Active", StringComparison.Ordinal)))
         {
             membershipAgencyIds.Add(membership.AgencyId);
             options.Add(new AgencyOption(membership.AgencyId.ToString(), membership.DisplayName));
         }
 
-        foreach (var assignment in profile.OperatorAssignments)
+        foreach (var assignment in profile.OperatorAssignments.Where(a =>
+                     !string.Equals(a.AgencyLifecycleStatus, "Archived", StringComparison.Ordinal)))
         {
             if (membershipAgencyIds.Add(assignment.AgencyId))
             {
