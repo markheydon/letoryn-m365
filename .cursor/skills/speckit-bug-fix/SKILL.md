@@ -21,15 +21,15 @@ The user input should identify the bug to fix. Accept any of:
 
 - `slug=<bug-slug>` or `--slug <bug-slug>` or just a bare slug-like token.
 - A path that contains the slug (e.g. `.specify/bugs/login-timeout/`).
-- **Nothing** — fall back to context (see below).
+- **Nothing**: fall back to context (see below).
 
 ## Slug Resolution
 
 Resolve `BUG_SLUG` in this order, stopping at the first match:
 
-1. **Explicit user input** — a slug passed in `$ARGUMENTS` (any of the forms above).
-2. **Conversation context** — if the current session has just run `/speckit-bug-assess`, the slug it reported is the working slug. Reuse it without re-prompting. Confirm it by checking that `.specify/bugs/<slug>/assessment.md` exists; if it does not, fall through.
-3. **Single candidate on disk** — list `.specify/bugs/*/assessment.md`. If exactly one matching `assessment.md` is found, use the slug from its parent directory.
+1. **Explicit user input**: a slug passed in `$ARGUMENTS` (any of the forms above).
+2. **Conversation context**: if the current session has just run `/speckit-bug-assess`, the slug it reported is the working slug. Reuse it without re-prompting. Confirm it by checking that `.specify/bugs/<slug>/assessment.md` exists; if it does not, fall through.
+3. **Single candidate on disk**: list `.specify/bugs/*/assessment.md`. If exactly one matching `assessment.md` is found, use the slug from its parent directory.
 4. **Disambiguate**:
    - **Interactive mode**: ask the user which bug to fix and list the candidates.
    - **Automated mode**: stop with an error listing the candidates. Do not guess.
@@ -46,13 +46,13 @@ Once resolved, set `BUG_SLUG` and `BUG_DIR = .specify/bugs/<BUG_SLUG>`, and brie
 
 1. **Confirm the plan**
    - Restate, in 3–6 bullets, what you are about to change and where, based on the assessment.
-   - If the assessment's verdict is `invalid`, stop — there is nothing to fix. Tell the user and exit.
+   - If the assessment's verdict is `invalid`, stop: there is nothing to fix. Tell the user and exit.
    - If the verdict is `likely valid, needs reproduction` and there are unresolved `[NEEDS CLARIFICATION]` items, flag them and ask the user whether to proceed in interactive mode, or stop in automated mode.
 
 2. **Apply the remediation**
    - Make the code changes described by the preferred remediation. Stay within the files listed by the assessment unless newly discovered evidence requires expanding scope (in which case, log the expansion explicitly in the report).
    - Add or update the tests called out in the assessment so the bug cannot regress silently.
-   - Keep the change minimal — do not refactor unrelated code, do not introduce dependencies that the assessment did not call for.
+   - Keep the change minimal: do not refactor unrelated code, do not introduce dependencies that the assessment did not call for.
    - If you discover the assessment was wrong (the proposed fix does not work, the root cause is elsewhere), STOP modifying code, document the new finding in the fix report under **Deviations from Assessment**, and recommend re-running `/speckit-bug-assess`.
 
 3. **Run local checks**
@@ -84,11 +84,11 @@ Once resolved, set `BUG_SLUG` and `BUG_DIR = .specify/bugs/<BUG_SLUG>`, and brie
 
    ## Diff Highlights (optional)
 
-   <Short, illustrative snippets of the most important hunks — not a full diff dump.>
+   <Short, illustrative snippets of the most important hunks: not a full diff dump.>
 
    ## Tests Added or Updated
 
-   - `path/to/test_file.py::test_name` — <what it pins down>
+   - `path/to/test_file.py::test_name`: <what it pins down>
 
    ## Local Verification
 
@@ -112,6 +112,6 @@ Once resolved, set `BUG_SLUG` and `BUG_DIR = .specify/bugs/<BUG_SLUG>`, and brie
 ## Guardrails
 
 - Never modify files outside the project workspace.
-- Never edit `assessment.md` — it is the contract you are working against. Record disagreements in `fix.md` under **Deviations from Assessment**.
+- Never edit `assessment.md`: it is the contract you are working against. Record disagreements in `fix.md` under **Deviations from Assessment**.
 - Never delete files unless the assessment explicitly required it.
 - Never overwrite an existing `fix.md` without confirmation.

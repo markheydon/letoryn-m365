@@ -9,13 +9,13 @@ What is implemented in `TenancyHub.slnx` today:
 | Layer | Choice | Notes |
 |-------|--------|--------|
 | Runtime | .NET 10 | Pinned in `global.json` |
-| Orchestration | .NET Aspire **13.6** | `TenancyHub.AppHost` — Project v2 (`AddDotnetProject`), coordinated builds, health checks |
+| Orchestration | .NET Aspire **13.6** | `TenancyHub.AppHost`: Project v2 (`AddDotnetProject`), coordinated builds, health checks |
 | Backend | ASP.NET Core API | `TenancyHub.ApiService` |
-| Front end | Blazor + Fluent UI Blazor v5 | `TenancyHub.Web` — see [web-ui-and-css.md](./web-ui-and-css.md) |
+| Front end | Blazor + Fluent UI Blazor v5 | `TenancyHub.Web`: see [web-ui-and-css.md](./web-ui-and-css.md) |
 | Cross-cutting | `TenancyHub.ServiceDefaults` | OpenTelemetry, HTTP resilience, service discovery defaults |
 | Packages | Central management | `Directory.Packages.props`, shared MSBuild in `Directory.Build.props` |
-| Tests | xUnit v3 + NSubstitute | `tests/TenancyHub.ApiService.UnitTests` — see [testing.md](./testing.md) |
-| CI | GitHub Actions | `.github/workflows/ci.yml` — Release build + test |
+| Tests | xUnit v3 + NSubstitute | `tests/TenancyHub.ApiService.UnitTests`: see [testing.md](./testing.md) |
+| CI | GitHub Actions | `.github/workflows/ci.yml`: Release build + test |
 
 Local run and toolchain: [local-development.md](./local-development.md). Build/analyzer policy: [build-quality.md](./build-quality.md).
 
@@ -27,7 +27,7 @@ Local run: Aspire AppHost (`aspire run` / AppHost project). Deployment targets a
 |---------|-----|
 | `TenancyHub.AppHost` | Aspire orchestration only |
 | `TenancyHub.*` executables | Web, API, future workers |
-| `TenancyHub.*` class libraries | Shared domain, clients, persistence—public API requires XML docs (see [build-quality.md](./build-quality.md)) |
+| `TenancyHub.*` class libraries | Shared domain, clients, persistence: public API requires XML docs (see [build-quality.md](./build-quality.md)) |
 | `TenancyHub.ServiceDefaults` | Aspire service defaults template; extend carefully |
 
 Add new projects under `src/` with the `TenancyHub.` prefix unless a tool generates a different name.
@@ -49,10 +49,10 @@ Architecture decisions from product research that **this codebase is expected to
 | UI | **Blazor** (this repo) |
 | Application logic | **.NET** backend services and APIs |
 | Hosting | **Azure** (production); Aspire for modelling and local parity |
-| System of record | **PostgreSQL** — operational domain data; add to AppHost when persistence lands |
+| System of record | **PostgreSQL**: operational domain data; add to AppHost when persistence lands |
 | Microsoft 365 | **Entra ID** (Microsoft 365 accounts) for identity; product should integrate with M365, not replace it |
 | M365 data & workflows | **Microsoft Graph** as the integration layer (mail, calendar, Teams, SharePoint, To Do, etc.) |
-| Platform core | **Not Dataverse** as the primary datastore — Graph integration is required either way; PostgreSQL keeps long-term SaaS flexibility |
+| Platform core | **Not Dataverse** as the primary datastore: Graph integration is required either way; PostgreSQL keeps long-term SaaS flexibility |
 
 Implement Graph and payment integrations as **backend concerns** with typed HTTP clients and DI registration per [csharp-patterns.md](./csharp-patterns.md). The Blazor app talks to our API, not directly to third-party APIs, unless a future security review explicitly allows otherwise.
 
@@ -61,9 +61,9 @@ Implement Graph and payment integrations as **backend concerns** with typed HTTP
 - **Graph**: Dedicated client(s) or small service layer; permissions and token acquisition via Entra / MSAL patterns appropriate to the hosting model. Do not embed Graph calls ad hoc in UI components.
 - **PostgreSQL**: Access from API (and future workers), not from the Blazor front end. Migrations and schema ownership TBD when the database project is added.
 - **SharePoint / documents & media**: Graph-backed libraries for tenancy documents and **operational media** (property photos, repair/cleaning evidence, etc.). Metadata and relationships in PostgreSQL; binaries in SharePoint unless a sub-spec documents otherwise.
-- **WordPress showcase** (roadmap R13): Server-side API and/or WordPress plugin—property data flows to an **existing** agency site; not a full website builder in v1.
-- **Property syndication feed** (roadmap R14): Outbound property export compatible with aggregators such as [Data Export](https://dataexport.co.uk/)—Tenancy Hub replaces the CRM-as-feed-source; **not** a replacement for Data Export or portal contracts.
-- **Payments / banking** (planned): Stripe, GoCardless, open banking, etc. — server-side only, secrets via configuration, no keys in the web client.
+- **WordPress showcase** (roadmap R13): Server-side API and/or WordPress plugin: property data flows to an **existing** agency site; not a full website builder in v1.
+- **Property syndication feed** (roadmap R14): Outbound property export compatible with aggregators such as [Data Export](https://dataexport.co.uk/): Tenancy Hub replaces the CRM-as-feed-source; **not** a replacement for Data Export or portal contracts.
+- **Payments / banking** (planned): Stripe, GoCardless, open banking, etc.: server-side only, secrets via configuration, no keys in the web client.
 - **Observability**: Continue using ServiceDefaults / OpenTelemetry patterns; extend as new services are added to the AppHost.
 
 ## Related standards
@@ -78,4 +78,4 @@ When stack choices conflict with those documents, the standards documents win un
 
 ## Out of scope for this file
 
-Domain features (CRM, compliance, portals, reporting), market positioning, process maps, and product roadmaps are intentionally omitted here. See [specs/tenancy-hub-platform/roadmap.md](../specs/tenancy-hub-platform/roadmap.md).
+Domain features, market positioning, process maps, and delivery phases are intentionally omitted here. See [product-vision.md](./product-vision.md) and the [platform roadmap](../specs/tenancy-hub-platform/roadmap.md).

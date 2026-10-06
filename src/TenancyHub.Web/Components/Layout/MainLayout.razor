@@ -1,22 +1,92 @@
 ﻿@inherits LayoutComponentBase
+@implements IDisposable
+@inject AgencyContextState AgencyContext
+@inject UserSessionState SessionState
+@inject TenancyHubApiClient ApiClient
+@inject NavigationManager Navigation
+
+<ShellBootstrap />
+
+<FluentProviders />
 
 <FluentLayout>
     <FluentLayoutItem Area="LayoutArea.Header">
-        <FluentLayoutHamburger />
-        Tenancy Hub
+        <CascadingValue Name="OnBrandHeader" Value="true">
+            <FluentStack Orientation="Orientation.Horizontal"
+                         HorizontalGap="16"
+                         VerticalAlignment="VerticalAlignment.Center"
+                         Padding="Padding12">
+                <FluentLayoutHamburger />
+                <FluentLabel Typo="Typography.H5" Style="@ShellHeaderStyles.OnBrandForeground">@UiStrings.ProductName</FluentLabel>
+                <AgencySwitcher />
+                <FluentSpacer />
+                <NotificationPanel />
+                <FluentButton Appearance="ButtonAppearance.Outline"
+                              Style="@ShellHeaderStyles.OnBrandOutlineButton"
+                              OnClick="SignOutAsync">@UiStrings.Shell.SignOut</FluentButton>
+            </FluentStack>
+        </CascadingValue>
     </FluentLayoutItem>
     <FluentLayoutItem Area="LayoutArea.Navigation">
         <NavMenu />
     </FluentLayoutItem>
     <FluentLayoutItem Area="LayoutArea.Content" Class="main">
-        <div class="content">
+        @if (_showInviteBanner)
+        {
+            <FluentMessageBar Intent="MessageBarIntent.Info">
+                @UiStrings.Shell.PendingInvitationsBanner
+                <FluentLink Href="/invitations">@UiStrings.Shell.ReviewInvitationsLink</FluentLink>
+            </FluentMessageBar>
+        }
+        <div class="content" @key="@AgencyContext.ActiveAgencyId">
             @Body
         </div>
     </FluentLayoutItem>
 </FluentLayout>
 
 <div id="blazor-error-ui" data-nosnippet>
-    An unhandled error has occurred.
-    <a href="." class="reload">Reload</a>
+    @UiStrings.BlazorError.UnhandledError
+    <a href="." class="reload">@UiStrings.BlazorError.Reload</a>
     <span class="dismiss">🗙</span>
 </div>
+
+@code {
+    private bool _showInviteBanner;
+
+    protected override void OnInitialized()
+    {
+        AgencyContext.Changed += OnContextChanged;
+        RefreshBanner();
+    }
+
+    private void OnContextChanged()
+    {
+        RefreshBanner();
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void RefreshBanner()
+    {
+        _showInviteBanner = AgencyContext.HasPendingInvites && AgencyContext.HasActiveMembership;
+    }
+
+    private async Task SignOutAsync()
+    {
+        try
+        {
+            await ApiClient.SignOutAsync();
+        }
+        catch
+        {
+            // Continue local sign-out even if API is unavailable.
+        }
+
+        SessionState.SessionId = null;
+        SessionState.ApiSessionEstablished = false;
+        await SessionState.PersistToBrowserAsync();
+        AgencyContext.Clear();
+        Navigation.NavigateTo("MicrosoftIdentity/Account/SignOut", forceLoad: true);
+    }
+
+    public void Dispose() => AgencyContext.Changed -= OnContextChanged;
+}

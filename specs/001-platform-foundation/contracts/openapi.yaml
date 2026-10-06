@@ -1,0 +1,327 @@
+# Stable route-group snapshot for Tenancy Hub API v1 (platform foundation / R1).
+# Full machine-generated document: run TenancyHub.ApiService in Development and GET /openapi/v1.json.
+# Semantic request/response shapes remain authoritative in api-v1.md until schemas are fully modelled in OpenAPI.
+openapi: 3.1.0
+info:
+  title: Tenancy Hub API
+  version: v1
+  description: |
+    Platform foundation HTTP API. Authenticated callers use Entra bearer tokens.
+    Agency-scoped routes require header `X-TenancyHub-Agency-Id` unless the path carries an explicit `{agencyId}` for operator cross-agency access.
+servers:
+  - url: https+http://apiservice
+    description: Aspire service discovery (local)
+  - url: http://localhost:5443
+    description: ApiService direct (Development profile)
+security:
+  - bearerAuth: []
+tags:
+  - name: Session
+  - name: Invitations
+  - name: Agency
+  - name: Membership
+  - name: Notifications
+  - name: Audit
+  - name: Auth
+  - name: Operator
+paths:
+  /:
+    get:
+      tags: [Session]
+      summary: Service root health probe
+      security: []
+      responses:
+        "200":
+          description: Service is running
+  /api/v1/me:
+    get:
+      tags: [Session]
+      summary: Signed-in identity, memberships, and context
+      responses:
+        "200":
+          description: Me profile
+        "401":
+          description: Unauthenticated
+  /api/v1/me/active-agency:
+    put:
+      tags: [Session]
+      summary: Set active agency for the current session
+      responses:
+        "204":
+          description: Active agency updated
+        "403":
+          description: Forbidden
+  /api/v1/me/sign-out:
+    post:
+      tags: [Session]
+      summary: End the current server-side session
+      responses:
+        "204":
+          description: Signed out
+  /api/v1/invitations/pending:
+    get:
+      tags: [Invitations]
+      summary: List pending invitations for the caller email
+      responses:
+        "200":
+          description: Pending invitations
+  /api/v1/invitations/{membershipId}/accept:
+    post:
+      tags: [Invitations]
+      summary: Accept an invitation
+      parameters:
+        - name: membershipId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Membership activated
+  /api/v1/invitations/{membershipId}/decline:
+    post:
+      tags: [Invitations]
+      summary: Decline an invitation
+      parameters:
+        - name: membershipId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Invitation declined
+  /api/v1/agencies/{agencyId}/settings:
+    get:
+      tags: [Agency]
+      summary: Read agency settings
+      parameters:
+        - $ref: "#/components/parameters/agencyId"
+      responses:
+        "200":
+          description: Agency settings
+    patch:
+      tags: [Agency]
+      summary: Update agency settings
+      parameters:
+        - $ref: "#/components/parameters/agencyId"
+      responses:
+        "200":
+          description: Updated settings
+  /api/v1/agencies/{agencyId}/memberships:
+    get:
+      tags: [Membership]
+      summary: List agency membership roster
+      parameters:
+        - $ref: "#/components/parameters/agencyId"
+      responses:
+        "200":
+          description: Membership roster
+  /api/v1/agencies/{agencyId}/memberships/invite:
+    post:
+      tags: [Membership]
+      summary: Invite a user to the agency
+      parameters:
+        - $ref: "#/components/parameters/agencyId"
+      responses:
+        "201":
+          description: Invitation created
+  /api/v1/agencies/{agencyId}/memberships/provision:
+    post:
+      tags: [Membership]
+      summary: Provision membership for an existing identity
+      parameters:
+        - $ref: "#/components/parameters/agencyId"
+      responses:
+        "201":
+          description: Membership provisioned
+  /api/v1/agencies/{agencyId}/memberships/{membershipId}/role:
+    patch:
+      tags: [Membership]
+      summary: Change member role
+      parameters:
+        - $ref: "#/components/parameters/agencyId"
+        - $ref: "#/components/parameters/membershipId"
+      responses:
+        "200":
+          description: Role updated
+  /api/v1/agencies/{agencyId}/memberships/{membershipId}/suspend:
+    post:
+      tags: [Membership]
+      summary: Suspend a member
+      parameters:
+        - $ref: "#/components/parameters/agencyId"
+        - $ref: "#/components/parameters/membershipId"
+      responses:
+        "204":
+          description: Member suspended
+  /api/v1/agencies/{agencyId}/memberships/{membershipId}/reactivate:
+    post:
+      tags: [Membership]
+      summary: Reactivate a suspended member
+      parameters:
+        - $ref: "#/components/parameters/agencyId"
+        - $ref: "#/components/parameters/membershipId"
+      responses:
+        "204":
+          description: Member reactivated
+  /api/v1/agencies/{agencyId}/memberships/{membershipId}:
+    delete:
+      tags: [Membership]
+      summary: Remove a member from the agency
+      parameters:
+        - $ref: "#/components/parameters/agencyId"
+        - $ref: "#/components/parameters/membershipId"
+      responses:
+        "204":
+          description: Member removed
+  /api/v1/agencies/{agencyId}/memberships/{membershipId}/invitation:
+    delete:
+      tags: [Membership]
+      summary: Revoke a pending invitation
+      parameters:
+        - $ref: "#/components/parameters/agencyId"
+        - $ref: "#/components/parameters/membershipId"
+      responses:
+        "204":
+          description: Invitation revoked
+  /api/v1/agencies/{agencyId}/notifications:
+    get:
+      tags: [Notifications]
+      summary: List in-app notifications for the agency context
+      parameters:
+        - $ref: "#/components/parameters/agencyId"
+      responses:
+        "200":
+          description: Notifications
+  /api/v1/agencies/{agencyId}/notifications/{notificationId}/read:
+    post:
+      tags: [Notifications]
+      summary: Mark a notification as read
+      parameters:
+        - $ref: "#/components/parameters/agencyId"
+        - name: notificationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Marked read
+  /api/v1/agencies/{agencyId}/audit:
+    get:
+      tags: [Audit]
+      summary: Agency-scoped audit history
+      parameters:
+        - $ref: "#/components/parameters/agencyId"
+      responses:
+        "200":
+          description: Audit events
+  /api/v1/auth/sign-in-failed:
+    post:
+      tags: [Auth]
+      summary: Report a failed sign-in attempt (internal / Web callback)
+      security: []
+      responses:
+        "204":
+          description: Recorded
+  /api/v1/operator/agencies:
+    post:
+      tags: [Operator]
+      summary: Create a new agency (platform operator)
+      responses:
+        "201":
+          description: Agency created
+  /api/v1/operator/agencies/{agencyId}/lifecycle:
+    post:
+      tags: [Operator]
+      summary: Change agency lifecycle status
+      parameters:
+        - $ref: "#/components/parameters/agencyId"
+      responses:
+        "200":
+          description: Lifecycle updated
+  /api/v1/operator/agencies/{agencyId}/summary:
+    get:
+      tags: [Operator]
+      summary: Operator diagnostics summary for an agency
+      parameters:
+        - $ref: "#/components/parameters/agencyId"
+      responses:
+        "200":
+          description: Diagnostics summary
+  /api/v1/operator/agencies/{agencyId}/audit:
+    get:
+      tags: [Audit]
+      summary: Operator cross-agency audit history
+      parameters:
+        - $ref: "#/components/parameters/agencyId"
+      responses:
+        "200":
+          description: Audit events
+  /api/v1/operator/platform/operators:
+    get:
+      tags: [Operator]
+      summary: List platform operators
+      responses:
+        "200":
+          description: Operator list
+  /api/v1/operator/platform/operators/{userId}/grant:
+    post:
+      tags: [Operator]
+      summary: Grant platform operator status
+      parameters:
+        - $ref: "#/components/parameters/userId"
+      responses:
+        "204":
+          description: Granted
+  /api/v1/operator/platform/operators/{userId}/revoke:
+    post:
+      tags: [Operator]
+      summary: Revoke platform operator status
+      parameters:
+        - $ref: "#/components/parameters/userId"
+      responses:
+        "204":
+          description: Revoked
+  /api/v1/operator/platform/operators/{userId}/assignments:
+    put:
+      tags: [Operator]
+      summary: Set operator agency assignments
+      parameters:
+        - $ref: "#/components/parameters/userId"
+      responses:
+        "200":
+          description: Assignments updated
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Entra ID access token for the Tenancy Hub API app registration
+  parameters:
+    agencyId:
+      name: agencyId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    membershipId:
+      name: membershipId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    userId:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid

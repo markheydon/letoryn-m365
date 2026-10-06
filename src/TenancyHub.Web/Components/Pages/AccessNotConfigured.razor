@@ -1,0 +1,10 @@
+@page "/access-not-configured"
+@attribute [Authorize]
+@layout TenancyHub.Web.Components.Layout.MinimalLayout
+
+<PageTitle>@UiStrings.AccessNotConfigured.Title</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
+    <FluentLabel Typo="Typography.H4">@UiStrings.AccessNotConfigured.Title</FluentLabel>
+    <FluentLabel>@UiStrings.AccessNotConfigured.Body</FluentLabel>
+</FluentStack>

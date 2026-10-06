@@ -13,6 +13,27 @@
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.10.0" />
     <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.10.0" />
   </ItemGroup>
+  <!-- Aspire hosting integrations (13.6 family; AppHost SDK uses 13.6 preview) -->
+  <ItemGroup>
+    <!-- No stable 13.6.0 on NuGet yet; align preview with Aspire.Hosting.Dotnet -->
+    <PackageVersion Include="Aspire.Hosting.EntityFrameworkCore" Version="13.6.0-preview.1.26479.8" />
+    <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="13.6.0" />
+    <PackageVersion Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="13.6.0" />
+  </ItemGroup>
+  <!-- Data access (EF Core 10) -->
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.12" />
+    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
+  </ItemGroup>
+  <!-- Authentication -->
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.Identity.Web" Version="4.16.0" />
+    <PackageVersion Include="Microsoft.Identity.Web.UI" Version="4.16.0" />
+  </ItemGroup>
   <!-- Fluent UI -->
   <ItemGroup>
     <PackageVersion Include="Microsoft.FluentUI.AspNetCore.Components" Version="5.0.0" />
@@ -33,5 +54,6 @@
     <PackageVersion Include="NSubstitute" Version="6.2.0" />
     <PackageVersion Include="xunit.v3" Version="4.0.1" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.0" />
+    <PackageVersion Include="Microsoft.Playwright" Version="1.63.0" />
   </ItemGroup>
 </Project>

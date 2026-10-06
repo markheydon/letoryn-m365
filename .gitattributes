@@ -28,7 +28,7 @@
 *.cmd text eol=crlf
 *.bat text eol=crlf
 
-# Binaries — never diff or modify line endings
+# Binaries: never diff or modify line endings
 *.png  binary
 *.jpg  binary
 *.jpeg binary
