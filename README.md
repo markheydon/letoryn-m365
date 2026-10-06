@@ -2,7 +2,9 @@
 
 **Letoryn for Microsoft 365.** A **multi-tenant**, **Microsoft 365-centric** property catalogue for small UK letting agencies (typically 1–25 staff) and very small portfolios. It stays native to **Entra ID and Microsoft Graph**, stores listing media in **SharePoint**, and exposes **one canonical listing feed** for the agency's **WordPress** site and syndication tools. It is not a replacement for the CRM, compliance, referencing, accounting, or other systems an agency already runs.
 
-The repository is **open source** (MIT) and an early **.NET Aspire** scaffold ([tech stack](docs/tech-stack.md)). All product work is **Spec Kit** SDD: a [platform roadmap](specs/letoryn-platform/roadmap.md) decomposes the epic; each slice runs specify → plan → tasks → implement ([Spec Kit](https://github.com/github/spec-kit), [spec of specs](https://github.github.com/spec-kit/concepts/spec-of-specs.html)).
+The repository is **open source** (MIT) and a **.NET Aspire** scaffold ([tech stack](docs/tech-stack.md)). **Development is at a very early stage:** platform foundation (R1) is implemented, but the property catalogue and integrations described below are mostly roadmap work. Expect breaking changes, incomplete features, and no production-ready release yet.
+
+All product work is **Spec Kit** SDD: a [platform roadmap](specs/letoryn-platform/roadmap.md) decomposes the epic; each slice runs specify → plan → tasks → implement ([Spec Kit](https://github.com/github/spec-kit), [spec of specs](https://github.github.com/spec-kit/concepts/spec-of-specs.html)).
 
 ## Collaboration and project status
 
@@ -79,6 +81,8 @@ aspire run                # from repo root
 Details: [docs/local-development.md](docs/local-development.md).
 
 ## Development status
+
+This table is the honest snapshot for contributors: one foundation slice shipped; everything else is planned or not started.
 
 | Layer | Status |
 |-------|--------|
