@@ -101,10 +101,12 @@ else if (_options.Count > 1)
         if (!ok)
         {
             RefreshOptions();
+            await InvokeAsync(StateHasChanged);
             return;
         }
 
         AgencyContext.SetActiveAgency(agencyId, displayName);
+        await InvokeAsync(StateHasChanged);
     }
 
     public void Dispose() => AgencyContext.Changed -= OnContextChanged;

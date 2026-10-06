@@ -38,7 +38,7 @@
                 <FluentLink Href="/invitations">@UiStrings.Shell.ReviewInvitationsLink</FluentLink>
             </FluentMessageBar>
         }
-        <div class="content">
+        <div class="content" @key="@AgencyContext.ActiveAgencyId">
             @Body
         </div>
     </FluentLayoutItem>

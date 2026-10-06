@@ -236,6 +236,7 @@
         {
             ClearActionMessage();
             await LoadRosterAsync();
+            StateHasChanged();
         });
     }
 
@@ -258,6 +259,7 @@
 
         _viewState = ViewState.Loading;
         _canManage = AgencyContext.CanManageMembers;
+        await InvokeAsync(StateHasChanged);
 
         var result = await ApiClient.GetMembershipRosterAsync(agencyId);
         switch (result.Access)

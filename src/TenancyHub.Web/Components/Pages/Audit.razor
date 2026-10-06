@@ -104,6 +104,7 @@
         _ = InvokeAsync(async () =>
         {
             await ReloadAsync();
+            StateHasChanged();
         });
     }
 
