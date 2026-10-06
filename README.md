@@ -1,35 +1,44 @@
 # Letoryn
 
-**Letoryn for Microsoft 365.** A **multi-tenant**, **Microsoft 365–centric** operating platform for small UK letting agencies (typically 1–25 staff). The goal is one integrated product: CRM, property and tenancy operations, maintenance, compliance, communications, and (over time) finance and portals: while **staying native to Entra ID and Microsoft Graph**, not replacing Microsoft 365.
+**Letoryn for Microsoft 365.** A **multi-tenant**, **Microsoft 365-centric** property catalogue for small UK letting agencies (typically 1–25 staff) and very small portfolios. It stays native to **Entra ID and Microsoft Graph**, stores listing media in **SharePoint**, and exposes **one canonical listing feed** for the agency's **WordPress** site and syndication tools. It is not a replacement for the CRM, compliance, referencing, accounting, or other systems an agency already runs.
 
-The repository is an early **.NET Aspire** scaffold ([tech stack](docs/tech-stack.md)). All product work is **Spec Kit** SDD: a [platform roadmap](specs/letoryn-platform/roadmap.md) decomposes the epic; each slice runs specify → plan → tasks → implement ([Spec Kit](https://github.com/github/spec-kit), [spec of specs](https://github.github.com/spec-kit/concepts/spec-of-specs.html)).
+The repository is **open source** (MIT) and a **.NET Aspire** scaffold ([tech stack](docs/tech-stack.md)). **Development is at a very early stage:** platform foundation (R1) is implemented, but the property catalogue and integrations described below are mostly roadmap work. Expect breaking changes, incomplete features, and no production-ready release yet.
 
-An initial **design-partner agency** provides domain expertise and early testing; **mid–long term** the intent is a **commercial SaaS** for any qualifying agency. Delivery phases and module map: [product vision](docs/product-vision.md); slice index: [roadmap](specs/letoryn-platform/roadmap.md).
+All product work is **Spec Kit** SDD: a [platform roadmap](specs/letoryn-platform/roadmap.md) decomposes the epic; each slice runs specify → plan → tasks → implement ([Spec Kit](https://github.com/github/spec-kit), [spec of specs](https://github.github.com/spec-kit/concepts/spec-of-specs.html)).
+
+## Collaboration and project status
+
+**Origin (public-safe):** the project started as an idea to bring fragmented agency tooling into one M365-native platform. That full scope needs lettings domain knowledge the maintainer cannot supply alone, so the repo is open for use, contribution, and partnership while the **Catalogue** ships first.
+
+**Looking for a UK lettings domain expert to partner** on Vision-phase modules (tenancies, compliance depth, finance, and similar). Catalogue and Operations slices are intended to be buildable without that expertise; see [CONTRIBUTING.md](CONTRIBUTING.md) for how to get in touch.
+
+Delivery phases and module map: [product vision](docs/product-vision.md); slice index: [roadmap](specs/letoryn-platform/roadmap.md).
 
 ## Problem
 
-Many agencies stitch together a CRM, referencing tools, rent and compliance products, Outlook, SharePoint, telephony, spreadsheets, and accounting. That fragmentation drives duplicate entry, manual handoffs, weak reporting, brittle integrations, and high total cost. Letoryn aims to **consolidate operational software** around a single platform that still **integrates with M365** rather than fighting it.
+An agency already has a website, Microsoft 365, and specialist tools for CRM, referencing, compliance, and accounting. Letoryn takes the property list those tools do not present well: one catalogue, photos in SharePoint, and a single feed for WordPress and syndication. It does not aim to become the only system on the desk.
 
 ## Product direction
 
 | Area | Direction |
 |------|-----------|
-| Tenancy | **Multi-tenant SaaS** from day one (agency isolation, shared deployment) |
+| Tenancy | **Multi-tenant architecture** from day one (agency isolation). A community or maintainer-hosted deployment may follow; see [product vision](docs/product-vision.md) (no commercial SaaS roadmap in this repo) |
 | Identity | Entra ID / Microsoft 365 accounts |
 | UX | Blazor + Fluent UI |
-| Integrations | Microsoft Graph (mail, calendar, SharePoint documents **and media library**); see roadmap phases |
+| Integrations | Microsoft Graph (SharePoint media library first; mail, calendar, To Do in later R8 tranches) |
 | System of record | PostgreSQL |
 | Hosting | Azure (Aspire deployment flows when introduced) |
-| Go-live integrations | WordPress property showcase plugin (R13), property feed for aggregators such as [Data Export](https://dataexport.co.uk/) (R14): not replacing those platforms |
-| Later | Reporting, finance, portals, AI: roadmap **Later** phase |
+| Catalogue (first release) | Listings (R3), SharePoint media (R8), one listing feed for WordPress (R13) and syndication (R14); foundation **R1 done** |
+| Operations | Optional contacts, repairs/work orders, dashboard (R2, R5, R6) |
+| Vision | Tenancies, compliance, finance, portals, reporting, AI, complaints (R4, R7, R9–R12, R15): may not ship without domain expert input |
 
 Full module and process context: [product vision](docs/product-vision.md). Capability slices: [roadmap](specs/letoryn-platform/roadmap.md). There is no separate PRD process.
 
 ## Repository hygiene
 
-The repo is intended as **public open source** (MIT). Do not commit customer-confidential material, internal process maps, or private M365 links. See [product vision: confidentiality](docs/product-vision.md#confidentiality-and-private-assets).
+The repo is **public open source** (MIT). Do not commit customer-confidential material, internal process maps, or private M365 links. See [product vision: confidentiality](docs/product-vision.md#confidentiality-and-private-assets).
 
-## Trademark
+## Branding
 
 **Letoryn** is the project name. The MIT license does not grant rights to use the name or any official branding to imply you operate the official Letoryn hosted service. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
@@ -73,14 +82,17 @@ Details: [docs/local-development.md](docs/local-development.md).
 
 ## Development status
 
+This table is the honest snapshot for contributors: one foundation slice shipped; everything else is planned or not started.
+
 | Layer | Status |
 |-------|--------|
-| Aspire AppHost + API + Blazor shell | Scaffolded |
-| POC (R1, R2, R3, R8) and go-live slices | Planned ([roadmap](specs/letoryn-platform/roadmap.md)) |
+| Platform foundation (R1) | **Done** ([specs/001-platform-foundation](specs/001-platform-foundation/)) |
+| Catalogue (R3, R8, R13, R14) | Planned ([roadmap](specs/letoryn-platform/roadmap.md)) |
+| Operations and Vision | Recorded on roadmap |
 
 ## Spec-driven work
 
-POC, go-live, and later delivery phases (including **R15** complaints): [product vision: delivery phases](docs/product-vision.md#delivery-phases). GitHub milestone rules: [milestone-strategy.md](docs/milestone-strategy.md). Pick the next slice from the [roadmap](specs/letoryn-platform/roadmap.md) by dependency and status.
+See [platform roadmap](specs/letoryn-platform/roadmap.md) for Spec Kit workflow and phase definitions. GitHub milestone rules: [milestone-strategy.md](docs/milestone-strategy.md).
 
 CI: Release build, format check, and tests on push/PR to `main` (`.github/workflows/ci.yml`).
 
