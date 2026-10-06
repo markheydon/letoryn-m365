@@ -124,23 +124,23 @@ When the PR is opened, set the **issue** to `status/in-review` (remove `status/i
 | Draft | **Ready for review** (`draft: false`) when CI would pass and the change is complete. Use draft only when the branch is known to be incomplete or blocked. |
 | Assignee | `markheydon`. |
 | Reviewers | Do **not** assign Copilot (or equivalent bot) as reviewer or assignee. |
-| Milestone | See [milestone-strategy.md](./milestone-strategy.md). Copy from the linked issue when present. If there is no issue, set from the cited roadmap row (**R1**–**R15**) → **POC**, **Go-live**, or **Later**. Leave unset for Dependabot and for repo-wide chores with no roadmap row. |
+| Milestone | See [milestone-strategy.md](./milestone-strategy.md). Copy from the linked issue when present. If there is no issue, set from the cited roadmap row (**R1**–**R15**) → **Catalogue**, **Operations**, or **Vision**. Leave unset for Dependabot and for repo-wide chores with no roadmap row. |
 
 ---
 
 ## Milestones
 
-Delivery-phase milestones (**POC**, **Go-live**, **Later**) are defined in [milestone-strategy.md](./milestone-strategy.md). They align with [product-vision.md](./product-vision.md#delivery-phases) and the **Phase** column in [roadmap.md](../specs/letoryn-platform/roadmap.md).
+Delivery-phase milestones (**Catalogue**, **Operations**, **Vision**) are defined in [milestone-strategy.md](./milestone-strategy.md). They align with [product-vision.md](./product-vision.md#delivery-phases) and the phase sections in [roadmap.md](../specs/letoryn-platform/roadmap.md).
 
 | Rule | Detail |
 |------|--------|
 | Source of truth | [milestone-strategy.md](./milestone-strategy.md): do not invent milestone names (for example “MVP”, “Sprint 2”) without updating that file first. |
 | PR default | Same milestone as the tracking issue. |
-| PR without issue | Derive from **Roadmap / Spec Kit** (**R#** → phase). Example: **R1** → **POC**. |
+| PR without issue | Derive from **Roadmap / Spec Kit** (**R#** → phase). Example: **R1** → **Catalogue**. |
 | Dependabot | No milestone. |
 | Epics | Milestone = phase of the primary roadmap row (not `type/epic` label). |
 
-When opening a PR, set milestone via `gh pr edit <n> --milestone "POC"` (or **Go-live** / **Later**) after labels and assignee.
+When opening a PR, set milestone via `gh pr edit <n> --milestone "Catalogue"` (or **Operations** / **Vision**) after labels and assignee.
 
 ---
 

@@ -65,7 +65,7 @@ When you touch existing copy that contains em dashes, rewrite to one of the abov
 When creating or updating GitHub issues and pull requests, follow the canonical taxonomy and PR metadata rules (UK English, template headings, labels on both issue and PR):
 
 - [docs/label-strategy.md](docs/label-strategy.md): `type/`, `priority/`, `status/`, `area/` (mapped to roadmap **R1–R15** in [specs/letoryn-platform/roadmap.md](specs/letoryn-platform/roadmap.md)), and `size/`.
-- [docs/milestone-strategy.md](docs/milestone-strategy.md): GitHub milestones **POC**, **Go-live**, **Later** (delivery phases from [product-vision.md](docs/product-vision.md#delivery-phases)).
+- [docs/milestone-strategy.md](docs/milestone-strategy.md): GitHub milestones **Catalogue**, **Operations**, **Vision** (delivery phases from [product-vision.md](docs/product-vision.md#delivery-phases)).
 - [docs/pull-request-policy.md](docs/pull-request-policy.md): PR title shape `[<Type>] <Imperative summary> (#N)`, [`.github/pull_request_template.md`](.github/pull_request_template.md), linking (`Closes` / `References`), milestones, and Dependabot label set.
 
 Apply at least one `type/` and one `priority/` label on every issue and PR; add `area/*` when the roadmap slice or cross-cutting area is known. When this document’s taxonomy changes, update GitHub labels via the maintainer’s cross-repo label sync: not ad-hoc one-off labels outside [label-strategy.md](docs/label-strategy.md).

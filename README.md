@@ -1,14 +1,20 @@
 # Letoryn
 
-**Letoryn for Microsoft 365.** A **multi-tenant**, **Microsoft 365–centric** property catalogue for small UK letting agencies (typically 1–25 staff). It stays native to **Entra ID and Microsoft Graph**, stores listing media in **SharePoint**, and publishes listings to the agency's existing **WordPress** site. It is not a replacement for the CRM, compliance, referencing, accounting, or other systems an agency already runs.
+**Letoryn for Microsoft 365.** A **multi-tenant**, **Microsoft 365–centric** property catalogue for small UK letting agencies (typically 1–25 staff) and very small portfolios. It stays native to **Entra ID and Microsoft Graph**, stores listing media in **SharePoint**, and exposes **one canonical listing feed** for the agency's **WordPress** site and syndication tools. It is not a replacement for the CRM, compliance, referencing, accounting, or other systems an agency already runs.
 
-The repository is an early **.NET Aspire** scaffold ([tech stack](docs/tech-stack.md)). All product work is **Spec Kit** SDD: a [platform roadmap](specs/letoryn-platform/roadmap.md) decomposes the epic; each slice runs specify → plan → tasks → implement ([Spec Kit](https://github.com/github/spec-kit), [spec of specs](https://github.github.com/spec-kit/concepts/spec-of-specs.html)).
+The repository is **open source** (MIT) and an early **.NET Aspire** scaffold ([tech stack](docs/tech-stack.md)). All product work is **Spec Kit** SDD: a [platform roadmap](specs/letoryn-platform/roadmap.md) decomposes the epic; each slice runs specify → plan → tasks → implement ([Spec Kit](https://github.com/github/spec-kit), [spec of specs](https://github.github.com/spec-kit/concepts/spec-of-specs.html)).
 
-The first feature set is that catalogue: listings in PostgreSQL, photos and files in **SharePoint**, published to WordPress. Further ideas on the roadmap are optional and are not a plan to retire the third-party tools around the product. An initial **design-partner agency** provides domain expertise and early testing; **mid–long term** the intent is a **commercial SaaS** for any qualifying agency. Delivery phases and module map: [product vision](docs/product-vision.md); slice index: [roadmap](specs/letoryn-platform/roadmap.md).
+## Collaboration and project status
+
+**Looking for a UK lettings domain expert to partner** on Vision-phase modules (tenancies, compliance depth, finance, and similar). Catalogue and Operations slices are intended to be buildable without that expertise; see [CONTRIBUTING.md](CONTRIBUTING.md) for how to get in touch.
+
+**Origin (public-safe):** the project started as an idea to bring fragmented agency tooling into one M365-native platform. That full scope needs lettings domain knowledge the maintainer cannot supply alone, so the repo is open for use, contribution, and partnership while the **Catalogue** ships first.
+
+Delivery phases and module map: [product vision](docs/product-vision.md); slice index: [roadmap](specs/letoryn-platform/roadmap.md).
 
 ## Problem
 
-An agency already has a website, Microsoft 365, and specialist tools for CRM, referencing, compliance, and accounting. Letoryn takes the property list those tools do not present well: one catalogue, photos in SharePoint, and a WordPress showcase on the site the agency already has. It does not aim to become the only system on the desk.
+An agency already has a website, Microsoft 365, and specialist tools for CRM, referencing, compliance, and accounting. Letoryn takes the property list those tools do not present well: one catalogue, photos in SharePoint, and a single feed for WordPress and syndication. It does not aim to become the only system on the desk.
 
 ## Product direction
 
@@ -17,18 +23,18 @@ An agency already has a website, Microsoft 365, and specialist tools for CRM, re
 | Tenancy | **Multi-tenant SaaS** from day one (agency isolation, shared deployment) |
 | Identity | Entra ID / Microsoft 365 accounts |
 | UX | Blazor + Fluent UI |
-| Integrations | Microsoft Graph (mail, calendar, SharePoint documents **and media library**); see roadmap phases |
+| Integrations | Microsoft Graph (SharePoint media library first; mail, calendar, To Do in later R8 tranches) |
 | System of record | PostgreSQL |
 | Hosting | Azure (Aspire deployment flows when introduced) |
-| First feature set | Property catalogue, SharePoint media library, WordPress showcase plugin (R1, R3, R8, R13) |
-| Next | Property feed for aggregators such as [Data Export](https://dataexport.co.uk/) (R14): an export into that existing path, not a replacement for it |
-| Later ideas | CRM, tenancies, maintenance, compliance, dashboard, reporting, finance, portals, AI: recorded only; not a commitment to replace those third-party systems |
+| Catalogue (first release) | Listings (R3), SharePoint media (R8), one listing feed for WordPress (R13) and syndication (R14); foundation **R1 done** |
+| Operations | Optional contacts, repairs/work orders, dashboard (R2, R5, R6) |
+| Vision | Tenancies, compliance, finance, portals, reporting, AI, complaints (R4, R7, R9–R12, R15): may not ship without domain expert input |
 
 Full module and process context: [product vision](docs/product-vision.md). Capability slices: [roadmap](specs/letoryn-platform/roadmap.md). There is no separate PRD process.
 
 ## Repository hygiene
 
-The repo is intended as **public open source** (MIT). Do not commit customer-confidential material, internal process maps, or private M365 links. See [product vision: confidentiality](docs/product-vision.md#confidentiality-and-private-assets).
+The repo is **public open source** (MIT). Do not commit customer-confidential material, internal process maps, or private M365 links. See [product vision: confidentiality](docs/product-vision.md#confidentiality-and-private-assets).
 
 ## Trademark
 
@@ -76,14 +82,15 @@ Details: [docs/local-development.md](docs/local-development.md).
 
 | Layer | Status |
 |-------|--------|
-| Aspire AppHost + API + Blazor shell | Scaffolded |
-| Catalogue (R1, R3, R8, R13) and later slices | Planned ([roadmap](specs/letoryn-platform/roadmap.md)) |
+| Platform foundation (R1) | **Done** ([specs/001-platform-foundation](specs/001-platform-foundation/)) |
+| Catalogue (R3, R8, R13, R14) | Planned ([roadmap](specs/letoryn-platform/roadmap.md)) |
+| Operations and Vision | Recorded on roadmap |
 
 ## Spec-driven work
 
-**Catalogue:** **R1 → R3 → R8 → R13** (multi-tenant foundation, property listings, SharePoint media, WordPress showcase).
+**Catalogue:** **R1 (done) → R3 → R8 → R13/R14** (one shared listing feed for WordPress and syndication).
 
-**Next:** **R14** (property feed for aggregators). **Later ideas, not a replacement plan:** R2 and R4–R15.
+**Operations:** **R2**, **R5**, **R6**. **Vision:** **R4**, **R7**, **R9–R12**, **R15**.
 
 See [platform roadmap](specs/letoryn-platform/roadmap.md) for Spec Kit workflow and phase definitions. GitHub milestone rules: [milestone-strategy.md](docs/milestone-strategy.md).
 

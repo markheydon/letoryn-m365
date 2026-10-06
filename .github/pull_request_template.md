@@ -8,7 +8,7 @@
 
 ## Roadmap / Spec Kit
 
-<!-- Roadmap row (R1–R15) and Spec Kit path if applicable, e.g. R1, specs/001-platform-foundation/. Set the PR milestone from the row’s phase: POC, Go-live, or Later (see docs/milestone-strategy.md). -->
+<!-- Roadmap row (R1–R15) and Spec Kit path if applicable, e.g. R1, specs/001-platform-foundation/. Set the PR milestone from the row’s phase: Catalogue, Operations, or Vision (see docs/milestone-strategy.md). -->
 
 ## Type of change
 

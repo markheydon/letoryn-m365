@@ -22,7 +22,7 @@ Describes the nature of the issue or PR.
 
 | Label | Colour | Description |
 |-------|--------|-------------|
-| `type/epic` | `#6f42c1` | A named product theme spanning multiple features or a major roadmap increment (for example platform foundation): not a GitHub milestone; use [milestone-strategy.md](./milestone-strategy.md) for **POC** / **Go-live** / **Later** |
+| `type/epic` | `#6f42c1` | A named product theme spanning multiple features or a major roadmap increment (for example platform foundation): not a GitHub milestone; use [milestone-strategy.md](./milestone-strategy.md) for **Catalogue** / **Operations** / **Vision** |
 | `type/feature` | `#0075ca` | A Feature: groups related stories under an epic or roadmap slice |
 | `type/story` | `#1d76db` | A user-facing Story delivering a discrete piece of value |
 | `type/enabler` | `#e4e669` | An Enabler: technical prerequisite that unblocks stories |
@@ -121,7 +121,7 @@ Effort estimate. Added during planning: not required when an issue is first crea
 #### `priority/`: always required on issues and PRs
 
 - Apply `priority/critical` only when blocking all progress or affecting production.
-- Apply `priority/high` for the active roadmap slice or imminent release cut (for example POC items on **R1** while it is in progress).
+- Apply `priority/high` for the active roadmap slice or imminent release cut (for example catalogue items on **R3** while **R1** is done).
 - Apply `priority/medium` as the default for new feature requests.
 - Apply `priority/low` for nice-to-have improvements or minor chores.
 
@@ -148,6 +148,6 @@ Effort estimate. Added during planning: not required when an issue is first crea
 
 #### Milestones: delivery phase (not labels)
 
-- GitHub milestones **POC**, **Go-live**, and **Later** are defined in [milestone-strategy.md](./milestone-strategy.md).
+- GitHub milestones **Catalogue**, **Operations**, and **Vision** are defined in [milestone-strategy.md](./milestone-strategy.md).
 - Set milestone from the roadmap **Phase** column for the issue’s primary **R#**; do not duplicate phase as a label.
 - `type/epic` describes theme; milestone describes when the work is intended to ship in the programme.
