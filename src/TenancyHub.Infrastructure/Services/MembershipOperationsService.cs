@@ -272,19 +272,23 @@ public sealed class MembershipOperationsService(
             return null;
         }
 
-        return await dbContext.AgencyMemberships
+        var rows = await dbContext.AgencyMemberships
             .AsNoTracking()
             .Where(m => m.AgencyId == agencyId && m.Status != MembershipStatus.Removed)
             .Join(
                 dbContext.UserIdentities.AsNoTracking(),
                 m => m.UserIdentityId,
                 u => u.Id,
-                (m, u) => new MembershipRosterDto(
-                    m.Id,
-                    u.Email,
-                    m.Status.ToString(),
-                    m.AgencyRole.ToString()))
+                (m, u) => new { m.Id, u.Email, m.Status, m.AgencyRole })
             .ToListAsync(cancellationToken);
+
+        return rows
+            .Select(r => new MembershipRosterDto(
+                r.Id,
+                r.Email,
+                r.Status.ToString(),
+                r.AgencyRole.ToString()))
+            .ToList();
     }
 
     /// <inheritdoc />

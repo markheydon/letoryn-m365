@@ -45,6 +45,21 @@ Follow these when writing or reviewing C# and tests:
 
 Do not contradict these documents unless the user explicitly overrides them for a task.
 
+## Writing style
+
+Product copy, API problem details, Blazor UI strings, specs, issues, PR descriptions, and commit messages should read plainly in **UK English** (see [docs/pull-request-policy.md](docs/pull-request-policy.md)).
+
+**Do not use em dashes (U+2014, `—`).** They are overused in technical writing and read as fussy. Agents and contributors must not introduce them in new or edited text unless there is no reasonable alternative without changing meaning (that should be rare).
+
+Prefer instead:
+
+- end the thought and start a new sentence, or use a comma where grammar allows;
+- a **colon** before an explanation or list (`Invite: pending invitation…`);
+- **parentheses** for a short aside;
+- established **en dashes** only where the repo already uses them for ranges or labels (e.g. roadmap **R1–R15** in [label-strategy.md](docs/label-strategy.md)).
+
+When you touch existing copy that contains em dashes, rewrite to one of the above rather than adding more. Do not “fix” unrelated files in bulk unless the user asks.
+
 ## GitHub issues and pull requests
 
 When creating or updating GitHub issues and pull requests, follow the canonical taxonomy and PR metadata rules (UK English, template headings, labels on both issue and PR):
