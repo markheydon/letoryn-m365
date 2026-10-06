@@ -1,6 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Identity.Web;
 using Microsoft.IdentityModel.Tokens;
 using TenancyHub.ApiService.Auth;
@@ -89,13 +89,20 @@ builder.Services.AddAuthorization();
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-    options.AddFixedWindowLimiter(
+    options.AddPolicy(
         AuthAuditEndpoints.AuthAuditRateLimitPolicyName,
-        limiterOptions =>
+        httpContext =>
         {
-            limiterOptions.Window = TimeSpan.FromMinutes(1);
-            limiterOptions.PermitLimit = 30;
-            limiterOptions.QueueLimit = 0;
+            var partitionKey = httpContext.Connection.RemoteIpAddress?.ToString()
+                ?? httpContext.Request.Headers.Host.ToString();
+            return RateLimitPartition.GetFixedWindowLimiter(
+                partitionKey,
+                _ => new FixedWindowRateLimiterOptions
+                {
+                    Window = TimeSpan.FromMinutes(1),
+                    PermitLimit = 30,
+                    QueueLimit = 0,
+                });
         });
 });
 

@@ -123,7 +123,7 @@ public sealed class MembershipOperationsService(
         var now = timeProvider.GetUtcNow();
         if (InvitationRules.IsExpired(membership, now))
         {
-            await WriteInvitationExpiredAuditAsync(membership, userIdentityId, cancellationToken);
+            await MarkInvitationExpiredAsync(membership, userIdentityId, now, cancellationToken);
             return new MembershipOperationResult(
                 MembershipOperationStatus.ValidationFailed,
                 "This invitation has expired. Ask for a new invitation.");
@@ -203,7 +203,7 @@ public sealed class MembershipOperationsService(
         var now = timeProvider.GetUtcNow();
         if (InvitationRules.IsExpired(membership, now))
         {
-            await WriteInvitationExpiredAuditAsync(membership, userIdentityId, cancellationToken);
+            await MarkInvitationExpiredAsync(membership, userIdentityId, now, cancellationToken);
             return new MembershipOperationResult(
                 MembershipOperationStatus.ValidationFailed,
                 "This invitation has expired.");
@@ -778,11 +778,17 @@ public sealed class MembershipOperationsService(
         return identity;
     }
 
-    private Task WriteInvitationExpiredAuditAsync(
+    private async Task MarkInvitationExpiredAsync(
         AgencyMembership membership,
         Guid? actorUserIdentityId,
-        CancellationToken cancellationToken) =>
-        auditWriter.WriteAsync(
+        DateTimeOffset now,
+        CancellationToken cancellationToken)
+    {
+        membership.Status = MembershipStatus.Removed;
+        membership.UpdatedAt = now;
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        await auditWriter.WriteAsync(
             new AuditEventWrite(
                 membership.AgencyId,
                 actorUserIdentityId,
@@ -790,4 +796,5 @@ public sealed class MembershipOperationsService(
                 "Invitation expired before it was accepted or declined.",
                 membership.UserIdentityId),
             cancellationToken);
+    }
 }

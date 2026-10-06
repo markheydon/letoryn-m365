@@ -36,6 +36,32 @@ public sealed class EnsureUserIdentityServiceTests
     }
 
     [Fact]
+    public async Task EnsureAsync_EntraEmailChangeToTakenAddress_ThrowsBindingConflict()
+    {
+        await using var db = CreateDbContext();
+        var userId = Guid.NewGuid();
+        db.UserIdentities.Add(new UserIdentity
+        {
+            Id = userId,
+            Email = "current@example.com",
+            EntraObjectId = "entra-1",
+            CreatedAt = DateTimeOffset.UtcNow,
+        });
+        db.UserIdentities.Add(new UserIdentity
+        {
+            Id = Guid.NewGuid(),
+            Email = "other@example.com",
+            EntraObjectId = "entra-2",
+            CreatedAt = DateTimeOffset.UtcNow,
+        });
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var service = new EnsureUserIdentityService(db);
+        await Assert.ThrowsAsync<UserIdentityBindingConflictException>(() =>
+            service.EnsureAsync("entra-1", "other@example.com", TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
     public async Task EnsureAsync_LinkedEmailMismatch_ThrowsBindingConflict()
     {
         await using var db = CreateDbContext();

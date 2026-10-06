@@ -49,10 +49,28 @@ public sealed class EnsureUserIdentityService(TenancyHubDbContext dbContext) : I
         }
         else if (!string.Equals(identity.Email, normalizedEmail, StringComparison.Ordinal))
         {
+            await EnsureEmailAvailableAsync(identity.Id, normalizedEmail, cancellationToken);
             identity.Email = normalizedEmail;
         }
 
-        await dbContext.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException)
+        {
+            var reconciled = await ReconcileAfterUniqueConstraintViolationAsync(
+                entraObjectId,
+                normalizedEmail,
+                identity,
+                cancellationToken);
+            if (reconciled is null)
+            {
+                throw;
+            }
+
+            identity = reconciled;
+        }
 
         return new EnsuredUserIdentity(
             identity.Id,
@@ -60,5 +78,57 @@ public sealed class EnsureUserIdentityService(TenancyHubDbContext dbContext) : I
             identity.Email,
             identity.IsPlatformOperator,
             identity.LastUsedAgencyId);
+    }
+
+    private async Task EnsureEmailAvailableAsync(
+        Guid identityId,
+        string normalizedEmail,
+        CancellationToken cancellationToken)
+    {
+        var emailTaken = await dbContext.UserIdentities
+            .AnyAsync(u => u.Email == normalizedEmail && u.Id != identityId, cancellationToken);
+
+        if (emailTaken)
+        {
+            throw new UserIdentityBindingConflictException();
+        }
+    }
+
+    private async Task<UserIdentity?> ReconcileAfterUniqueConstraintViolationAsync(
+        string entraObjectId,
+        string normalizedEmail,
+        UserIdentity attempted,
+        CancellationToken cancellationToken)
+    {
+        if (dbContext.Entry(attempted).State is EntityState.Added)
+        {
+            dbContext.Entry(attempted).State = EntityState.Detached;
+        }
+
+        var byOid = await dbContext.UserIdentities
+            .FirstOrDefaultAsync(u => u.EntraObjectId == entraObjectId, cancellationToken);
+        if (byOid is not null)
+        {
+            return byOid;
+        }
+
+        var byEmail = await dbContext.UserIdentities
+            .FirstOrDefaultAsync(u => u.Email == normalizedEmail, cancellationToken);
+        if (byEmail is not null)
+        {
+            if (UserIdentityLinkConstants.IsUnlinkedEntraObjectId(byEmail.EntraObjectId))
+            {
+                byEmail.EntraObjectId = entraObjectId;
+                await dbContext.SaveChangesAsync(cancellationToken);
+            }
+            else if (!string.Equals(byEmail.EntraObjectId, entraObjectId, StringComparison.Ordinal))
+            {
+                throw new UserIdentityBindingConflictException();
+            }
+
+            return byEmail;
+        }
+
+        return null;
     }
 }
