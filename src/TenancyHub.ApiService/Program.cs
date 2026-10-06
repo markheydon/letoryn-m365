@@ -1,12 +1,13 @@
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Identity.Web;
 using Microsoft.IdentityModel.Tokens;
 using TenancyHub.ApiService.Auth;
-using TenancyHub.ApiService.Services;
 using TenancyHub.ApiService.Endpoints;
 using TenancyHub.ApiService.Infrastructure;
 using TenancyHub.ApiService.Middleware;
+using TenancyHub.ApiService.Services;
 using TenancyHub.ApiService.Tenancy;
 using TenancyHub.ApiService.Validation;
 using TenancyHub.Application.Abstractions.Authorization;
@@ -85,6 +86,19 @@ if (string.IsNullOrWhiteSpace(azureAdSection["Audience"]))
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddFixedWindowLimiter(
+        AuthAuditEndpoints.AuthAuditRateLimitPolicyName,
+        limiterOptions =>
+        {
+            limiterOptions.Window = TimeSpan.FromMinutes(1);
+            limiterOptions.PermitLimit = 30;
+            limiterOptions.QueueLimit = 0;
+        });
+});
+
 builder.Services.AddProblemDetails(options =>
 {
     options.CustomizeProblemDetails = context =>
@@ -114,6 +128,7 @@ builder.Services.AddHostedService<InvitationExpiryHostedService>();
 var app = builder.Build();
 
 app.UseExceptionHandler();
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<CurrentUserMiddleware>();

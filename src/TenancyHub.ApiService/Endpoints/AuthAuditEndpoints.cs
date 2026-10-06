@@ -7,10 +7,14 @@ namespace TenancyHub.ApiService.Endpoints;
 /// <summary>Internal audit hooks for Web-tier authentication failures.</summary>
 public static class AuthAuditEndpoints
 {
+    /// <summary>Rate limiter policy for internal sign-in failure audit posts.</summary>
+    public const string AuthAuditRateLimitPolicyName = "internal-auth-audit";
+
     /// <summary>Maps auth audit routes.</summary>
     public static IEndpointRouteBuilder MapAuthAuditEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapPost("/api/v1/auth/sign-in-failed", ReportSignInFailedAsync);
+        endpoints.MapPost("/api/v1/auth/sign-in-failed", ReportSignInFailedAsync)
+            .RequireRateLimiting(AuthAuditRateLimitPolicyName);
 
         return endpoints;
     }

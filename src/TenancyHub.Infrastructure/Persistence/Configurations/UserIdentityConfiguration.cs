@@ -15,6 +15,6 @@ public sealed class UserIdentityConfiguration : IEntityTypeConfiguration<UserIde
         builder.Property(u => u.EntraObjectId).HasMaxLength(128).IsRequired();
         builder.Property(u => u.Email).HasMaxLength(320).IsRequired();
         builder.HasIndex(u => u.EntraObjectId).IsUnique();
-        builder.HasIndex(u => u.Email);
+        builder.HasIndex(u => u.Email).IsUnique();
     }
 }

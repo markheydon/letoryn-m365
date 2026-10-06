@@ -168,22 +168,11 @@ public static class MeEndpoints
             return Results.NoContent();
         }
 
-        Guid? sessionId = null;
         if (httpContext.Items.TryGetValue(UserSessionMiddleware.SessionHeaderName, out var sessionObj)
             && sessionObj is Guid validatedSessionId)
         {
-            sessionId = validatedSessionId;
-        }
-        else if (httpContext.Request.Headers.TryGetValue(UserSessionMiddleware.SessionHeaderName, out var sessionHeader)
-            && Guid.TryParse(sessionHeader.FirstOrDefault(), out var headerSessionId))
-        {
-            sessionId = headerSessionId;
-        }
-
-        if (sessionId is Guid id)
-        {
             var ended = await sessionService.EndSessionAsync(
-                id,
+                validatedSessionId,
                 currentUser.UserIdentityId,
                 cancellationToken);
 

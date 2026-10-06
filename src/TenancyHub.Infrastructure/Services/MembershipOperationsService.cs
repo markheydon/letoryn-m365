@@ -123,6 +123,7 @@ public sealed class MembershipOperationsService(
         var now = timeProvider.GetUtcNow();
         if (InvitationRules.IsExpired(membership, now))
         {
+            await WriteInvitationExpiredAuditAsync(membership, userIdentityId, cancellationToken);
             return new MembershipOperationResult(
                 MembershipOperationStatus.ValidationFailed,
                 "This invitation has expired. Ask for a new invitation.");
@@ -202,6 +203,7 @@ public sealed class MembershipOperationsService(
         var now = timeProvider.GetUtcNow();
         if (InvitationRules.IsExpired(membership, now))
         {
+            await WriteInvitationExpiredAuditAsync(membership, userIdentityId, cancellationToken);
             return new MembershipOperationResult(
                 MembershipOperationStatus.ValidationFailed,
                 "This invitation has expired.");
@@ -751,11 +753,41 @@ public sealed class MembershipOperationsService(
         {
             Id = Guid.NewGuid(),
             Email = normalizedEmail,
-            EntraObjectId = $"unlinked:{Guid.NewGuid():N}",
+            EntraObjectId = $"{UserIdentityLinkConstants.UnlinkedEntraObjectIdPrefix}{Guid.NewGuid():N}",
             CreatedAt = timeProvider.GetUtcNow(),
         };
         dbContext.UserIdentities.Add(identity);
-        await dbContext.SaveChangesAsync(cancellationToken);
+
+        try
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException)
+        {
+            dbContext.Entry(identity).State = EntityState.Detached;
+            var raced = await dbContext.UserIdentities
+                .FirstOrDefaultAsync(u => u.Email == normalizedEmail, cancellationToken);
+            if (raced is null)
+            {
+                throw;
+            }
+
+            return raced;
+        }
+
         return identity;
     }
+
+    private Task WriteInvitationExpiredAuditAsync(
+        AgencyMembership membership,
+        Guid? actorUserIdentityId,
+        CancellationToken cancellationToken) =>
+        auditWriter.WriteAsync(
+            new AuditEventWrite(
+                membership.AgencyId,
+                actorUserIdentityId,
+                AuditActionTypes.MembershipInviteExpired,
+                "Invitation expired before it was accepted or declined.",
+                membership.UserIdentityId),
+            cancellationToken);
 }

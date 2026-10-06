@@ -3,8 +3,8 @@ using TenancyHub.Application.Abstractions.Agencies;
 using TenancyHub.Application.Abstractions.Audit;
 using TenancyHub.Application.Abstractions.Memberships;
 using TenancyHub.Application.Notifications;
-using TenancyHub.Domain.Memberships;
 using TenancyHub.Domain.Agencies;
+using TenancyHub.Domain.Memberships;
 using TenancyHub.Domain.PlatformOperators;
 using TenancyHub.Infrastructure.Persistence;
 

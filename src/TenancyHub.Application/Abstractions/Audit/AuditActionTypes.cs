@@ -39,6 +39,9 @@ public static class AuditActionTypes
     /// <summary>Invitation accept or decline failed (identity mismatch).</summary>
     public const string MembershipInviteActionFailed = "membership.invite_action_failed";
 
+    /// <summary>Invitation expired (lazy evaluation or background sweep).</summary>
+    public const string MembershipInviteExpired = "membership.invite_expired";
+
     /// <summary>Membership role changed.</summary>
     public const string MembershipRoleChanged = "membership.role_changed";
 

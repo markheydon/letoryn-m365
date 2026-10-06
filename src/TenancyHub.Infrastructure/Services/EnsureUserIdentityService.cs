@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TenancyHub.Application.Abstractions.Identities;
+using TenancyHub.Application.Identities;
 using TenancyHub.Domain.Identities;
 using TenancyHub.Infrastructure.Persistence;
 
@@ -25,7 +26,14 @@ public sealed class EnsureUserIdentityService(TenancyHubDbContext dbContext) : I
 
             if (identity is not null)
             {
-                identity.EntraObjectId = entraObjectId;
+                if (UserIdentityLinkConstants.IsUnlinkedEntraObjectId(identity.EntraObjectId))
+                {
+                    identity.EntraObjectId = entraObjectId;
+                }
+                else if (!string.Equals(identity.EntraObjectId, entraObjectId, StringComparison.Ordinal))
+                {
+                    throw new UserIdentityBindingConflictException();
+                }
             }
             else
             {

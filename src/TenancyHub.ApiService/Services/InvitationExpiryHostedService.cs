@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using TenancyHub.Application.Abstractions.Audit;
 using TenancyHub.Application.Memberships;
 using TenancyHub.Domain.Memberships;
 using TenancyHub.Infrastructure.Persistence;
@@ -35,6 +36,7 @@ public sealed class InvitationExpiryHostedService(
     {
         using var scope = serviceProvider.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<TenancyHubDbContext>();
+        var auditWriter = scope.ServiceProvider.GetRequiredService<IAuditWriter>();
         var now = timeProvider.GetUtcNow();
 
         var invited = await db.AgencyMemberships
@@ -52,6 +54,15 @@ public sealed class InvitationExpiryHostedService(
             membership.Status = MembershipStatus.Removed;
             membership.UpdatedAt = now;
             changed = true;
+
+            await auditWriter.WriteAsync(
+                new AuditEventWrite(
+                    membership.AgencyId,
+                    null,
+                    AuditActionTypes.MembershipInviteExpired,
+                    "Invitation expired during background sweep.",
+                    membership.UserIdentityId),
+                cancellationToken);
         }
 
         if (changed)
