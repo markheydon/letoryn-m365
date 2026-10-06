@@ -71,6 +71,14 @@ public sealed class AgencyContextState
     public bool HasValidRoutineShellContext =>
         ActiveAgencyId is not null && IsRoutineShellAgency(ActiveAgencyId.Value);
 
+    /// <summary>Whether the agency notification bell may appear (FR-002, FR-010).</summary>
+    public bool CanShowAgencyNotificationBell =>
+        HasValidRoutineShellContext && ActiveAgencyMemberRole is not null;
+
+    /// <summary>Whether the user may mark agency notifications read (FR-010).</summary>
+    public bool CanMarkAgencyNotificationsRead =>
+        ActiveAgencyMemberRole is "StandardMember" or "Administrator";
+
     /// <summary>Whether the user may enter routine shell via membership (active membership in an active agency).</summary>
     public bool HasSelectableRoutineMemberAgency =>
         Profile?.Memberships.Any(IsRoutineMemberAgency) == true;
@@ -104,6 +112,76 @@ public sealed class AgencyContextState
             return AgencyAccessRules.AgencySuspendedMemberMessage;
         }
     }
+
+    /// <summary>Whether the platform operator is assigned to the active agency.</summary>
+    public bool IsOperatorAssignedToActiveAgency =>
+        ActiveAgencyId is Guid agencyId
+        && Profile?.IsPlatformOperator == true
+        && Profile.OperatorAssignments.Any(a =>
+            a.AgencyId == agencyId && IsOperatorSelectableAgency(a));
+
+    /// <summary>Agency role for the user's active membership on the selected agency, if any.</summary>
+    public string? ActiveAgencyMemberRole
+    {
+        get
+        {
+            if (ActiveAgencyId is not Guid agencyId || Profile is null)
+            {
+                return null;
+            }
+
+            var membership = Profile.Memberships.FirstOrDefault(m => m.AgencyId == agencyId);
+            if (membership is null
+                || !string.Equals(membership.Status, "Active", StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            return membership.Role;
+        }
+    }
+
+    /// <summary>Whether the user may view the agency member roster (US3).</summary>
+    public bool CanViewMemberRoster =>
+        IsOperatorAssignedToActiveAgency
+        || ActiveAgencyMemberRole is "Administrator" or "StandardMember";
+
+    /// <summary>Whether the user may invite, provision, or change memberships (US3).</summary>
+    public bool CanManageMembers =>
+        IsOperatorAssignedToActiveAgency
+        || string.Equals(ActiveAgencyMemberRole, "Administrator", StringComparison.Ordinal);
+
+    /// <summary>Lifecycle status of the selected agency from profile data.</summary>
+    public string? ActiveAgencyLifecycleStatus
+    {
+        get
+        {
+            if (ActiveAgencyId is not Guid agencyId || Profile is null)
+            {
+                return null;
+            }
+
+            var membership = Profile.Memberships.FirstOrDefault(m => m.AgencyId == agencyId);
+            if (membership is not null)
+            {
+                return membership.AgencyLifecycleStatus;
+            }
+
+            return Profile.OperatorAssignments.FirstOrDefault(a => a.AgencyId == agencyId)?.AgencyLifecycleStatus;
+        }
+    }
+
+    /// <summary>Whether the user may view and update agency settings (FR-015).</summary>
+    public bool CanManageAgencySettings =>
+        IsOperatorAssignedToActiveAgency
+        || (string.Equals(ActiveAgencyMemberRole, "Administrator", StringComparison.Ordinal)
+            && string.Equals(ActiveAgencyLifecycleStatus, "Active", StringComparison.Ordinal));
+
+    /// <summary>Whether the user may view agency-scoped audit history (FR-009, US4).</summary>
+    public bool CanViewAgencyAudit =>
+        HasValidRoutineShellContext
+        && string.Equals(ActiveAgencyMemberRole, "Administrator", StringComparison.Ordinal)
+        && string.Equals(ActiveAgencyLifecycleStatus, "Active", StringComparison.Ordinal);
 
     /// <summary>Whether the agency id is valid for routine member shell work.</summary>
     public bool IsRoutineShellAgency(Guid agencyId)

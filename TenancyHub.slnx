@@ -11,5 +11,6 @@
   <Folder Name="/tests/">
     <Project Path="tests/TenancyHub.ApiService.UnitTests/TenancyHub.ApiService.UnitTests.csproj" />
     <Project Path="tests/TenancyHub.Application.UnitTests/TenancyHub.Application.UnitTests.csproj" />
+    <Project Path="tests/TenancyHub.E2E/TenancyHub.E2E.csproj" />
   </Folder>
 </Solution>

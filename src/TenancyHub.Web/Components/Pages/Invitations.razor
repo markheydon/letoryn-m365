@@ -2,51 +2,180 @@
 @attribute [Authorize]
 @layout TenancyHub.Web.Components.Layout.MinimalLayout
 @implements IDisposable
+@using TenancyHub.Application.Abstractions.Memberships
 
 <PageTitle>Pending invitations</PageTitle>
 
 <FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
     <FluentLabel Typo="Typography.H4">Pending invitations</FluentLabel>
     <FluentLabel>
-        You have pending agency invitations. Accept or decline each invitation to continue.
-        Invitation actions will be wired when membership APIs are available.
+        Accept or decline each agency invitation below. You must be signed in with the invited work account;
+        the server will reject actions when your sign-in email does not match the invitation.
     </FluentLabel>
 
-    @if (_invites.Count > 0)
+    @if (!string.IsNullOrWhiteSpace(_signedInEmail))
     {
-        <FluentDataGrid Items="@_invites.AsQueryable()" GridTemplateColumns="2fr 1fr">
-            <PropertyColumn Property="@(invite => invite.DisplayName)" Title="Agency" />
+        <FluentLabel>Signed in as @_signedInEmail</FluentLabel>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(_errorMessage))
+    {
+        <FluentMessageBar Intent="MessageBarIntent.Error">@_errorMessage</FluentMessageBar>
+    }
+
+    @if (_loading)
+    {
+        <FluentSpinner />
+    }
+    else if (_inviteRows.Count == 0)
+    {
+        <FluentLabel>You have no pending invitations.</FluentLabel>
+    }
+    else
+    {
+        <FluentDataGrid Items="@_inviteRows.AsQueryable()"
+                        GridTemplateColumns="2fr 1fr 1fr 1.5fr"
+                        Loading="@_actionInProgress">
+            <PropertyColumn Property="@(invite => invite.AgencyDisplayName)" Title="Agency" />
             <PropertyColumn Property="@(invite => invite.Role)" Title="Role" />
+            <PropertyColumn Property="@(invite => invite.ExpiresDisplay)" Title="Expires" />
+            <TemplateColumn Title="Actions">
+                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8">
+                    <FluentButton Appearance="ButtonAppearance.Primary"
+                                  Disabled="@IsRowBusy(context.MembershipId)"
+                                  OnClick="@(() => AcceptAsync(context.MembershipId))">
+                        Accept
+                    </FluentButton>
+                    <FluentButton Appearance="ButtonAppearance.Outline"
+                                  Disabled="@IsRowBusy(context.MembershipId)"
+                                  OnClick="@(() => DeclineAsync(context.MembershipId))">
+                        Decline
+                    </FluentButton>
+                </FluentStack>
+            </TemplateColumn>
         </FluentDataGrid>
     }
 </FluentStack>
 
 @code {
     [Inject]
+    private TenancyHubApiClient ApiClient { get; set; } = default!;
+
+    [Inject]
     private AgencyContextState AgencyContext { get; set; } = default!;
 
-    private IReadOnlyList<InviteRow> _invites = [];
+    [Inject]
+    private ShellNavigationService ShellNavigation { get; set; } = default!;
 
-    protected override void OnInitialized()
+    [Inject]
+    private NavigationManager Navigation { get; set; } = default!;
+
+    private IReadOnlyList<InviteRow> _inviteRows = [];
+    private bool _loading = true;
+    private bool _actionInProgress;
+    private Guid? _busyMembershipId;
+    private string? _errorMessage;
+    private string? _signedInEmail;
+
+    protected override async Task OnInitializedAsync()
     {
         AgencyContext.Changed += OnContextChanged;
-        RefreshInvites();
+        _signedInEmail = AgencyContext.Profile?.Email;
+        await LoadInvitationsAsync();
     }
 
     private void OnContextChanged()
     {
-        RefreshInvites();
+        _signedInEmail = AgencyContext.Profile?.Email;
         InvokeAsync(StateHasChanged);
     }
 
-    private void RefreshInvites()
+    private async Task LoadInvitationsAsync()
     {
-        _invites = AgencyContext.Profile?.PendingInvites
-            .Select(i => new InviteRow(i.DisplayName, i.Role))
-            .ToList() ?? [];
+        _loading = true;
+        _errorMessage = null;
+
+        try
+        {
+            var invites = await ApiClient.GetPendingInvitationsAsync();
+            _inviteRows = invites.Select(InviteRow.FromDto).ToList();
+        }
+        catch
+        {
+            _errorMessage = "We could not load your pending invitations. Please try again.";
+            _inviteRows = [];
+        }
+        finally
+        {
+            _loading = false;
+        }
     }
+
+    private async Task AcceptAsync(Guid membershipId) =>
+        await RunInvitationActionAsync(membershipId, ApiClient.AcceptInvitationAsync);
+
+    private async Task DeclineAsync(Guid membershipId) =>
+        await RunInvitationActionAsync(membershipId, ApiClient.DeclineInvitationAsync);
+
+    private async Task RunInvitationActionAsync(
+        Guid membershipId,
+        Func<Guid, CancellationToken, Task<InvitationActionResult>> action)
+    {
+        _actionInProgress = true;
+        _busyMembershipId = membershipId;
+        _errorMessage = null;
+
+        try
+        {
+            var result = await action(membershipId, CancellationToken.None);
+            if (!result.Succeeded)
+            {
+                _errorMessage = result.ErrorMessage;
+                return;
+            }
+
+            await RefreshProfileAsync();
+            await LoadInvitationsAsync();
+        }
+        catch
+        {
+            _errorMessage = "We could not complete that action. Please try again.";
+        }
+        finally
+        {
+            _actionInProgress = false;
+            _busyMembershipId = null;
+        }
+    }
+
+    private async Task RefreshProfileAsync()
+    {
+        var profile = await ApiClient.GetMeAsync();
+        if (profile is null)
+        {
+            return;
+        }
+
+        var relative = Navigation.ToBaseRelativePath(Navigation.Uri);
+        ShellNavigation.ApplyProfileAndRoute(profile, relative);
+    }
+
+    private bool IsRowBusy(Guid membershipId) =>
+        _actionInProgress && _busyMembershipId == membershipId;
 
     public void Dispose() => AgencyContext.Changed -= OnContextChanged;
 
-    private sealed record InviteRow(string DisplayName, string Role);
+    private sealed record InviteRow(
+        Guid MembershipId,
+        string AgencyDisplayName,
+        string Role,
+        string ExpiresDisplay)
+    {
+        public static InviteRow FromDto(PendingInvitationDto dto) =>
+            new(
+                dto.MembershipId,
+                dto.AgencyDisplayName,
+                dto.Role,
+                dto.ExpiresAt.ToLocalTime().ToString("dd MMM yyyy"));
+    }
 }

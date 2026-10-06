@@ -1,15 +1,15 @@
 using TenancyHub.ApiService.Infrastructure;
+using TenancyHub.Application.Abstractions.Audit;
 using TenancyHub.Application.Abstractions.Authorization;
+using TenancyHub.Application.Abstractions.Tenancy;
 using TenancyHub.Domain.Memberships;
 
 namespace TenancyHub.ApiService.Endpoints;
 
-/// <summary>
-/// Agency and operator audit routes (US2 isolation surface; US4 expands query behaviour).
-/// </summary>
+/// <summary>Agency and operator audit history routes (FR-009).</summary>
 public static class AuditEndpoints
 {
-    /// <summary>Maps audit routes used for tenant isolation validation and later US4 history.</summary>
+    /// <summary>Maps audit routes.</summary>
     public static IEndpointRouteBuilder MapAuditEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var agencyGroup = endpoints.MapAgencyScopedApiGroup();
@@ -21,9 +21,13 @@ public static class AuditEndpoints
         return endpoints;
     }
 
-    private static IResult GetAgencyAuditAsync(
+    private static async Task<IResult> GetAgencyAuditAsync(
         Guid agencyId,
-        IAgencyAuthorizationService authorization)
+        HttpRequest request,
+        ICurrentUser currentUser,
+        IAgencyAuthorizationService authorization,
+        IAuditQueryService auditQuery,
+        CancellationToken cancellationToken)
     {
         var roleCheck = authorization.AuthorizeAgencyRole([AgencyRole.Administrator]);
         if (!roleCheck.IsAuthorized)
@@ -31,19 +35,47 @@ public static class AuditEndpoints
             return roleCheck.ToHttpResult();
         }
 
-        return Results.Ok(new AuditListResponse([], null));
+        var limit = ParseLimit(request);
+        var membershipCheck = authorization.AuthorizeMembershipStatus(agencyId, MembershipStatus.Active);
+        if (!membershipCheck.IsAuthorized)
+        {
+            return membershipCheck.ToHttpResult();
+        }
+
+        var page = await auditQuery.GetAgencyAuditForAdministratorAsync(
+            agencyId,
+            currentUser.UserIdentityId,
+            request.Query["cursor"].FirstOrDefault(),
+            limit,
+            cancellationToken);
+
+        return Results.Ok(new AuditListResponse(page.Items, page.NextCursor));
     }
 
-    private static IResult GetOperatorAgencyAuditAsync(Guid agencyId) =>
-        Results.Ok(new AuditListResponse([], null));
+    private static async Task<IResult> GetOperatorAgencyAuditAsync(
+        Guid agencyId,
+        HttpRequest request,
+        ICurrentUser currentUser,
+        IAuditQueryService auditQuery,
+        CancellationToken cancellationToken)
+    {
+        var limit = ParseLimit(request);
+        var page = await auditQuery.GetAgencyAuditForOperatorAsync(
+            agencyId,
+            currentUser.UserIdentityId,
+            request.Query["cursor"].FirstOrDefault(),
+            limit,
+            cancellationToken);
+
+        return Results.Ok(new AuditListResponse(page.Items, page.NextCursor));
+    }
+
+    private static int ParseLimit(HttpRequest request)
+    {
+        return int.TryParse(request.Query["limit"].FirstOrDefault(), out var limit) ? limit : 50;
+    }
 
     private sealed record AuditListResponse(
-        IReadOnlyList<AuditItemResponse> Items,
+        IReadOnlyList<AuditListItem> Items,
         string? NextCursor);
-
-    private sealed record AuditItemResponse(
-        DateTimeOffset OccurredAt,
-        string ActorEmail,
-        string ActionType,
-        string Summary);
 }

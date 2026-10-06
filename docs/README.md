@@ -11,6 +11,7 @@ Internal standards and reference for contributors and automation. Product contex
 | [tech-stack.md](./tech-stack.md) | Current repo stack, target Azure/PostgreSQL/Graph direction, integration boundaries |
 | [csharp-patterns.md](./csharp-patterns.md) | Modern C# conventions (DI, HTTP clients, async, options, records) |
 | [testing.md](./testing.md) | Unit, AppHost, and end-to-end testing standards |
+| [platform-foundation-user-journeys.md](./platform-foundation-user-journeys.md) | R1 user journeys mapped to [quickstart §3–§8](../specs/001-platform-foundation/quickstart.md) (E2E alignment) |
 | [web-ui-and-css.md](./web-ui-and-css.md) | Fluent UI first; minimal custom CSS; branding ownership |
 | [label-strategy.md](./label-strategy.md) | GitHub issue/PR labels (`type/`, `priority/`, `status/`, `area/`, `size/`) |
 | [milestone-strategy.md](./milestone-strategy.md) | GitHub milestones **POC**, **Go-live**, **Later** vs roadmap **R1–R15** |

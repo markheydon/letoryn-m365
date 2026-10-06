@@ -14,10 +14,11 @@
                      VerticalAlignment="VerticalAlignment.Center"
                      Padding="Padding12">
             <FluentLayoutHamburger />
-            <FluentLabel Typo="Typography.H5">Tenancy Hub</FluentLabel>
+            <FluentLabel Typo="Typography.H5">@UiStrings.ProductName</FluentLabel>
             <AgencySwitcher />
             <FluentSpacer />
-            <FluentButton Appearance="ButtonAppearance.Transparent" OnClick="SignOutAsync">Sign out</FluentButton>
+            <NotificationPanel />
+            <FluentButton Appearance="ButtonAppearance.Transparent" OnClick="SignOutAsync">@UiStrings.Shell.SignOut</FluentButton>
         </FluentStack>
     </FluentLayoutItem>
     <FluentLayoutItem Area="LayoutArea.Navigation">
@@ -27,8 +28,8 @@
         @if (_showInviteBanner)
         {
             <FluentMessageBar Intent="MessageBarIntent.Info">
-                You have pending invitations.
-                <FluentLink Href="/invitations">Review invitations</FluentLink>
+                @UiStrings.Shell.PendingInvitationsBanner
+                <FluentLink Href="/invitations">@UiStrings.Shell.ReviewInvitationsLink</FluentLink>
             </FluentMessageBar>
         }
         <div class="content">
@@ -38,8 +39,8 @@
 </FluentLayout>
 
 <div id="blazor-error-ui" data-nosnippet>
-    An unhandled error has occurred.
-    <a href="." class="reload">Reload</a>
+    @UiStrings.BlazorError.UnhandledError
+    <a href="." class="reload">@UiStrings.BlazorError.Reload</a>
     <span class="dismiss">🗙</span>
 </div>
 

@@ -1,0 +1,376 @@
+@page "/operator/diagnostics"
+@attribute [Authorize]
+@implements IDisposable
+@using System.Globalization
+
+<PageTitle>Support diagnostics</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="24">
+    <FluentLabel Typo="Typography.H4">Support diagnostics</FluentLabel>
+    <FluentLabel Typo="Typography.Body">
+        Read-only agency summary and audit history for agencies assigned to you as a platform operator.
+        Use this view for suspended or archived agencies as well as active ones.
+    </FluentLabel>
+
+    @if (_accessDenied)
+    {
+        <FluentMessageBar Intent="MessageBarIntent.Warning">
+            You must be a platform operator with at least one agency assignment to use support diagnostics.
+        </FluentMessageBar>
+    }
+    else if (_assignments.Count == 0)
+    {
+        <FluentMessageBar Intent="MessageBarIntent.Info">
+            You have no agency assignments yet. Create an agency from the operator agencies page, or ask another
+            platform operator to assign agencies to you.
+        </FluentMessageBar>
+        <FluentLink Href="/operator/agencies">Open agencies</FluentLink>
+    }
+    else
+    {
+        <FluentSelect TOption="AgencyOption"
+                      TValue="string"
+                      Label="Agency"
+                      Items="@_assignments"
+                      OptionText="@(a => a.Label)"
+                      OptionValue="@(a => a.Value)"
+                      Value="@_selectedAgencyId"
+                      ValueChanged="OnAgencySelectedAsync"
+                      Style="max-width: 32rem;" />
+
+        @if (_summaryState is SummaryState.Loading && _summary is null)
+        {
+            <FluentSpinner />
+        }
+        else if (_summaryState is SummaryState.PermissionDenied)
+        {
+            <FluentMessageBar Intent="MessageBarIntent.Warning">
+                You do not have permission to view diagnostics for this agency.
+            </FluentMessageBar>
+        }
+        else if (_summaryState is SummaryState.LoadFailed)
+        {
+            <FluentMessageBar Intent="MessageBarIntent.Error">
+                @_summaryErrorMessage
+            </FluentMessageBar>
+            <FluentButton Appearance="ButtonAppearance.Primary" OnClick="ReloadSummaryAsync">Try again</FluentButton>
+        }
+        else if (_summary is not null)
+        {
+            <FluentStack Orientation="Orientation.Vertical" VerticalGap="12">
+                <FluentLabel Typo="Typography.H5">Agency summary</FluentLabel>
+                <FluentLabel Typo="Typography.Body">
+                    <strong>Identity reference:</strong> @_summary.AgencyId
+                </FluentLabel>
+                <FluentLabel Typo="Typography.Body">
+                    <strong>Display name:</strong> @_summary.DisplayName
+                </FluentLabel>
+                <FluentLabel Typo="Typography.Body">
+                    <strong>Lifecycle status:</strong> @_summary.LifecycleStatus
+                </FluentLabel>
+                <FluentLabel Typo="Typography.Body">
+                    <strong>Primary contact email:</strong> @_summary.PrimaryContactEmail
+                </FluentLabel>
+                <FluentLabel Typo="Typography.Body">
+                    <strong>Primary contact phone:</strong> @FormatPhone(_summary.PrimaryContactPhone)
+                </FluentLabel>
+                <FluentLabel Typo="Typography.Body">
+                    <strong>Last lifecycle change:</strong>
+                    @_summary.LastLifecycleChangeAt.ToString("g", UkCulture)
+                </FluentLabel>
+                <FluentLabel Typo="Typography.BodyStrong">Membership counts by role</FluentLabel>
+                <FluentStack Orientation="Orientation.Vertical" VerticalGap="4">
+                    <FluentLabel>Administrator: @_summary.RoleCounts.Administrator</FluentLabel>
+                    <FluentLabel>Standard member: @_summary.RoleCounts.StandardMember</FluentLabel>
+                    <FluentLabel>Read-only member: @_summary.RoleCounts.ReadOnlyMember</FluentLabel>
+                    <FluentLabel>Invited (pending): @_summary.RoleCounts.Invited</FluentLabel>
+                </FluentStack>
+            </FluentStack>
+
+            <FluentDivider />
+
+            <FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
+                <FluentLabel Typo="Typography.H5">Audit history</FluentLabel>
+                <FluentLabel Typo="Typography.Body">
+                    Full agency-scoped audit for @_summary.DisplayName, newest first.
+                </FluentLabel>
+
+                @if (_auditState is AuditState.PermissionDenied)
+                {
+                    <FluentMessageBar Intent="MessageBarIntent.Warning">
+                        You do not have permission to view audit history for this agency.
+                    </FluentMessageBar>
+                }
+                else if (_auditState is AuditState.Loading && _auditItems.Count == 0)
+                {
+                    <FluentSpinner />
+                }
+                else if (_auditState is AuditState.LoadFailed && _auditItems.Count == 0)
+                {
+                    <FluentMessageBar Intent="MessageBarIntent.Error">
+                        @_auditErrorMessage
+                    </FluentMessageBar>
+                    <FluentButton Appearance="ButtonAppearance.Primary" OnClick="ReloadAuditAsync">Try again</FluentButton>
+                }
+                else
+                {
+                    @if (_auditItems.Count == 0)
+                    {
+                        <FluentLabel>No audit events to display yet.</FluentLabel>
+                    }
+                    else
+                    {
+                        <FluentDataGrid Items="@_auditItems.AsQueryable()"
+                                        GridTemplateColumns="10rem 1.5fr 1fr 2fr"
+                                        Loading="@_loadingMoreAudit">
+                            <TemplateColumn Title="When">
+                                @context.OccurredAt.ToString("g", UkCulture)
+                            </TemplateColumn>
+                            <PropertyColumn Property="@(e => e.ActorEmail)" Title="Actor" />
+                            <PropertyColumn Property="@(e => e.ActionType)" Title="Action" />
+                            <PropertyColumn Property="@(e => e.Summary)" Title="Summary" />
+                        </FluentDataGrid>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(_auditNextCursor))
+                    {
+                        <FluentButton Appearance="ButtonAppearance.Outline"
+                                      Disabled="_loadingMoreAudit"
+                                      OnClick="LoadMoreAuditAsync">
+                            @(_loadingMoreAudit ? "Loading…" : "Load more")
+                        </FluentButton>
+                    }
+
+                    @if (_auditState is AuditState.LoadFailed && _auditItems.Count > 0)
+                    {
+                        <FluentMessageBar Intent="MessageBarIntent.Error">
+                            @_auditErrorMessage
+                        </FluentMessageBar>
+                    }
+                }
+            </FluentStack>
+        }
+    }
+</FluentStack>
+
+@code {
+    private static readonly CultureInfo UkCulture = CultureInfo.GetCultureInfo("en-GB");
+
+    [Inject]
+    private TenancyHubApiClient ApiClient { get; set; } = default!;
+
+    [Inject]
+    private AgencyContextState AgencyContext { get; set; } = default!;
+
+    private enum SummaryState
+    {
+        Idle,
+        Loading,
+        Ready,
+        PermissionDenied,
+        LoadFailed,
+    }
+
+    private enum AuditState
+    {
+        Idle,
+        Loading,
+        Ready,
+        PermissionDenied,
+        LoadFailed,
+    }
+
+    private readonly List<AgencyOption> _assignments = [];
+    private readonly List<AgencyAuditItemDto> _auditItems = [];
+
+    private string? _selectedAgencyId;
+    private bool _accessDenied;
+    private OperatorAgencySummaryDto? _summary;
+    private SummaryState _summaryState = SummaryState.Idle;
+    private AuditState _auditState = AuditState.Idle;
+    private string? _auditNextCursor;
+    private bool _loadingMoreAudit;
+    private string _summaryErrorMessage = "Unable to load agency summary.";
+    private string _auditErrorMessage = "Unable to load audit history.";
+
+    protected override void OnInitialized()
+    {
+        AgencyContext.Changed += OnContextChanged;
+        RefreshAccessAndAssignments();
+        if (!_accessDenied && _assignments.Count > 0)
+        {
+            _ = ReloadAllAsync();
+        }
+    }
+
+    private void OnContextChanged()
+    {
+        RefreshAccessAndAssignments();
+        _ = InvokeAsync(async () =>
+        {
+            if (_accessDenied || _assignments.Count == 0)
+            {
+                _summary = null;
+                _auditItems.Clear();
+                _auditNextCursor = null;
+                _summaryState = SummaryState.Idle;
+                _auditState = AuditState.Idle;
+            }
+            else
+            {
+                await ReloadAllAsync();
+            }
+
+            StateHasChanged();
+        });
+    }
+
+    private void RefreshAccessAndAssignments()
+    {
+        _accessDenied = AgencyContext.Profile?.IsPlatformOperator != true;
+        _assignments.Clear();
+
+        if (_accessDenied || AgencyContext.Profile is null)
+        {
+            _selectedAgencyId = null;
+            return;
+        }
+
+        foreach (var assignment in AgencyContext.Profile.OperatorAssignments)
+        {
+            _assignments.Add(new AgencyOption(
+                assignment.AgencyId.ToString(),
+                $"{assignment.DisplayName} ({assignment.AgencyLifecycleStatus})"));
+        }
+
+        if (string.IsNullOrWhiteSpace(_selectedAgencyId)
+            || !_assignments.Any(a => a.Value == _selectedAgencyId))
+        {
+            _selectedAgencyId = _assignments.FirstOrDefault()?.Value;
+        }
+    }
+
+    private async Task OnAgencySelectedAsync(string? agencyId)
+    {
+        _selectedAgencyId = agencyId;
+        await ReloadAllAsync();
+    }
+
+    private async Task ReloadAllAsync()
+    {
+        _auditItems.Clear();
+        _auditNextCursor = null;
+        await ReloadSummaryAsync();
+        if (_summaryState is SummaryState.Ready)
+        {
+            await ReloadAuditAsync();
+        }
+    }
+
+    private Task ReloadSummaryAsync() => LoadSummaryAsync();
+
+    private Task ReloadAuditAsync()
+    {
+        _auditItems.Clear();
+        _auditNextCursor = null;
+        return LoadAuditPageAsync(isInitialLoad: true);
+    }
+
+    private Task LoadMoreAuditAsync() => LoadAuditPageAsync(isInitialLoad: false);
+
+    private async Task LoadSummaryAsync()
+    {
+        if (!Guid.TryParse(_selectedAgencyId, out var agencyId) || !IsAssignedToSelectedAgency(agencyId))
+        {
+            _summary = null;
+            _summaryState = SummaryState.PermissionDenied;
+            return;
+        }
+
+        _summaryState = SummaryState.Loading;
+
+        try
+        {
+            var result = await ApiClient.GetOperatorAgencySummaryAsync(agencyId);
+            switch (result.Access)
+            {
+                case OperatorAgencySummaryLoadAccess.Success when result.Summary is not null:
+                    _summary = result.Summary;
+                    _summaryState = SummaryState.Ready;
+                    break;
+                case OperatorAgencySummaryLoadAccess.Denied:
+                    _summary = null;
+                    _summaryState = SummaryState.PermissionDenied;
+                    break;
+                default:
+                    _summary = null;
+                    _summaryErrorMessage = "Unable to load agency summary. Try again later.";
+                    _summaryState = SummaryState.LoadFailed;
+                    break;
+            }
+        }
+        finally
+        {
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task LoadAuditPageAsync(bool isInitialLoad)
+    {
+        if (!Guid.TryParse(_selectedAgencyId, out var agencyId) || !IsAssignedToSelectedAgency(agencyId))
+        {
+            _auditItems.Clear();
+            _auditNextCursor = null;
+            _auditState = AuditState.PermissionDenied;
+            return;
+        }
+
+        if (isInitialLoad)
+        {
+            _auditState = AuditState.Loading;
+        }
+        else
+        {
+            _loadingMoreAudit = true;
+        }
+
+        try
+        {
+            var result = await ApiClient.GetOperatorAgencyAuditAsync(agencyId, _auditNextCursor);
+            switch (result.Access)
+            {
+                case AgencyAuditLoadAccess.Success when result.Page is not null:
+                    _auditItems.AddRange(result.Page.Items);
+                    _auditNextCursor = result.Page.NextCursor;
+                    _auditState = AuditState.Ready;
+                    break;
+                case AgencyAuditLoadAccess.Denied:
+                    _auditItems.Clear();
+                    _auditNextCursor = null;
+                    _auditState = AuditState.PermissionDenied;
+                    break;
+                default:
+                    _auditErrorMessage = isInitialLoad
+                        ? "Unable to load audit history. Try again later."
+                        : "Unable to load more audit events. Try again.";
+                    _auditState = _auditItems.Count == 0 ? AuditState.LoadFailed : AuditState.Ready;
+                    break;
+            }
+        }
+        finally
+        {
+            _loadingMoreAudit = false;
+        }
+    }
+
+    private bool IsAssignedToSelectedAgency(Guid agencyId) =>
+        AgencyContext.Profile?.IsPlatformOperator == true
+        && AgencyContext.Profile.OperatorAssignments.Any(a => a.AgencyId == agencyId);
+
+    private static string FormatPhone(string? phone) =>
+        string.IsNullOrWhiteSpace(phone) ? "Not provided" : phone;
+
+    public void Dispose() => AgencyContext.Changed -= OnContextChanged;
+
+    private sealed record AgencyOption(string Value, string Label);
+}

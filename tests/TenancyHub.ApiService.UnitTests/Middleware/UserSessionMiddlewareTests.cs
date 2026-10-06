@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using TenancyHub.ApiService.Auth;
@@ -51,6 +50,28 @@ public sealed class UserSessionMiddlewareTests
         Assert.False(context.Items.ContainsKey(UserSessionMiddleware.SessionHeaderName));
         await auditWriter.Received(1).WriteAsync(
             Arg.Is<AuditEventWrite>(e => e.ActionType == AuditActionTypes.SessionTerminated),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task InvokeAsync_AuthenticatedWithoutProvisionedIdentity_WritesSignInFailedAudit()
+    {
+        var context = CreateHttpContext("/api/v1/agencies/settings", HttpMethods.Get, Guid.NewGuid());
+        context.User = new ClaimsPrincipal(
+            new ClaimsIdentity([new Claim(ClaimTypes.Name, "test")], "Bearer"));
+        await using var db = CreateDbContext();
+        var sessionService = new UserSessionService(db);
+        var auditWriter = Substitute.For<IAuditWriter>();
+        var signInAudit = new SignInAuditService(auditWriter);
+        var currentUser = new TestCurrentUser(Guid.Empty);
+
+        var middleware = new UserSessionMiddleware(_ => Task.CompletedTask);
+
+        await middleware.InvokeAsync(context, sessionService, currentUser, signInAudit);
+
+        Assert.Equal(StatusCodes.Status401Unauthorized, context.Response.StatusCode);
+        await auditWriter.Received(1).WriteAsync(
+            Arg.Is<AuditEventWrite>(e => e.ActionType == AuditActionTypes.SignInFailed),
             Arg.Any<CancellationToken>());
     }
 

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
 using Microsoft.IdentityModel.Tokens;
 using TenancyHub.ApiService.Auth;
+using TenancyHub.ApiService.Services;
 using TenancyHub.ApiService.Endpoints;
 using TenancyHub.ApiService.Infrastructure;
 using TenancyHub.ApiService.Middleware;
@@ -93,10 +94,22 @@ builder.Services.AddProblemDetails(options =>
 });
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddApiRequestValidation();
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer((document, _, _) =>
+    {
+        document.Info.Title = "Tenancy Hub API";
+        document.Info.Version = "v1";
+        document.Info.Description =
+            "Platform foundation (R1) HTTP API. Semantic contract: specs/001-platform-foundation/contracts/api-v1.md.";
+        return Task.CompletedTask;
+    });
+});
 
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<TenancyHubDbContext>("postgresql");
+
+builder.Services.AddHostedService<InvitationExpiryHostedService>();
 
 var app = builder.Build();
 
@@ -115,6 +128,13 @@ if (app.Environment.IsDevelopment())
 app.MapGet("/", () => Results.Ok(new { service = "TenancyHub.ApiService", status = "running" }));
 
 app.MapMeEndpoints();
+app.MapInvitationEndpoints();
+app.MapMembershipEndpoints();
+app.MapAgencySettingsEndpoints();
+app.MapOperatorAgencyEndpoints();
+app.MapOperatorPlatformEndpoints();
+app.MapOperatorDiagnosticsEndpoints();
+app.MapNotificationEndpoints();
 app.MapAuditEndpoints();
 app.MapAuthAuditEndpoints();
 

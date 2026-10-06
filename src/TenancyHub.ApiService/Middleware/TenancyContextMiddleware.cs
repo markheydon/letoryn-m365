@@ -8,13 +8,30 @@ using TenancyHub.Infrastructure.Persistence;
 namespace TenancyHub.ApiService.Middleware;
 
 /// <summary>
-/// Resolves active agency context from <c>X-TenancyHub-Agency-Id</c> and membership or operator assignment (FR-002).
+/// Resolves active agency context from <see cref="AgencyHeaderName"/> and populates <see cref="AgencyContextAccessor"/> (FR-002).
 /// </summary>
+/// <remarks>
+/// <para>
+/// The agency header is optional: requests without it pass through unchanged (global routes such as <c>/api/v1/me</c>).
+/// When present, the value must match any agency id embedded in the URL path; mismatches yield a tenant-safe 404/403.
+/// </para>
+/// <para>
+/// Authorization requires an authenticated product identity with either an agency membership or a platform-operator
+/// assignment to that agency. Lifecycle and membership status are evaluated via <see cref="AgencyAccessRules"/>;
+/// operator API routes under <c>/api/v1/operator</c> follow distinct rules for suspended agencies.
+/// </para>
+/// <para>
+/// On success, downstream handlers read agency id, lifecycle, membership role, and operator-assignment flags from
+/// <see cref="AgencyContextAccessor"/>—the header alone is never treated as proof of access.
+/// </para>
+/// </remarks>
 public sealed class TenancyContextMiddleware(
     RequestDelegate next,
     ILogger<TenancyContextMiddleware> logger)
 {
-    /// <summary>Agency context request header name.</summary>
+    /// <summary>
+    /// Agency context request header name (<see cref="TenancyHttpHeaders.AgencyId"/>).
+    /// </summary>
     public const string AgencyHeaderName = TenancyHttpHeaders.AgencyId;
 
     private static readonly PathString OperatorApiPrefix = new("/api/v1/operator");

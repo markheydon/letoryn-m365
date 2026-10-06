@@ -98,6 +98,8 @@ builder.Services.AddOptions<MicrosoftIdentityOptions>()
 builder.Services.AddOptions<CookieAuthenticationOptions>(CookieAuthenticationDefaults.AuthenticationScheme)
     .Configure(options =>
     {
+        options.LoginPath = "/MicrosoftIdentity/Account/SignIn";
+        options.AccessDeniedPath = "/MicrosoftIdentity/Account/AccessDenied";
         options.SlidingExpiration = true;
         options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
         options.Cookie.MaxAge = TimeSpan.FromHours(12);

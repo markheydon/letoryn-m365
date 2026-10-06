@@ -27,6 +27,26 @@ public sealed class AgencyAuthorizationServiceTests
     }
 
     [Fact]
+    public void AuthorizeAgencyRole_ReadOnlyMemberWhenAdministratorRequired_DeniesForbidden()
+    {
+        var agencyId = Guid.NewGuid();
+        IAgencyContext context = new TestAgencyContext
+        {
+            ActiveAgencyId = agencyId,
+            ActiveAgencyLifecycleStatus = AgencyLifecycleStatus.Active,
+            ActiveMembershipStatus = MembershipStatus.Active,
+            ActiveMembershipId = Guid.NewGuid(),
+            ActiveAgencyRole = AgencyRole.ReadOnlyMember,
+        };
+        IAgencyAuthorizationService service = new AgencyAuthorizationService(context);
+
+        var result = service.AuthorizeAgencyRole([AgencyRole.Administrator]);
+
+        Assert.False(result.IsAuthorized);
+        Assert.Equal(AuthorizationFailureKind.Forbidden, result.FailureKind);
+    }
+
+    [Fact]
     public void AuthorizeAgencyScopedAccess_WhenAgencySuspended_DeniesWithLifecycleMessage()
     {
         var agencyId = Guid.NewGuid();

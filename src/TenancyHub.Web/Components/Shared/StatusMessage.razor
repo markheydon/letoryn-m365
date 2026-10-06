@@ -1,0 +1,16 @@
+@if (!string.IsNullOrWhiteSpace(Message))
+{
+    <FluentMessageBar Intent="@Intent">
+        @Message
+    </FluentMessageBar>
+}
+
+@code {
+    /// <summary>User-visible message.</summary>
+    [Parameter]
+    public string? Message { get; set; }
+
+    /// <summary>Fluent message bar intent.</summary>
+    [Parameter]
+    public MessageBarIntent Intent { get; set; } = MessageBarIntent.Info;
+}

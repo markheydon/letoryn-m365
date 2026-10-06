@@ -1,0 +1,436 @@
+@page "/operator/platform-operators"
+@attribute [Authorize]
+@layout TenancyHub.Web.Components.Layout.MinimalLayout
+@using TenancyHub.Application.Abstractions.Operators
+
+<PageTitle>Platform operators</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
+    <FluentLabel Typo="Typography.H4">Platform operators</FluentLabel>
+    <FluentLabel>
+        Grant or revoke platform operator status and manage agency assignments.
+        At least one platform operator must remain; revoking the last operator is blocked.
+    </FluentLabel>
+
+    @if (!_isPlatformOperator)
+    {
+        <FluentMessageBar Intent="MessageBarIntent.Warning">
+            You must be signed in as a platform operator to use this page.
+        </FluentMessageBar>
+    }
+    else
+    {
+        @if (!string.IsNullOrWhiteSpace(_errorMessage))
+        {
+            <FluentMessageBar Intent="MessageBarIntent.Error">@_errorMessage</FluentMessageBar>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(_successMessage))
+        {
+            <FluentMessageBar Intent="MessageBarIntent.Success">@_successMessage</FluentMessageBar>
+        }
+
+        <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
+            <FluentLabel Typo="Typography.BodyStrong">Grant operator status</FluentLabel>
+            <FluentLabel>
+                Enter the work-account user identity id (GUID). The identity must already exist in Tenancy Hub
+                (for example after the person has signed in once).
+            </FluentLabel>
+            <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8" VerticalAlignment="VerticalAlignment.Center">
+                <FluentTextInput @bind-Value="_grantUserIdText"
+                                 Label="User identity id"
+                                 Disabled="@_busy" />
+                <FluentButton Appearance="ButtonAppearance.Primary"
+                              Disabled="@(_busy || string.IsNullOrWhiteSpace(_grantUserIdText))"
+                              OnClick="GrantAsync">
+                    Grant operator
+                </FluentButton>
+            </FluentStack>
+        </FluentStack>
+
+        @if (_loading)
+        {
+            <FluentSpinner />
+        }
+        else if (_operators.Count == 0)
+        {
+            <FluentLabel>No platform operators are configured.</FluentLabel>
+        }
+        else
+        {
+            <FluentDataGrid Items="@_operators.AsQueryable()"
+                            GridTemplateColumns="2fr 2fr 1.5fr"
+                            Loading="@_busy">
+                <PropertyColumn Property="@(op => op.Email)" Title="Email" />
+                <TemplateColumn Title="Agency assignments">
+                    @FormatAssignments(context)
+                </TemplateColumn>
+                <TemplateColumn Title="Actions">
+                    <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8">
+                        <FluentButton Appearance="ButtonAppearance.Outline"
+                                      Disabled="@_busy"
+                                      OnClick="@(() => BeginEditAssignments(context))">
+                            Assignments
+                        </FluentButton>
+                        <FluentButton Appearance="ButtonAppearance.Outline"
+                                      Disabled="@(_busy || IsCurrentUser(context.UserId))"
+                                      OnClick="@(() => RevokeAsync(context.UserId))">
+                            Revoke
+                        </FluentButton>
+                    </FluentStack>
+                </TemplateColumn>
+            </FluentDataGrid>
+        }
+
+        @if (_editingOperator is not null)
+        {
+            <FluentDivider />
+            <FluentStack Orientation="Orientation.Vertical" VerticalGap="12">
+                <FluentLabel Typo="Typography.BodyStrong">
+                    Agency assignments for @_editingOperator.Email
+                </FluentLabel>
+                <FluentLabel>
+                    Select agencies this operator may access. Unassigned agencies remain inaccessible in operator flows.
+                </FluentLabel>
+
+                @if (_agencyOptions.Count == 0)
+                {
+                    <FluentLabel>
+                        No agencies are listed yet. Add an agency id below, or create agencies from the operator console.
+                    </FluentLabel>
+                }
+                else
+                {
+                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="4">
+                        @foreach (var agency in _agencyOptions.OrderBy(a => a.DisplayName, StringComparer.OrdinalIgnoreCase))
+                        {
+                            <FluentCheckbox Value="@IsAgencySelected(agency.AgencyId)"
+                                            ValueChanged="@(value => SetAgencySelected(agency.AgencyId, value))"
+                                            Label="@agency.DisplayName"
+                                            Disabled="@_busy" />
+                        }
+                    </FluentStack>
+                }
+
+                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8" VerticalAlignment="VerticalAlignment.Center">
+                    <FluentTextInput @bind-Value="_additionalAgencyIdText"
+                                     Label="Add agency by id"
+                                     Disabled="@_busy" />
+                    <FluentButton Appearance="ButtonAppearance.Outline"
+                                  Disabled="@(_busy || string.IsNullOrWhiteSpace(_additionalAgencyIdText))"
+                                  OnClick="AddAgencyOptionAsync">
+                        Add agency
+                    </FluentButton>
+                </FluentStack>
+
+                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8">
+                    <FluentButton Appearance="ButtonAppearance.Primary"
+                                  Disabled="@_busy"
+                                  OnClick="SaveAssignmentsAsync">
+                        Save assignments
+                    </FluentButton>
+                    <FluentButton Appearance="ButtonAppearance.Transparent"
+                                  Disabled="@_busy"
+                                  OnClick="CancelEditAssignments">
+                        Cancel
+                    </FluentButton>
+                </FluentStack>
+            </FluentStack>
+        }
+    }
+</FluentStack>
+
+@code {
+    [Inject]
+    private TenancyHubApiClient ApiClient { get; set; } = default!;
+
+    [Inject]
+    private AgencyContextState AgencyContext { get; set; } = default!;
+
+    [Inject]
+    private ShellNavigationService ShellNavigation { get; set; } = default!;
+
+    [Inject]
+    private NavigationManager Navigation { get; set; } = default!;
+
+    private IReadOnlyList<PlatformOperatorDto> _operators = [];
+    private readonly List<AgencyOption> _agencyOptions = [];
+    private readonly HashSet<Guid> _selectedAgencyIds = [];
+    private PlatformOperatorDto? _editingOperator;
+    private bool _loading = true;
+    private bool _busy;
+    private bool _isPlatformOperator;
+    private string? _errorMessage;
+    private string? _successMessage;
+    private string _grantUserIdText = string.Empty;
+    private string _additionalAgencyIdText = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _isPlatformOperator = AgencyContext.Profile?.IsPlatformOperator == true;
+        if (!_isPlatformOperator)
+        {
+            _loading = false;
+            return;
+        }
+
+        await LoadOperatorsAsync();
+    }
+
+    private async Task LoadOperatorsAsync(bool showLoadingIndicator = true)
+    {
+        if (showLoadingIndicator)
+        {
+            _loading = true;
+        }
+        _errorMessage = null;
+        _successMessage = null;
+
+        try
+        {
+            _operators = await ApiClient.GetPlatformOperatorsAsync();
+            RebuildAgencyCatalog();
+        }
+        catch
+        {
+            _errorMessage = "We could not load platform operators. Please try again.";
+            _operators = [];
+        }
+        finally
+        {
+            if (showLoadingIndicator)
+            {
+                _loading = false;
+            }
+        }
+    }
+
+    private void RebuildAgencyCatalog()
+    {
+        _agencyOptions.Clear();
+
+        void Add(Guid agencyId, string? displayName)
+        {
+            if (_agencyOptions.Any(a => a.AgencyId == agencyId))
+            {
+                return;
+            }
+
+            _agencyOptions.Add(new AgencyOption(
+                agencyId,
+                string.IsNullOrWhiteSpace(displayName) ? agencyId.ToString() : displayName));
+        }
+
+        foreach (var op in _operators)
+        {
+            foreach (var agencyId in op.AssignedAgencyIds)
+            {
+                Add(agencyId, null);
+            }
+        }
+
+        if (AgencyContext.Profile is { } profile)
+        {
+            foreach (var assignment in profile.OperatorAssignments)
+            {
+                Add(assignment.AgencyId, assignment.DisplayName);
+            }
+
+            foreach (var membership in profile.Memberships)
+            {
+                Add(membership.AgencyId, membership.DisplayName);
+            }
+        }
+    }
+
+    private async Task GrantAsync()
+    {
+        if (!TryParseUserId(_grantUserIdText, out var userId))
+        {
+            _errorMessage = "Enter a valid user identity id (GUID).";
+            _successMessage = null;
+            return;
+        }
+
+        await RunActionAsync(
+            async () =>
+            {
+                var result = await ApiClient.GrantPlatformOperatorAsync(userId);
+                if (!result.Succeeded)
+                {
+                    return result;
+                }
+
+                _grantUserIdText = string.Empty;
+                return result;
+            },
+            "Platform operator status granted.",
+            reloadOperators: true);
+    }
+
+    private async Task RevokeAsync(Guid userId) =>
+        await RunActionAsync(
+            () => ApiClient.RevokePlatformOperatorAsync(userId),
+            "Platform operator status revoked.",
+            reloadOperators: true);
+
+    private void BeginEditAssignments(PlatformOperatorDto op)
+    {
+        _editingOperator = op;
+        _selectedAgencyIds.Clear();
+        foreach (var agencyId in op.AssignedAgencyIds)
+        {
+            _selectedAgencyIds.Add(agencyId);
+            if (_agencyOptions.All(a => a.AgencyId != agencyId))
+            {
+                _agencyOptions.Add(new AgencyOption(agencyId, agencyId.ToString()));
+            }
+        }
+
+        _additionalAgencyIdText = string.Empty;
+        _errorMessage = null;
+        _successMessage = null;
+    }
+
+    private void CancelEditAssignments()
+    {
+        _editingOperator = null;
+        _selectedAgencyIds.Clear();
+        _additionalAgencyIdText = string.Empty;
+    }
+
+    private bool IsAgencySelected(Guid agencyId) => _selectedAgencyIds.Contains(agencyId);
+
+    private void SetAgencySelected(Guid agencyId, bool selected)
+    {
+        if (selected)
+        {
+            _selectedAgencyIds.Add(agencyId);
+        }
+        else
+        {
+            _selectedAgencyIds.Remove(agencyId);
+        }
+    }
+
+    private Task AddAgencyOptionAsync()
+    {
+        if (!TryParseUserId(_additionalAgencyIdText, out var agencyId))
+        {
+            _errorMessage = "Enter a valid agency id (GUID).";
+            _successMessage = null;
+            return Task.CompletedTask;
+        }
+
+        if (_agencyOptions.All(a => a.AgencyId != agencyId))
+        {
+            _agencyOptions.Add(new AgencyOption(agencyId, agencyId.ToString()));
+        }
+
+        _selectedAgencyIds.Add(agencyId);
+        _additionalAgencyIdText = string.Empty;
+        _errorMessage = null;
+        return Task.CompletedTask;
+    }
+
+    private async Task SaveAssignmentsAsync()
+    {
+        if (_editingOperator is null)
+        {
+            return;
+        }
+
+        var userId = _editingOperator.UserId;
+        var agencyIds = _selectedAgencyIds.OrderBy(id => id).ToList();
+
+        await RunActionAsync(
+            () => ApiClient.SetPlatformOperatorAssignmentsAsync(userId, agencyIds),
+            "Agency assignments saved.",
+            reloadOperators: true,
+            refreshProfile: true);
+
+        if (string.IsNullOrWhiteSpace(_errorMessage))
+        {
+            CancelEditAssignments();
+        }
+    }
+
+    private async Task RunActionAsync(
+        Func<Task<PlatformOperatorActionResult>> action,
+        string successMessage,
+        bool reloadOperators = false,
+        bool refreshProfile = false)
+    {
+        _busy = true;
+        _errorMessage = null;
+        _successMessage = null;
+
+        try
+        {
+            var result = await action();
+            if (!result.Succeeded)
+            {
+                _errorMessage = result.ErrorMessage;
+                return;
+            }
+
+            _successMessage = successMessage;
+
+            if (reloadOperators)
+            {
+                await LoadOperatorsAsync(showLoadingIndicator: false);
+            }
+
+            if (refreshProfile)
+            {
+                await RefreshProfileAsync();
+            }
+        }
+        catch
+        {
+            _errorMessage = "We could not complete that action. Please try again.";
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task RefreshProfileAsync()
+    {
+        var profile = await ApiClient.GetMeAsync();
+        if (profile is null)
+        {
+            return;
+        }
+
+        var relative = Navigation.ToBaseRelativePath(Navigation.Uri);
+        ShellNavigation.ApplyProfileAndRoute(profile, relative);
+    }
+
+    private bool IsCurrentUser(Guid userId) =>
+        AgencyContext.Profile?.UserId == userId;
+
+    private static bool TryParseUserId(string text, out Guid userId) =>
+        Guid.TryParse(text.Trim(), out userId);
+
+    private string FormatAssignments(PlatformOperatorDto op)
+    {
+        if (op.AssignedAgencyIds.Count == 0)
+        {
+            return "None";
+        }
+
+        var labels = op.AssignedAgencyIds
+            .Select(id =>
+            {
+                var match = _agencyOptions.FirstOrDefault(a => a.AgencyId == id);
+                return match?.DisplayName ?? id.ToString();
+            })
+            .ToList();
+
+        return string.Join(", ", labels);
+    }
+
+    private sealed record AgencyOption(Guid AgencyId, string DisplayName);
+}

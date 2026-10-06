@@ -9,6 +9,11 @@ namespace TenancyHub.Application.Authorization;
 /// <summary>
 /// Authorization checks derived from resolved tenancy context (FR-003, FR-006, FR-012).
 /// </summary>
+/// <remarks>
+/// Role and membership fields are populated from the database on each API request via
+/// <c>TenancyContextMiddleware</c> (no long-lived client cache), so role changes apply on the next request
+/// without full sign-out (FR-005, quickstart §5).
+/// </remarks>
 public sealed class AgencyAuthorizationService(IAgencyContext agencyContext) : IAgencyAuthorizationService
 {
     /// <inheritdoc />

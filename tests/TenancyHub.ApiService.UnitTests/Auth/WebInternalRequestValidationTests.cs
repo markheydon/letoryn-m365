@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using TenancyHub.ApiService.Auth;
 using TenancyHub.Application.Abstractions.Tenancy;

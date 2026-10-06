@@ -62,7 +62,7 @@ Tenancy Hub uses a **client certificate** for the web app (auth-code exchange an
    - **`.cer`** (public key only) for Entra
    - **`.pfx`** (private key + cert) for the app—never commit; `*.pfx` is gitignored
 2. Entra admin center → web app registration → **Certificates & secrets** → **Upload certificate** → select the **`.cer`** file.
-3. Store the Base64-encoded `.pfx` and its password in AppHost secrets (section 3)—never commit.
+3. Store the Base64-encoded `.pfx` in `Parameters:EntraWebClientCertificatePfx` and the password in `Parameters:EntraWebClientCertificatePassword` (section 3)—never commit.
 4. **Rotation**: Entra allows multiple certificates. Upload the new `.cer`, update AppHost secrets, verify sign-in, then remove the old certificate from Entra.
 
 **Troubleshooting**: If sign-in fails at the token step with client authentication errors, confirm the thumbprint of the cert in Entra matches the `.pfx` you encoded (Entra portal shows thumbprints for uploaded certs). Wrong password on the PFX or stale Base64 in user secrets are the other common causes.
@@ -91,7 +91,15 @@ dotnet user-secrets set "Parameters:TenancyHubInternalSignInAuditKey" "<random-s
 
 Use any long random string for `TenancyHubInternalSignInAuditKey` (same value on **apiservice** and **webfrontend** via AppHost). The Web app sends it when establishing an API session and reporting sign-in audit events; the API rejects those calls without a matching key.
 
-Alternatively, from the repository root: `aspire secret set "Parameters:EntraWebClientCertificatePfx" "$(base64 -w0 /path/to/entra-web-dev.pfx)"` (and the same for other parameters).
+Alternatively, from the repository root (same `Parameters:*` names as above):
+
+```bash
+aspire secret set "Parameters:EntraWebClientCertificatePfx" "$(base64 -w0 /path/to/entra-web-dev.pfx)" \
+  --apphost src/TenancyHub.AppHost/TenancyHub.AppHost.csproj
+aspire secret set "Parameters:EntraWebClientCertificatePassword" "<pfx-password>" \
+  --apphost src/TenancyHub.AppHost/TenancyHub.AppHost.csproj
+# Repeat for EntraTenantId, EntraWebClientId, EntraApiClientId, EntraApiAudience, TenancyHubInternalSignInAuditKey.
+```
 
 On macOS, use `base64 -i entra-web-dev.pfx` (no `-w0`) to produce a single line for the PFX parameter.
 
@@ -103,11 +111,10 @@ AppHost parameter names (secret parameters via `AddParameter`):
 |-----------|------------------------|-------------------------|
 | `EntraTenantId` | `AzureAd__TenantId` | `AzureAd__TenantId` |
 | `EntraApiClientId` | `AzureAd__ClientId` | — |
-| `EntraApiAudience` | `AzureAd__Audience` | — |
+| `EntraApiAudience` | `AzureAd__Audience` | `TenancyHub__ApiScope` = `{EntraApiAudience}/access_as_user` (AppHost expression) |
 | `EntraWebClientId` | — | `AzureAd__ClientId` |
 | `EntraWebClientCertificatePfx` | — | `AzureAd__ClientCredentials__0__Base64EncodedValue` |
 | `EntraWebClientCertificatePassword` | — | `AzureAd__ClientCredentials__0__CertificatePassword` |
-| `EntraApiAudience` | — | `TenancyHub__ApiScope` = `{EntraApiAudience}/access_as_user` (AppHost expression) |
 | `TenancyHubInternalSignInAuditKey` | `TenancyHub__InternalSignInAuditKey` | `TenancyHub__InternalSignInAuditKey` |
 
 `webfrontend` also receives `AzureAd__ClientCredentials__0__SourceType` = `Base64Encoded` (fixed in AppHost).
@@ -127,11 +134,11 @@ Both apps also receive `AzureAd__Instance` = `https://login.microsoftonline.com/
 
 Register redirect URIs in Entra for each `webfrontend` HTTPS port from `aspire describe webfrontend` (section 2.1).
 
-**API scope for Web → API calls**: configure `TenancyHub:ApiScope` (for example `api://{api-client-id}/access_as_user`) on `webfrontend` to match the exposed API scope granted to the web app registration.
+**API scope for Web → API calls**: with AppHost, `EntraApiAudience` drives `TenancyHub__ApiScope` (suffix `/access_as_user`). Set `Parameters:EntraApiAudience` to the API **Application ID URI** (for example `api://{api-client-id}`) and grant that scope to the web registration in Entra. Manual `TenancyHub:ApiScope` on `webfrontend` is only needed when running Web outside AppHost wiring.
 
 PostgreSQL resource: AppHost `AddPostgres("postgres").WithDataVolume("pg-data").AddDatabase("tenancyhub")`; API uses `AddNpgsqlDbContext<TenancyHubDbContext>(connectionName: "tenancyhub")`. The named Docker volume **`pg-data`** keeps database files across AppHost restarts (schema and data survive; you do not need to re-apply migrations after every stop/start when the volume is intact).
 
-**EF migrations (local Aspire)**: AppHost wires `AddEFMigrations` on `apiservice` with `WithMigrationsProject` → `TenancyHub.Infrastructure`, `RunDatabaseUpdateOnStart()`, and `apiservice.WaitForCompletion(migrations)` after `migrations.WaitFor(postgres)`. Pending migrations apply automatically on `aspire run` before the API serves traffic.
+**EF migrations (local Aspire)**: AppHost registers resource **`tenancyhub-migrations`** via `AddEFMigrations` on `apiservice` for `TenancyHub.Infrastructure.Persistence.TenancyHubDbContext`, with `WithMigrationsProject` → `TenancyHub.Infrastructure`, `RunDatabaseUpdateOnStart()`, and `apiservice.WaitForCompletion(migrations)` after `migrations.WaitFor(postgres)`. Pending migrations apply automatically on `aspire run` before `apiservice` serves traffic; confirm **`tenancyhub-migrations`** is **Finished** in `aspire describe` after a fresh Postgres volume.
 
 **Disabled directory accounts (FR-001)**: In Entra, keep **access token lifetime** ≤ 60 minutes for POC so revoked/disabled users lose API access within a refresh cycle without Microsoft Graph integration (see [research.md](../specs/001-platform-foundation/research.md)).
 
@@ -147,7 +154,7 @@ aspire run
 
 AppHost adds PostgreSQL with generated credentials and a persistent data volume (`pg-data`); the API receives connection settings through `WithReference` and the Aspire Npgsql EF client integration.
 
-To **wipe local Postgres data** (fresh database, re-run migrations and seed): `aspire stop`, then `docker volume rm pg-data` (or remove the volume in Docker Desktop). On the next `aspire run`, Aspire recreates the volume and credentials.
+To **wipe local Postgres data** (fresh database, re-run migrations and seed): `aspire stop`, then remove the **`pg-data`** volume (`docker volume rm pg-data`, or Docker Desktop → Volumes). AppHost uses `WithDataVolume("pg-data")` in `src/TenancyHub.AppHost/AppHost.cs`; if removal fails, list volumes (`docker volume ls`) and remove the Postgres data volume Aspire created for this AppHost. On the next `aspire run`, Aspire recreates the volume and credentials; **`tenancyhub-migrations`** applies schema before seeding (section 5).
 
 ### 4.2 Apply schema
 
@@ -177,7 +184,7 @@ See `.agents/skills/aspireify/references/apphost-wiring.md` (stale volume sectio
 
 R1 allows seeding **outside** the product before the “at least one operator” guard applies.
 
-After database is migrated:
+After **`tenancyhub-migrations`** is **Finished** and `apiservice` is healthy (`aspire describe`):
 
 1. Identify your Entra **object id** (`oid` claim) after first sign-in attempt or from Entra user profile.
 2. Run [scripts/r1/seed-platform-operator.sql](../scripts/r1/seed-platform-operator.sql) against the **`tenancyhub`** database (same as `TenancyHubDbContext` / EF migrations—not the parent `postgres` server connection alone):

@@ -20,14 +20,24 @@ public sealed class EnsureUserIdentityService(TenancyHubDbContext dbContext) : I
 
         if (identity is null)
         {
-            identity = new UserIdentity
+            identity = await dbContext.UserIdentities
+                .FirstOrDefaultAsync(u => u.Email == normalizedEmail, cancellationToken);
+
+            if (identity is not null)
             {
-                Id = Guid.NewGuid(),
-                EntraObjectId = entraObjectId,
-                Email = normalizedEmail,
-                CreatedAt = DateTimeOffset.UtcNow,
-            };
-            dbContext.UserIdentities.Add(identity);
+                identity.EntraObjectId = entraObjectId;
+            }
+            else
+            {
+                identity = new UserIdentity
+                {
+                    Id = Guid.NewGuid(),
+                    EntraObjectId = entraObjectId,
+                    Email = normalizedEmail,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                };
+                dbContext.UserIdentities.Add(identity);
+            }
         }
         else if (!string.Equals(identity.Email, normalizedEmail, StringComparison.Ordinal))
         {

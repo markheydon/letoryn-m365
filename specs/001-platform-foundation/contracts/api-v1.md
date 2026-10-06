@@ -200,4 +200,6 @@ Standard members only (FR-010).
 
 ## OpenAPI
 
-During implement, expose OpenAPI 3.1 from `TenancyHub.ApiService` (`MapOpenApi` in Development) generated from minimal APIs or controllers; this document is the semantic contract until OpenAPI is checked in as `contracts/openapi.yaml`.
+`TenancyHub.ApiService` exposes OpenAPI 3.1 in **Development** at **`GET /openapi/v1.json`** (`AddOpenApi` + `MapOpenApi` in `Program.cs`).
+
+Checked-in route snapshot: **[openapi.yaml](./openapi.yaml)** (stable path index). **This document (`api-v1.md`)** remains the semantic contract for payloads, headers, and error behaviour; refresh `openapi.yaml` when route groups change materially.

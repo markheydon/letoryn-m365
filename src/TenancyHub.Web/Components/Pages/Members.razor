@@ -1,0 +1,322 @@
+@page "/members"
+@attribute [Authorize]
+@using TenancyHub.Application.Abstractions.Memberships
+@implements IDisposable
+
+<PageTitle>Members</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
+    <FluentLabel Typo="Typography.H4">Members</FluentLabel>
+
+    @if (_viewState is ViewState.PermissionDenied)
+    {
+        <FluentMessageBar Intent="MessageBarIntent.Warning">
+            You do not have permission to view the member list for this agency.
+        </FluentMessageBar>
+    }
+    else if (_viewState is ViewState.Loading)
+    {
+        <FluentSpinner />
+    }
+    else if (_viewState is ViewState.LoadFailed)
+    {
+        <FluentMessageBar Intent="MessageBarIntent.Error">
+            @_loadErrorMessage
+        </FluentMessageBar>
+        <FluentButton Appearance="ButtonAppearance.Primary" OnClick="LoadRosterAsync">Try again</FluentButton>
+    }
+    else
+    {
+        @if (!string.IsNullOrWhiteSpace(_actionMessage))
+        {
+            <FluentMessageBar Intent="@_actionMessageIntent">
+                @_actionMessage
+            </FluentMessageBar>
+        }
+
+        @if (_canManage)
+        {
+            <FluentStack Orientation="Orientation.Vertical" VerticalGap="12">
+                <FluentLabel Typo="Typography.Body"><strong>Invite</strong> — pending invitation (30-day expiry)</FluentLabel>
+                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8" VerticalAlignment="VerticalAlignment.Center">
+                    <FluentTextInput @bind-Value="_inviteEmail" Label="Email" Required="true" />
+                    <FluentSelect TOption="string"
+                                  TValue="string"
+                                  Label="Role"
+                                  Items="@_roleOptions"
+                                  OptionText="@(r => r)"
+                                  OptionValue="@(r => r)"
+                                  @bind-Value="_inviteRole"
+                                  Width="200px" />
+                    <FluentButton Appearance="ButtonAppearance.Primary"
+                                  Disabled="_actionInProgress"
+                                  OnClick="InviteAsync">
+                        Send invite
+                    </FluentButton>
+                </FluentStack>
+
+                <FluentLabel Typo="Typography.Body"><strong>Provision</strong> — immediate active membership</FluentLabel>
+                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8" VerticalAlignment="VerticalAlignment.Center">
+                    <FluentTextInput @bind-Value="_provisionEmail" Label="Email" Required="true" />
+                    <FluentSelect TOption="string"
+                                  TValue="string"
+                                  Label="Role"
+                                  Items="@_roleOptions"
+                                  OptionText="@(r => r)"
+                                  OptionValue="@(r => r)"
+                                  @bind-Value="_provisionRole"
+                                  Width="200px" />
+                    <FluentButton Appearance="ButtonAppearance.Outline"
+                                  Disabled="_actionInProgress"
+                                  OnClick="ProvisionAsync">
+                        Provision member
+                    </FluentButton>
+                </FluentStack>
+            </FluentStack>
+        }
+
+        @if (_roster.Count == 0)
+        {
+            <FluentLabel>No members to display.</FluentLabel>
+        }
+        else
+        {
+            <FluentDataGrid Items="@_roster.AsQueryable()"
+                            GridTemplateColumns="@(_canManage ? "2fr 1fr 1fr 2fr" : "2fr 1fr 1fr")">
+                <PropertyColumn Property="@(m => m.Email)" Title="Email" Sortable="true" />
+                <PropertyColumn Property="@(m => m.Role)" Title="Role" Sortable="true" />
+                <PropertyColumn Property="@(m => m.Status)" Title="Status" Sortable="true" />
+                @if (_canManage)
+                {
+                    <TemplateColumn Title="Actions">
+                        @{
+                            var member = context;
+                        }
+                        <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="4">
+                            @if (string.Equals(member.Status, "Active", StringComparison.Ordinal))
+                            {
+                                <FluentSelect TOption="string"
+                                              TValue="string"
+                                              Items="@_roleOptions"
+                                              OptionText="@(r => r)"
+                                              OptionValue="@(r => r)"
+                                              Value="@member.Role"
+                                              ValueChanged="@(role => ChangeRoleAsync(member.MembershipId, role))"
+                                              Width="160px" />
+                                <FluentButton Size="ButtonSize.Small"
+                                              Disabled="_actionInProgress"
+                                              OnClick="@(() => SuspendAsync(member.MembershipId))">
+                                    Suspend
+                                </FluentButton>
+                                <FluentButton Size="ButtonSize.Small"
+                                              Appearance="ButtonAppearance.Outline"
+                                              Disabled="_actionInProgress"
+                                              OnClick="@(() => RemoveAsync(member.MembershipId))">
+                                    Remove
+                                </FluentButton>
+                            }
+                            else if (string.Equals(member.Status, "Suspended", StringComparison.Ordinal))
+                            {
+                                <FluentButton Size="ButtonSize.Small"
+                                              Disabled="_actionInProgress"
+                                              OnClick="@(() => ReactivateAsync(member.MembershipId))">
+                                    Reactivate
+                                </FluentButton>
+                                <FluentButton Size="ButtonSize.Small"
+                                              Appearance="ButtonAppearance.Outline"
+                                              Disabled="_actionInProgress"
+                                              OnClick="@(() => RemoveAsync(member.MembershipId))">
+                                    Remove
+                                </FluentButton>
+                            }
+                            else if (string.Equals(member.Status, "Invited", StringComparison.Ordinal))
+                            {
+                                <FluentButton Size="ButtonSize.Small"
+                                              Appearance="ButtonAppearance.Outline"
+                                              Disabled="_actionInProgress"
+                                              OnClick="@(() => RevokeInviteAsync(member.MembershipId))">
+                                    Revoke invite
+                                </FluentButton>
+                            }
+                        </FluentStack>
+                    </TemplateColumn>
+                }
+            </FluentDataGrid>
+        }
+    }
+</FluentStack>
+
+@code {
+    [Inject]
+    private AgencyContextState AgencyContext { get; set; } = default!;
+
+    [Inject]
+    private TenancyHubApiClient ApiClient { get; set; } = default!;
+
+    private enum ViewState
+    {
+        Loading,
+        Ready,
+        PermissionDenied,
+        LoadFailed,
+    }
+
+    private ViewState _viewState = ViewState.Loading;
+    private bool _canManage;
+    private bool _actionInProgress;
+    private string? _actionMessage;
+    private MessageBarIntent _actionMessageIntent = MessageBarIntent.Info;
+    private string _loadErrorMessage = "Unable to load members.";
+    private IReadOnlyList<MembershipRosterDto> _roster = [];
+    private readonly string[] _roleOptions =
+    [
+        "Administrator",
+        "StandardMember",
+        "ReadOnlyMember",
+    ];
+
+    private string _inviteEmail = string.Empty;
+    private string _inviteRole = "StandardMember";
+    private string _provisionEmail = string.Empty;
+    private string _provisionRole = "StandardMember";
+
+    protected override void OnInitialized()
+    {
+        AgencyContext.Changed += OnContextChanged;
+        _ = LoadRosterAsync();
+    }
+
+    private void OnContextChanged()
+    {
+        _ = InvokeAsync(async () =>
+        {
+            ClearActionMessage();
+            await LoadRosterAsync();
+        });
+    }
+
+    private async Task LoadRosterAsync()
+    {
+        if (!AgencyContext.CanViewMemberRoster || AgencyContext.ActiveAgencyId is not Guid agencyId)
+        {
+            _viewState = ViewState.PermissionDenied;
+            _roster = [];
+            _canManage = false;
+            return;
+        }
+
+        _viewState = ViewState.Loading;
+        _canManage = AgencyContext.CanManageMembers;
+
+        var result = await ApiClient.GetMembershipRosterAsync(agencyId);
+        switch (result.Access)
+        {
+            case MembershipRosterAccess.Success:
+                _roster = result.Items;
+                _viewState = ViewState.Ready;
+                break;
+            case MembershipRosterAccess.Denied:
+                _roster = [];
+                _canManage = false;
+                _viewState = ViewState.PermissionDenied;
+                break;
+            default:
+                _roster = [];
+                _loadErrorMessage = "Unable to load members. Try again later.";
+                _viewState = ViewState.LoadFailed;
+                break;
+        }
+    }
+
+    private async Task InviteAsync()
+    {
+        if (AgencyContext.ActiveAgencyId is not Guid agencyId)
+        {
+            return;
+        }
+
+        await RunMutationAsync(
+            () => ApiClient.InviteMemberAsync(agencyId, _inviteEmail.Trim(), _inviteRole),
+            "Invitation sent.",
+            () => _inviteEmail = string.Empty);
+    }
+
+    private async Task ProvisionAsync()
+    {
+        if (AgencyContext.ActiveAgencyId is not Guid agencyId)
+        {
+            return;
+        }
+
+        await RunMutationAsync(
+            () => ApiClient.ProvisionMemberAsync(agencyId, _provisionEmail.Trim(), _provisionRole),
+            "Member provisioned.",
+            () => _provisionEmail = string.Empty);
+    }
+
+    private Task ChangeRoleAsync(Guid membershipId, string? role) =>
+        role is null
+            ? Task.CompletedTask
+            : RunMutationAsync(
+                () => ApiClient.ChangeMemberRoleAsync(AgencyContext.ActiveAgencyId!.Value, membershipId, role),
+                "Role updated.");
+
+    private Task SuspendAsync(Guid membershipId) =>
+        RunMutationAsync(
+            () => ApiClient.SuspendMemberAsync(AgencyContext.ActiveAgencyId!.Value, membershipId),
+            "Member suspended.");
+
+    private Task ReactivateAsync(Guid membershipId) =>
+        RunMutationAsync(
+            () => ApiClient.ReactivateMemberAsync(AgencyContext.ActiveAgencyId!.Value, membershipId),
+            "Member reactivated.");
+
+    private Task RemoveAsync(Guid membershipId) =>
+        RunMutationAsync(
+            () => ApiClient.RemoveMemberAsync(AgencyContext.ActiveAgencyId!.Value, membershipId),
+            "Member removed.");
+
+    private Task RevokeInviteAsync(Guid membershipId) =>
+        RunMutationAsync(
+            () => ApiClient.RevokeInvitationAsync(AgencyContext.ActiveAgencyId!.Value, membershipId),
+            "Invitation revoked.");
+
+    private async Task RunMutationAsync(
+        Func<Task<MembershipMutationResult>> action,
+        string successMessage,
+        Action? onSuccess = null)
+    {
+        if (!_canManage || AgencyContext.ActiveAgencyId is null)
+        {
+            return;
+        }
+
+        _actionInProgress = true;
+        ClearActionMessage();
+
+        try
+        {
+            var result = await action();
+            if (result.Succeeded)
+            {
+                _actionMessage = successMessage;
+                _actionMessageIntent = MessageBarIntent.Success;
+                onSuccess?.Invoke();
+                await LoadRosterAsync();
+            }
+            else
+            {
+                _actionMessage = result.ErrorMessage ?? "The action could not be completed.";
+                _actionMessageIntent = MessageBarIntent.Error;
+            }
+        }
+        finally
+        {
+            _actionInProgress = false;
+        }
+    }
+
+    private void ClearActionMessage() => _actionMessage = null;
+
+    public void Dispose() => AgencyContext.Changed -= OnContextChanged;
+}

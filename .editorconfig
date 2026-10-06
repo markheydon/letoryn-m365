@@ -283,6 +283,12 @@ dotnet_diagnostic.CS1591.severity = none
 [src/TenancyHub.ServiceDefaults/**/*.cs]
 dotnet_diagnostic.CS1591.severity = error
 
+[src/TenancyHub.Domain/**/*.cs]
+dotnet_diagnostic.CS1591.severity = error
+
+[src/TenancyHub.Infrastructure/**/*.cs]
+dotnet_diagnostic.CS1591.severity = error
+
 # ──────────────────────────────────────
 # Test project overrides
 # ──────────────────────────────────────

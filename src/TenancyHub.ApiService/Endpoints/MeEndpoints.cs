@@ -9,10 +9,28 @@ using UserSessionTerminationReason = TenancyHub.Application.Abstractions.Session
 
 namespace TenancyHub.ApiService.Endpoints;
 
-/// <summary>Session and identity endpoints for the signed-in user.</summary>
+/// <summary>
+/// Session and identity endpoints for the signed-in user (FR-001).
+/// </summary>
+/// <remarks>
+/// <para>
+/// All routes require a validated JWT; <see cref="ICurrentUser"/> supplies the product identity.
+/// Server-side sessions are correlated with <see cref="TenancyHttpHeaders.SessionId"/> on subsequent calls.
+/// </para>
+/// <para>
+/// <c>GET /</c> accepts an existing session id (validated by upstream middleware or the handler),
+/// or creates one when the trusted Blazor host sends <see cref="TenancyHttpHeaders.EstablishSession"/>
+/// after interactive Entra sign-in (see <see cref="WebInternalRequestValidation"/>).
+/// The issued session id is returned on the response as <see cref="TenancyHttpHeaders.SessionId"/>.
+/// </para>
+/// <para>
+/// <c>PUT /active-agency</c> persists shell agency selection; it does not set tenancy headers—
+/// callers must continue sending <see cref="TenancyHttpHeaders.AgencyId"/> on agency-scoped API traffic.
+/// </para>
+/// </remarks>
 public static class MeEndpoints
 {
-    /// <summary>Maps /api/v1/me routes.</summary>
+    /// <summary>Maps <c>/api/v1/me</c> routes (profile, active agency, sign-out).</summary>
     public static IEndpointRouteBuilder MapMeEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var group = endpoints.MapGroup("/api/v1/me")

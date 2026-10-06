@@ -131,24 +131,24 @@ Per [plan.md](./plan.md): `src/TenancyHub.*` libraries, `tests/TenancyHub.*` tes
 
 ### Implementation for User Story 3
 
-- [ ] T053 [P] [US3] Implement invitee routes `GET /api/v1/invitations/pending`, `POST /api/v1/invitations/{membershipId}/accept`, and `POST /api/v1/invitations/{membershipId}/decline` in `src/TenancyHub.ApiService/Endpoints/InvitationEndpoints.cs` per [contracts/api-v1.md](./contracts/api-v1.md)
-- [ ] T054 [US3] Implement invite idempotency (at most one pending `Invited` per agency+email) in `src/TenancyHub.Application/Memberships/InviteMemberHandler.cs`
-- [ ] T055 [US3] Implement provision → immediate `Active` membership in `src/TenancyHub.Application/Memberships/ProvisionMemberHandler.cs`
-- [ ] T056 [US3] Implement membership lifecycle handlers (suspend, reactivate, remove, revoke invitation, role patch) in `src/TenancyHub.Application/Memberships/`
-- [ ] T057 [US3] Enforce 30-day invite expiry with lazy evaluation on pending list, accept, and decline; optional `InvitationExpiryHostedService` sweep in `src/TenancyHub.Application/Memberships/InvitationRules.cs` and `src/TenancyHub.ApiService/` registration
-- [ ] T058 [US3] Ensure role and membership permission checks read current database state (or cache TTL ≤ 1 minute) so role changes apply within one minute without full logout in `src/TenancyHub.Application/Authorization/AgencyAuthorizationService.cs`; add quickstart §5 verification step
-- [ ] T059 [US3] Implement agency membership API group `/api/v1/agencies/{agencyId}/memberships` in `src/TenancyHub.ApiService/Endpoints/MembershipEndpoints.cs`; **read-only members** MUST receive **403** (or tenant-safe equivalent) on roster `GET`—only administrators, operators, and **standard members** may list names and roles per spec US3 scenario 11
-- [ ] T060 [US3] Implement canonical `PATCH /api/v1/agencies/{agencyId}/settings` only (no separate operator settings route) with admin-active vs operator-assigned rules in `src/TenancyHub.ApiService/Endpoints/AgencySettingsEndpoints.cs` per [contracts/api-v1.md](./contracts/api-v1.md); deny updates when agency is **Archived** (FR-015); operators may update on **active**/**suspended** assigned agencies only
-- [ ] T061 [US3] Implement operator agency create `POST /api/v1/operator/agencies` with auto-assignment in `src/TenancyHub.ApiService/Endpoints/OperatorAgencyEndpoints.cs` per FR-016
-- [ ] T062 [US3] Implement operator lifecycle `POST /api/v1/operator/agencies/{agencyId}/lifecycle` in `src/TenancyHub.ApiService/Endpoints/OperatorAgencyEndpoints.cs`
-- [ ] T063 [US3] Implement platform operator management in `src/TenancyHub.ApiService/Endpoints/OperatorPlatformEndpoints.cs`: `GET /api/v1/operator/platform/operators`, `POST .../operators/{userId}/grant`, `POST .../operators/{userId}/revoke` (last-operator block), and `PUT .../operators/{userId}/assignments` per [contracts/api-v1.md](./contracts/api-v1.md)
-- [ ] T064 [P] [US3] Build invitation acceptance page in `src/TenancyHub.Web/Components/Pages/Invitations.razor` wired to accept/decline API routes (explicit actions; matching email only)
-- [ ] T065 [P] [US3] Build member roster and management pages in `src/TenancyHub.Web/Components/Pages/Members.razor` (admin/operator manage; standard member read-only list); omit member-list nav for **read-only members**; direct URL attempts show permission denied without data leakage
-- [ ] T066 [P] [US3] Build operator agency create and lifecycle UI in `src/TenancyHub.Web/Components/Pages/Operator/Agencies.razor` (covers [quickstart.md](./quickstart.md) §5.1 agency create)
-- [ ] T097 [P] [US3] Build platform operator grant/revoke and agency assignment UI in `src/TenancyHub.Web/Components/Pages/Operator/PlatformOperators.razor` wired to T063 endpoints (FR-006; [quickstart.md](./quickstart.md) §5.1)
-- [ ] T098 [P] [US3] Build agency settings page in `src/TenancyHub.Web/Components/Pages/AgencySettings.razor` for administrators on **active** agencies and operators on assigned **active**/**suspended** agencies via T060; **do not** add ad-hoc `NavMenu.razor` links here—agency settings nav entry is wired in T075 via `ShellNavigationPolicy` after T074 (FR-011, FR-015; [quickstart.md](./quickstart.md) §5.2)
-- [ ] T099 [US3] Add Fluent UI form validation (required fields, email/phone formats) on invite, provision, agency settings, operator agency create, and platform operator flows in `src/TenancyHub.Web/Components/` with server-side enforcement via API (constitution Principle I; pairs with T026)
-- [ ] T067 [US3] Emit audit entries via `IAuditWriter` for every FR-008 category not covered solely by T044/T073: agency creation (T061) and auto-assign; agency lifecycle transitions (T062); agency settings changes (T060); membership invite, provision, accept, decline, revoke, suspend, reactivate, remove, and role changes including concurrent-update attempts (T053–T056); platform operator agency assignment changes and **platform operator** status grant/revoke including blocked last-operator attempts (T063); failed invitation accept/decline identity mismatch
+- [x] T053 [P] [US3] Implement invitee routes `GET /api/v1/invitations/pending`, `POST /api/v1/invitations/{membershipId}/accept`, and `POST /api/v1/invitations/{membershipId}/decline` in `src/TenancyHub.ApiService/Endpoints/InvitationEndpoints.cs` per [contracts/api-v1.md](./contracts/api-v1.md)
+- [x] T054 [US3] Implement invite idempotency (at most one pending `Invited` per agency+email) in `src/TenancyHub.Application/Memberships/InviteMemberHandler.cs`
+- [x] T055 [US3] Implement provision → immediate `Active` membership in `src/TenancyHub.Application/Memberships/ProvisionMemberHandler.cs`
+- [x] T056 [US3] Implement membership lifecycle handlers (suspend, reactivate, remove, revoke invitation, role patch) in `src/TenancyHub.Application/Memberships/`
+- [x] T057 [US3] Enforce 30-day invite expiry with lazy evaluation on pending list, accept, and decline; optional `InvitationExpiryHostedService` sweep in `src/TenancyHub.Application/Memberships/InvitationRules.cs` and `src/TenancyHub.ApiService/` registration
+- [x] T058 [US3] Ensure role and membership permission checks read current database state (or cache TTL ≤ 1 minute) so role changes apply within one minute without full logout in `src/TenancyHub.Application/Authorization/AgencyAuthorizationService.cs`; add quickstart §5 verification step
+- [x] T059 [US3] Implement agency membership API group `/api/v1/agencies/{agencyId}/memberships` in `src/TenancyHub.ApiService/Endpoints/MembershipEndpoints.cs`; **read-only members** MUST receive **403** (or tenant-safe equivalent) on roster `GET`—only administrators, operators, and **standard members** may list names and roles per spec US3 scenario 11
+- [x] T060 [US3] Implement canonical `PATCH /api/v1/agencies/{agencyId}/settings` only (no separate operator settings route) with admin-active vs operator-assigned rules in `src/TenancyHub.ApiService/Endpoints/AgencySettingsEndpoints.cs` per [contracts/api-v1.md](./contracts/api-v1.md); deny updates when agency is **Archived** (FR-015); operators may update on **active**/**suspended** assigned agencies only
+- [x] T061 [US3] Implement operator agency create `POST /api/v1/operator/agencies` with auto-assignment in `src/TenancyHub.ApiService/Endpoints/OperatorAgencyEndpoints.cs` per FR-016
+- [x] T062 [US3] Implement operator lifecycle `POST /api/v1/operator/agencies/{agencyId}/lifecycle` in `src/TenancyHub.ApiService/Endpoints/OperatorAgencyEndpoints.cs`
+- [x] T063 [US3] Implement platform operator management in `src/TenancyHub.ApiService/Endpoints/OperatorPlatformEndpoints.cs`: `GET /api/v1/operator/platform/operators`, `POST .../operators/{userId}/grant`, `POST .../operators/{userId}/revoke` (last-operator block), and `PUT .../operators/{userId}/assignments` per [contracts/api-v1.md](./contracts/api-v1.md)
+- [x] T064 [P] [US3] Build invitation acceptance page in `src/TenancyHub.Web/Components/Pages/Invitations.razor` wired to accept/decline API routes (explicit actions; matching email only)
+- [x] T065 [P] [US3] Build member roster and management pages in `src/TenancyHub.Web/Components/Pages/Members.razor` (admin/operator manage; standard member read-only list); omit member-list nav for **read-only members**; direct URL attempts show permission denied without data leakage
+- [x] T066 [P] [US3] Build operator agency create and lifecycle UI in `src/TenancyHub.Web/Components/Pages/Operator/Agencies.razor` (covers [quickstart.md](./quickstart.md) §5.1 agency create)
+- [x] T097 [P] [US3] Build platform operator grant/revoke and agency assignment UI in `src/TenancyHub.Web/Components/Pages/Operator/PlatformOperators.razor` wired to T063 endpoints (FR-006; [quickstart.md](./quickstart.md) §5.1)
+- [x] T098 [P] [US3] Build agency settings page in `src/TenancyHub.Web/Components/Pages/AgencySettings.razor` for administrators on **active** agencies and operators on assigned **active**/**suspended** agencies via T060; **do not** add ad-hoc `NavMenu.razor` links here—agency settings nav entry is wired in T075 via `ShellNavigationPolicy` after T074 (FR-011, FR-015; [quickstart.md](./quickstart.md) §5.2)
+- [x] T099 [US3] Add Fluent UI form validation (required fields, email/phone formats) on invite, provision, agency settings, operator agency create, and platform operator flows in `src/TenancyHub.Web/Components/` with server-side enforcement via API (constitution Principle I; pairs with T026)
+- [x] T067 [US3] Emit audit entries via `IAuditWriter` for every FR-008 category not covered solely by T044/T073: agency creation (T061) and auto-assign; agency lifecycle transitions (T062); agency settings changes (T060); membership invite, provision, accept, decline, revoke, suspend, reactivate, remove, and role changes including concurrent-update attempts (T053–T056); platform operator agency assignment changes and **platform operator** status grant/revoke including blocked last-operator attempts (T063); failed invitation accept/decline identity mismatch
 
 **Checkpoint**: User Story 3 independently testable via quickstart §5.
 
@@ -162,12 +162,12 @@ Per [plan.md](./plan.md): `src/TenancyHub.*` libraries, `tests/TenancyHub.*` tes
 
 ### Implementation for User Story 4
 
-- [ ] T068 [US4] Implement cursor-paginated audit queries in `src/TenancyHub.ApiService/Endpoints/AuditEndpoints.cs` per [contracts/api-v1.md](./contracts/api-v1.md): `GET /api/v1/agencies/{agencyId}/audit` for **agency administrators** (**Active** agency + **Active** membership; requires matching `X-TenancyHub-Agency-Id`) and `GET /api/v1/operator/agencies/{agencyId}/audit` for assigned operators on **Active**, **Suspended**, or **Archived** agencies (no active-agency header requirement; FR-009)
-- [ ] T069 [US4] Implement `GET /api/v1/operator/agencies/{agencyId}/summary` (identity ref, display name, lifecycle, contacts, role counts including `Invited`, `LastLifecycleChangeAt`) in `src/TenancyHub.ApiService/Endpoints/OperatorDiagnosticsEndpoints.cs`
-- [ ] T070 [US4] Add audit query service with agency filter, descending `OccurredAt`, and caller authorization matching FR-009 (admin + active agency + active membership vs operator assignment) in `src/TenancyHub.Application/Audit/AuditQueryService.cs`
-- [ ] T071 [P] [US4] Build agency administrator audit page in `src/TenancyHub.Web/Components/Pages/Audit.razor` with Fluent UI data grid
-- [ ] T072 [P] [US4] Build operator diagnostics page in `src/TenancyHub.Web/Components/Pages/Operator/Diagnostics.razor` linking to `GET /api/v1/operator/agencies/{agencyId}/audit` (not the agency-admin route)
-- [ ] T073 [US4] Audit every operator cross-agency view action in `src/TenancyHub.Application/Operators/OperatorDiagnosticsService.cs`
+- [x] T068 [US4] Implement cursor-paginated audit queries in `src/TenancyHub.ApiService/Endpoints/AuditEndpoints.cs` per [contracts/api-v1.md](./contracts/api-v1.md): `GET /api/v1/agencies/{agencyId}/audit` for **agency administrators** (**Active** agency + **Active** membership; requires matching `X-TenancyHub-Agency-Id`) and `GET /api/v1/operator/agencies/{agencyId}/audit` for assigned operators on **Active**, **Suspended**, or **Archived** agencies (no active-agency header requirement; FR-009)
+- [x] T069 [US4] Implement `GET /api/v1/operator/agencies/{agencyId}/summary` (identity ref, display name, lifecycle, contacts, role counts including `Invited`, `LastLifecycleChangeAt`) in `src/TenancyHub.ApiService/Endpoints/OperatorDiagnosticsEndpoints.cs`
+- [x] T070 [US4] Add audit query service with agency filter, descending `OccurredAt`, and caller authorization matching FR-009 (admin + active agency + active membership vs operator assignment) in `src/TenancyHub.Application/Audit/AuditQueryService.cs`
+- [x] T071 [P] [US4] Build agency administrator audit page in `src/TenancyHub.Web/Components/Pages/Audit.razor` with Fluent UI data grid
+- [x] T072 [P] [US4] Build operator diagnostics page in `src/TenancyHub.Web/Components/Pages/Operator/Diagnostics.razor` linking to `GET /api/v1/operator/agencies/{agencyId}/audit` (not the agency-admin route)
+- [x] T073 [US4] Audit every operator cross-agency view action in `src/TenancyHub.Application/Operators/OperatorDiagnosticsService.cs`
 
 **Checkpoint**: User Story 4 independently testable via quickstart §6.
 
@@ -183,12 +183,12 @@ Per [plan.md](./plan.md): `src/TenancyHub.*` libraries, `tests/TenancyHub.*` tes
 
 ### Implementation for User Story 6
 
-- [ ] T074 [P] [US6] Define permission-to-nav map in `src/TenancyHub.Application/Navigation/ShellNavigationPolicy.cs` per FR-011
-- [ ] T075 [US6] Refactor `src/TenancyHub.Web/Components/Layout/NavMenu.razor` to render only permitted routes from `ShellNavigationPolicy` (no disabled tease); include agency settings route when T060/T098 page exists and caller is permitted (depends T074, T098)
-- [ ] T076 [US6] Update `src/TenancyHub.Web/Components/Pages/Home.razor` with coming-soon module summary for administrator and standard member on active agency only
-- [ ] T077 [US6] Add consistent empty, error, and permission-denied components in `src/TenancyHub.Web/Components/Shared/StatusMessage.razor` using Fluent UI
-- [ ] T078 [US6] Ensure signed-out users hitting in-app URLs redirect to sign-in without agency data in `src/TenancyHub.Web/Program.cs`
-- [ ] T079 [P] [US6] Centralize UK English user strings in `src/TenancyHub.Web/Resources/UiStrings.cs` (no language selector)
+- [x] T074 [P] [US6] Define permission-to-nav map in `src/TenancyHub.Application/Navigation/ShellNavigationPolicy.cs` per FR-011
+- [x] T075 [US6] Refactor `src/TenancyHub.Web/Components/Layout/NavMenu.razor` to render only permitted routes from `ShellNavigationPolicy` (no disabled tease); include agency settings route when T060/T098 page exists and caller is permitted (depends T074, T098)
+- [x] T076 [US6] Update `src/TenancyHub.Web/Components/Pages/Home.razor` with coming-soon module summary for administrator and standard member on active agency only
+- [x] T077 [US6] Add consistent empty, error, and permission-denied components in `src/TenancyHub.Web/Components/Shared/StatusMessage.razor` using Fluent UI
+- [x] T078 [US6] Ensure signed-out users hitting in-app URLs redirect to sign-in without agency data in `src/TenancyHub.Web/Program.cs`
+- [x] T079 [P] [US6] Centralize UK English user strings in `src/TenancyHub.Web/Resources/UiStrings.cs` (no language selector)
 
 **Checkpoint**: User Story 6 independently testable via quickstart §8.
 
@@ -204,12 +204,12 @@ Per [plan.md](./plan.md): `src/TenancyHub.*` libraries, `tests/TenancyHub.*` tes
 
 ### Implementation for User Story 5
 
-- [ ] T080 [US5] Implement membership notification triggers in `src/TenancyHub.Application/Notifications/NotificationTriggerService.cs` per FR-010: **agency bell/list** for activated, role changed, membership suspended/reactivated/removed when user has shell context; on **invite** creating **Invited** status, MAY persist a notification row but MUST NOT deliver to agency bell (invitee uses invitation-acceptance experience per T101/T064)
-- [ ] T081 [US5] Implement agency settings and lifecycle notification triggers (display name/contact changes, suspend/archive/reactivate) including administrator copies where applicable in `src/TenancyHub.Application/Notifications/AgencyNotificationTriggerService.cs` per FR-010
-- [ ] T082 [US5] Implement `GET /api/v1/agencies/{agencyId}/notifications` in `src/TenancyHub.ApiService/Endpoints/NotificationEndpoints.cs`
-- [ ] T083 [US5] Implement `POST /api/v1/agencies/{agencyId}/notifications/{id}/read` (standard members only) in `src/TenancyHub.ApiService/Endpoints/NotificationEndpoints.cs`
-- [ ] T084 [P] [US5] Add notification bell and list UI in `src/TenancyHub.Web/Components/Notifications/NotificationPanel.razor` only when user has FR-002 routine shell context with **Active** membership for the active agency (hide bell on invite-only layout T101, operator-no-assignment pages, and before accept); wire in `MainLayout.razor` per T041
-- [ ] T085 [US5] Scope notification queries to active agency context only in `src/TenancyHub.Infrastructure/Services/NotificationQueryService.cs`
+- [x] T080 [US5] Implement membership notification triggers in `src/TenancyHub.Application/Notifications/NotificationTriggerService.cs` per FR-010: **agency bell/list** for activated, role changed, membership suspended/reactivated/removed when user has shell context; on **invite** creating **Invited** status, MAY persist a notification row but MUST NOT deliver to agency bell (invitee uses invitation-acceptance experience per T101/T064)
+- [x] T081 [US5] Implement agency settings and lifecycle notification triggers (display name/contact changes, suspend/archive/reactivate) including administrator copies where applicable in `src/TenancyHub.Application/Notifications/AgencyNotificationTriggerService.cs` per FR-010
+- [x] T082 [US5] Implement `GET /api/v1/agencies/{agencyId}/notifications` in `src/TenancyHub.ApiService/Endpoints/NotificationEndpoints.cs`
+- [x] T083 [US5] Implement `POST /api/v1/agencies/{agencyId}/notifications/{id}/read` (standard members only) in `src/TenancyHub.ApiService/Endpoints/NotificationEndpoints.cs`
+- [x] T084 [P] [US5] Add notification bell and list UI in `src/TenancyHub.Web/Components/Notifications/NotificationPanel.razor` only when user has FR-002 routine shell context with **Active** membership for the active agency (hide bell on invite-only layout T101, operator-no-assignment pages, and before accept); wire in `MainLayout.razor` per T041
+- [x] T085 [US5] Scope notification queries to active agency context only in `src/TenancyHub.Infrastructure/Services/NotificationQueryService.cs`
 
 **Checkpoint**: User Story 5 independently testable via quickstart §7.
 
@@ -219,16 +219,16 @@ Per [plan.md](./plan.md): `src/TenancyHub.*` libraries, `tests/TenancyHub.*` tes
 
 **Purpose**: OpenAPI, tests, E2E, documentation alignment, and release readiness.
 
-- [ ] T086 [P] Expose OpenAPI in Development from `src/TenancyHub.ApiService/Program.cs` and add generated snapshot to `specs/001-platform-foundation/contracts/openapi.yaml` when stable
-- [ ] T087 [P] Add focused application unit tests for invite expiry, last-admin guard, last-operator guard, read-only roster **403**, membership/agency suspension access rules, FR-008 sign-in audit (assert **successful** and **failed** sign-in produce `IAuditWriter` calls with expected action types; assert `PUT /api/v1/me/active-agency` does **not** write an audit row in R1), and FR-010 notification trigger matrix (assert invite-pending does **not** enqueue agency-bell delivery; assert bell triggers after **Active** membership) in `tests/TenancyHub.Application.UnitTests/`
-- [ ] T088 [P] Extend `tests/TenancyHub.ApiService.UnitTests/` for ProblemDetails shape, validation 400 responses (T026), and `/api/v1/me` mapping
-- [ ] T089 [P] Add `docs/platform-foundation-user-journeys.md` documenting quickstart §3–§8 paths (including §3.6–§3.13, §4.1, §7 notification matrix, §5.1–5.3 operator/settings/decline flows) for contributors and link it from `docs/README.md` (constitution Principle VI)
-- [ ] T090 Create `tests/TenancyHub.E2E/` Playwright C# project with journeys mapped to `docs/platform-foundation-user-journeys.md` per `docs/testing.md` (**depends on T089**—Principle VI)
-- [ ] T091 Run full [quickstart.md](./quickstart.md) validation and fix gaps in code or docs
-- [ ] T092 [P] Final pass on [docs/operations-rebuild-runbook.md](../../docs/operations-rebuild-runbook.md) for Entra (client certificate parameters `EntraWebClientCertificatePfx` / `EntraWebClientCertificatePassword`, not client secrets), Postgres volume reset, migrations, and seed alignment with implemented parameter names
-- [ ] T093 Verify `dotnet build TenancyHub.slnx` and `dotnet test TenancyHub.slnx --configuration Release` clean with warnings-as-errors
-- [ ] T095 [P] Add XML documentation on public tenancy and security contracts in `src/TenancyHub.ApiService/Endpoints/MeEndpoints.cs`, `src/TenancyHub.ApiService/Middleware/TenancyContextMiddleware.cs`, and `src/TenancyHub.Web/Services/TenancyHubApiClient.cs` per constitution Principle II (non-obvious auth, agency header, and token-forwarding assumptions)
-- [ ] T100 [P] Add XML documentation on all **public** types in `src/TenancyHub.Domain/` and `src/TenancyHub.Infrastructure/` (entities, DbContext surface, DI extensions) per constitution Principle II and `docs/build-quality.md`—build must pass with warnings-as-errors
+- [x] T086 [P] Expose OpenAPI in Development from `src/TenancyHub.ApiService/Program.cs` and add generated snapshot to `specs/001-platform-foundation/contracts/openapi.yaml` when stable
+- [x] T087 [P] Add focused application unit tests for invite expiry, last-admin guard, last-operator guard, read-only roster **403**, membership/agency suspension access rules, FR-008 sign-in audit (assert **successful** and **failed** sign-in produce `IAuditWriter` calls with expected action types; assert `PUT /api/v1/me/active-agency` does **not** write an audit row in R1), and FR-010 notification trigger matrix (assert invite-pending does **not** enqueue agency-bell delivery; assert bell triggers after **Active** membership) in `tests/TenancyHub.Application.UnitTests/`
+- [x] T088 [P] Extend `tests/TenancyHub.ApiService.UnitTests/` for ProblemDetails shape, validation 400 responses (T026), and `/api/v1/me` mapping
+- [x] T089 [P] Add `docs/platform-foundation-user-journeys.md` documenting quickstart §3–§8 paths (including §3.6–§3.13, §4.1, §7 notification matrix, §5.1–5.3 operator/settings/decline flows) for contributors and link it from `docs/README.md` (constitution Principle VI)
+- [x] T090 Create `tests/TenancyHub.E2E/` Playwright C# project with journeys mapped to `docs/platform-foundation-user-journeys.md` per `docs/testing.md` (**depends on T089**—Principle VI)
+- [x] T091 Run full [quickstart.md](./quickstart.md) validation and fix gaps in code or docs
+- [x] T092 [P] Final pass on [docs/operations-rebuild-runbook.md](../../docs/operations-rebuild-runbook.md) for Entra (client certificate parameters `EntraWebClientCertificatePfx` / `EntraWebClientCertificatePassword`, not client secrets), Postgres volume reset, migrations, and seed alignment with implemented parameter names
+- [x] T093 Verify `dotnet build TenancyHub.slnx` and `dotnet test TenancyHub.slnx --configuration Release` clean with warnings-as-errors
+- [x] T095 [P] Add XML documentation on public tenancy and security contracts in `src/TenancyHub.ApiService/Endpoints/MeEndpoints.cs`, `src/TenancyHub.ApiService/Middleware/TenancyContextMiddleware.cs`, and `src/TenancyHub.Web/Services/TenancyHubApiClient.cs` per constitution Principle II (non-obvious auth, agency header, and token-forwarding assumptions)
+- [x] T100 [P] Add XML documentation on all **public** types in `src/TenancyHub.Domain/` and `src/TenancyHub.Infrastructure/` (entities, DbContext surface, DI extensions) per constitution Principle II and `docs/build-quality.md`—build must pass with warnings-as-errors
 
 ---
 
@@ -325,3 +325,9 @@ Per [plan.md](./plan.md): `src/TenancyHub.*` libraries, `tests/TenancyHub.*` tes
 - Remediation (2026-10-01 `/speckit-analyze` pass 6): quickstart §3.9–§3.12, §4.1 lifecycle gates, §7 FR-010 matrix; T049 retagged FR-013; plan.md pass 6 note.
 - Remediation (2026-10-01 `/speckit-analyze` pass 7): §3.9 disabled-directory step (renumber §3.10–§3.13); US1 checkpoint §3.8–§3.11; quickstart §9 ↔ T089; api-v1 audit auth table (FR-009).
 - Remediation (2026-10-01 `/speckit-analyze` pass 8): `GET /operator/agencies/{agencyId}/audit` in contract + T068/T072; quickstart §3.11 T043-only; plan pass 8 note.
+
+## Phase 10: Convergence
+
+- [x] T103 Emit FR-010 agency notification-list notices when membership is **suspended**, **reactivated**, or **removed** in `src/TenancyHub.Infrastructure/Services/MembershipOperationsService.cs` (extend `NotificationTriggerService` and wire from `ChangeActiveMembershipStatusAsync`) per FR-010 and T080 (missing)
+- [x] T104 Fan out agency **settings** and **lifecycle** in-app notifications to members with **Active** or **Suspended** agency membership (not only **Active**) in `src/TenancyHub.Infrastructure/Services/AgencyOperationsService.cs` `NotifyActiveMembersAsync` per FR-010 (partial)
+- [x] T105 Expand `tests/TenancyHub.E2E/` Playwright journeys for quickstart §3–§8 paths still marked **E2E** in `docs/platform-foundation-user-journeys.md` but lacking automation (e.g. R1-J3.2–J3.8, J3.11, J4.1, J5.1–J5.3, J6, J7) per Constitution Principle VI and T090 (partial)
