@@ -1,11 +1,14 @@
 ---
 name: speckit-bug-test
-description: Validate that a previously fixed bug is resolved and record the verification report
+description: Validate that a previously fixed bug is resolved and record the verification
+  report
 compatibility: Requires spec-kit project structure with .specify/ directory
 metadata:
   author: spec-kit-core
-  source: bug:commands/speckit.bug.test.md
+  source: extension:bug
 ---
+
+# Bug Test Skill
 
 # Test Bug Fix
 
@@ -21,15 +24,15 @@ The user input should identify the bug to validate. Accept any of:
 
 - `slug=<bug-slug>` or `--slug <bug-slug>` or a bare slug-like token.
 - A path that contains the slug (e.g. `.specify/bugs/login-timeout/`).
-- **Nothing**: fall back to context (see below).
+- **Nothing** — fall back to context (see below).
 
 ## Slug Resolution
 
 Resolve `BUG_SLUG` in this order, stopping at the first match:
 
-1. **Explicit user input**: a slug passed in `$ARGUMENTS` (any of the forms above).
-2. **Conversation context**: if the current session has just run `/speckit-bug-assess` or `/speckit-bug-fix`, the slug it reported is the working slug. Reuse it without re-prompting. Confirm it by checking that `.specify/bugs/<slug>/fix.md` exists; if it does not, fall through.
-3. **Single candidate on disk**: list `.specify/bugs/*/fix.md`. If exactly one bug has a `fix.md`, use it.
+1. **Explicit user input** — a slug passed in `$ARGUMENTS` (any of the forms above).
+2. **Conversation context** — if the current session has just run `/speckit-bug-assess` or `/speckit-bug-fix`, the slug it reported is the working slug. Reuse it without re-prompting. Confirm it by checking that `.specify/bugs/<slug>/fix.md` exists; if it does not, fall through.
+3. **Single candidate on disk** — list `.specify/bugs/*/fix.md`. If exactly one bug has a `fix.md`, use it.
 4. **Disambiguate**:
    - **Interactive mode**: ask the user which bug to validate and list the candidates.
    - **Automated mode**: stop with an error listing the candidates. Do not guess.
@@ -63,9 +66,9 @@ Once resolved, set `BUG_SLUG` and `BUG_DIR = .specify/bugs/<BUG_SLUG>`, and brie
 
 3. **Judge the outcome**
    - Mark the fix as:
-     - **verified**: all critical checks pass and the original symptom no longer reproduces.
-     - **partial**: the original symptom is gone but unrelated regressions appeared, or some checks are inconclusive.
-     - **failed**: the symptom still reproduces or the regression suite is broken by the fix.
+     - **verified** — all critical checks pass and the original symptom no longer reproduces.
+     - **partial** — the original symptom is gone but unrelated regressions appeared, or some checks are inconclusive.
+     - **failed** — the symptom still reproduces or the regression suite is broken by the fix.
    - Do not over-claim. If reproduction was not actually performed (e.g., the bug required a production environment), say so explicitly.
 
 4. **Write the verification report**
@@ -96,7 +99,7 @@ Once resolved, set `BUG_SLUG` and `BUG_DIR = .specify/bugs/<BUG_SLUG>`, and brie
 
    ## Output Excerpts
 
-   <Short snippets of relevant output (e.g., final summary line of a test run, the failing assertion). Keep it tight: no full logs.>
+   <Short snippets of relevant output (e.g., final summary line of a test run, the failing assertion). Keep it tight — no full logs.>
 
    ## Residual Risks
 
@@ -105,9 +108,9 @@ Once resolved, set `BUG_SLUG` and `BUG_DIR = .specify/bugs/<BUG_SLUG>`, and brie
    ## Recommendation
 
    <One paragraph. Examples:>
-   - "Close the bug: verified end-to-end."
-   - "Hold: reproduction inconclusive; needs verification in staging."
-   - "Reopen: symptom still reproduces; rerun `/speckit-bug-assess`."
+   - "Close the bug — verified end-to-end."
+   - "Hold — reproduction inconclusive; needs verification in staging."
+   - "Reopen — symptom still reproduces; rerun `/speckit-bug-assess`."
    ```
 
 5. **Report back** with:
@@ -119,4 +122,4 @@ Once resolved, set `BUG_SLUG` and `BUG_DIR = .specify/bugs/<BUG_SLUG>`, and brie
 
 - This command MUST NOT modify source code. It only runs checks and writes inside `.specify/bugs/<slug>/`.
 - Never overwrite an existing `test.md` without confirmation.
-- Never mark a fix as `verified` based on tests alone if the original assessment listed a reproduction that you did not actually exercise: downgrade to `partial` and say so.
+- Never mark a fix as `verified` based on tests alone if the original assessment listed a reproduction that you did not actually exercise — downgrade to `partial` and say so.

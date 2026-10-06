@@ -4,8 +4,10 @@ description: Auto-commit changes after a Spec Kit command completes
 compatibility: Requires spec-kit project structure with .specify/ directory
 metadata:
   author: spec-kit-core
-  source: git:commands/speckit.git.commit.md
+  source: extension:git
 ---
+
+# Git Commit Skill
 
 # Auto-Commit Changes
 
@@ -36,9 +38,9 @@ Determine the event name from the hook that triggered this command, then run the
 - **Bash**: `.specify/extensions/git/scripts/bash/auto-commit.sh <event_name> [--message-file <path>]`
 - **PowerShell**: `.specify/extensions/git/scripts/powershell/auto-commit.ps1 <event_name> [-MessageFile <path>]`
 
-Replace `<event_name>` with the actual hook event (e.g., `after_specify`, `before_plan`, `after_implement`). Only pass a generated message when `commit_style: conventional` is configured: first check `.specify/extensions/git/git-config.yml` for the value of `commit_style`:
+Replace `<event_name>` with the actual hook event (e.g., `after_specify`, `before_plan`, `after_implement`). Only pass a generated message when `commit_style: conventional` is configured — first check `.specify/extensions/git/git-config.yml` for the value of `commit_style`:
 
-- If `conventional`: inspect the diff and generate a Conventional Commit message. **Do not interpolate the generated message directly into a shell command string**: its content is derived from repository changes and may contain characters (quotes, `$(...)`, backticks) that a shell would execute or that would break command quoting. Instead, write the message to a temporary file using your file-editing tool (not a shell `echo`/`printf`), then pass that file's path via `--message-file <path>` (Bash) or `-MessageFile <path>` (PowerShell).
+- If `conventional`: inspect the diff and generate a Conventional Commit message. **Do not interpolate the generated message directly into a shell command string** — its content is derived from repository changes and may contain characters (quotes, `$(...)`, backticks) that a shell would execute or that would break command quoting. Instead, write the message to a temporary file using your file-editing tool (not a shell `echo`/`printf`), then pass that file's path via `--message-file <path>` (Bash) or `-MessageFile <path>` (PowerShell).
 - If `fixed` or absent: run the script with just `<event_name>`; it uses the configured/static message.
 
 ## Configuration
@@ -51,7 +53,7 @@ In `.specify/extensions/git/git-config.yml`:
 commit_style: fixed
 
 auto_commit:
-  default: false          # Global toggle: set true to enable for all commands
+  default: false          # Global toggle — set true to enable for all commands
   after_specify:
     enabled: true          # Override per-command
     message: "[Spec Kit] Add specification"
