@@ -1,10 +1,12 @@
 @implements IDisposable
+@using TenancyHub.Web.Components.Layout
 
 @if (_visible)
 {
     <FluentCounterBadge Count="@_unreadCount">
         <FluentButton Id="@_anchorId"
                       Appearance="ButtonAppearance.Transparent"
+                      Style="@_headerButtonStyle"
                       Title="Notifications"
                       AriaLabel="Notifications"
                       OnClick="TogglePanelAsync">
@@ -79,6 +81,12 @@
 
 @code {
     private const string AnchorIdPrefix = "tenancyhub-notification-bell-";
+
+    [CascadingParameter(Name = "OnBrandHeader")]
+    private bool OnBrandHeader { get; set; }
+
+    private string? _headerButtonStyle =>
+        OnBrandHeader ? ShellHeaderStyles.OnBrandTransparentButton : null;
 
     [Inject]
     private AgencyContextState AgencyContext { get; set; } = default!;

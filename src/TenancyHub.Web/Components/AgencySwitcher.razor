@@ -1,8 +1,9 @@
 @implements IDisposable
+@using TenancyHub.Web.Components.Layout
 
 @if (_options.Count == 1)
 {
-    <FluentLabel Typo="Typography.Body" Margin="Margin0">
+    <FluentLabel Typo="Typography.Body" Margin="Margin0" Style="@_headerLabelStyle">
         @_options[0].Label
     </FluentLabel>
 }
@@ -12,7 +13,7 @@ else if (_options.Count > 1)
                  HorizontalGap="8"
                  VerticalAlignment="VerticalAlignment.Center"
                  Margin="Margin0">
-        <FluentLabel Typo="Typography.Body" Margin="Margin0">Agency</FluentLabel>
+        <FluentLabel Typo="Typography.Body" Margin="Margin0" Style="@_headerLabelStyle">Agency</FluentLabel>
         <FluentSelect TOption="AgencyOption"
                       TValue="string"
                       Width="220px"
@@ -25,6 +26,11 @@ else if (_options.Count > 1)
 }
 
 @code {
+    [CascadingParameter(Name = "OnBrandHeader")]
+    private bool OnBrandHeader { get; set; }
+
+    private string? _headerLabelStyle => OnBrandHeader ? ShellHeaderStyles.OnBrandForeground : null;
+
     [Inject]
     private AgencyContextState AgencyContext { get; set; } = default!;
 

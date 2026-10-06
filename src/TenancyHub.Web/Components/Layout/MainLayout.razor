@@ -9,17 +9,21 @@
 
 <FluentLayout>
     <FluentLayoutItem Area="LayoutArea.Header">
-        <FluentStack Orientation="Orientation.Horizontal"
-                     HorizontalGap="16"
-                     VerticalAlignment="VerticalAlignment.Center"
-                     Padding="Padding12">
-            <FluentLayoutHamburger />
-            <FluentLabel Typo="Typography.H5">@UiStrings.ProductName</FluentLabel>
-            <AgencySwitcher />
-            <FluentSpacer />
-            <NotificationPanel />
-            <FluentButton Appearance="ButtonAppearance.Transparent" OnClick="SignOutAsync">@UiStrings.Shell.SignOut</FluentButton>
-        </FluentStack>
+        <CascadingValue Name="OnBrandHeader" Value="true">
+            <FluentStack Orientation="Orientation.Horizontal"
+                         HorizontalGap="16"
+                         VerticalAlignment="VerticalAlignment.Center"
+                         Padding="Padding12">
+                <FluentLayoutHamburger />
+                <FluentLabel Typo="Typography.H5" Style="@ShellHeaderStyles.OnBrandForeground">@UiStrings.ProductName</FluentLabel>
+                <AgencySwitcher />
+                <FluentSpacer />
+                <NotificationPanel />
+                <FluentButton Appearance="ButtonAppearance.Outline"
+                              Style="@ShellHeaderStyles.OnBrandOutlineButton"
+                              OnClick="SignOutAsync">@UiStrings.Shell.SignOut</FluentButton>
+            </FluentStack>
+        </CascadingValue>
     </FluentLayoutItem>
     <FluentLayoutItem Area="LayoutArea.Navigation">
         <NavMenu />
