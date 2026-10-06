@@ -115,6 +115,10 @@ gh pr edit <n> --repo markheydon/letoryn-m365 --milestone "Vision"
 
 Re-run after reprioritising the roadmap so closed history stays consistent with the current phase model.
 
+### Migration status (2026-10-06)
+
+GitHub milestones **Catalogue**, **Operations**, and **Vision** are open with descriptions aligned to this file. Legacy **Go-live** and **Later** milestones are closed with zero items (former **POC** was remapped to **Catalogue**). All tracked issues and PRs with a milestone use **Catalogue** for R1 work; chores without a roadmap row (for example rebrand #8) correctly have no milestone.
+
 ---
 
 ## Maintenance

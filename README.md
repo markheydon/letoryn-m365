@@ -1,6 +1,6 @@
 # Letoryn
 
-**Letoryn for Microsoft 365.** A **multi-tenant**, **Microsoft 365-centric** property catalogue for small UK letting agencies (typically 1-25 staff) and very small portfolios. It stays native to **Entra ID and Microsoft Graph**, stores listing media in **SharePoint**, and exposes **one canonical listing feed** for the agency's **WordPress** site and syndication tools. It is not a replacement for the CRM, compliance, referencing, accounting, or other systems an agency already runs.
+**Letoryn for Microsoft 365.** A **multi-tenant**, **Microsoft 365-centric** property catalogue for small UK letting agencies (typically 1–25 staff) and very small portfolios. It stays native to **Entra ID and Microsoft Graph**, stores listing media in **SharePoint**, and exposes **one canonical listing feed** for the agency's **WordPress** site and syndication tools. It is not a replacement for the CRM, compliance, referencing, accounting, or other systems an agency already runs.
 
 The repository is **open source** (MIT) and an early **.NET Aspire** scaffold ([tech stack](docs/tech-stack.md)). All product work is **Spec Kit** SDD: a [platform roadmap](specs/letoryn-platform/roadmap.md) decomposes the epic; each slice runs specify → plan → tasks → implement ([Spec Kit](https://github.com/github/spec-kit), [spec of specs](https://github.github.com/spec-kit/concepts/spec-of-specs.html)).
 
@@ -20,7 +20,7 @@ An agency already has a website, Microsoft 365, and specialist tools for CRM, re
 
 | Area | Direction |
 |------|-----------|
-| Tenancy | **Multi-tenant SaaS** from day one (agency isolation, shared deployment) |
+| Tenancy | **Multi-tenant architecture** from day one (agency isolation). A community or maintainer-hosted deployment may follow; see [product vision](docs/product-vision.md) (no commercial SaaS roadmap in this repo) |
 | Identity | Entra ID / Microsoft 365 accounts |
 | UX | Blazor + Fluent UI |
 | Integrations | Microsoft Graph (SharePoint media library first; mail, calendar, To Do in later R8 tranches) |
@@ -28,7 +28,7 @@ An agency already has a website, Microsoft 365, and specialist tools for CRM, re
 | Hosting | Azure (Aspire deployment flows when introduced) |
 | Catalogue (first release) | Listings (R3), SharePoint media (R8), one listing feed for WordPress (R13) and syndication (R14); foundation **R1 done** |
 | Operations | Optional contacts, repairs/work orders, dashboard (R2, R5, R6) |
-| Vision | Tenancies, compliance, finance, portals, reporting, AI, complaints (R4, R7, R9-R12, R15): may not ship without domain expert input |
+| Vision | Tenancies, compliance, finance, portals, reporting, AI, complaints (R4, R7, R9–R12, R15): may not ship without domain expert input |
 
 Full module and process context: [product vision](docs/product-vision.md). Capability slices: [roadmap](specs/letoryn-platform/roadmap.md). There is no separate PRD process.
 

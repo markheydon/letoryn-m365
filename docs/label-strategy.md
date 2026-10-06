@@ -149,5 +149,5 @@ Effort estimate. Added during planning: not required when an issue is first crea
 #### Milestones: delivery phase (not labels)
 
 - GitHub milestones **Catalogue**, **Operations**, and **Vision** are defined in [milestone-strategy.md](./milestone-strategy.md).
-- Set milestone from the roadmap **Phase** column for the issue’s primary **R#**; do not duplicate phase as a label.
+- Set milestone from the issue’s primary **R#**: use the roadmap section (**Catalogue**, **Operations**, or **Vision**) or the row → milestone table in [milestone-strategy.md](./milestone-strategy.md#row--milestone-quick-reference); do not duplicate phase as a label.
 - `type/epic` describes theme; milestone describes when the work is intended to ship in the programme.
