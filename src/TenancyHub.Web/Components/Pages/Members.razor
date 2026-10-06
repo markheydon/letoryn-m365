@@ -37,40 +37,72 @@
         @if (_canManage)
         {
             <FluentStack Orientation="Orientation.Vertical" VerticalGap="12">
-                <FluentLabel Typo="Typography.Body"><strong>Invite</strong> — pending invitation (30-day expiry)</FluentLabel>
-                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8" VerticalAlignment="VerticalAlignment.Center">
-                    <FluentTextInput @bind-Value="_inviteEmail" Label="Email" Required="true" />
-                    <FluentSelect TOption="string"
-                                  TValue="string"
-                                  Label="Role"
-                                  Items="@_roleOptions"
-                                  OptionText="@(r => r)"
-                                  OptionValue="@(r => r)"
-                                  @bind-Value="_inviteRole"
-                                  Width="200px" />
-                    <FluentButton Appearance="ButtonAppearance.Primary"
-                                  Disabled="_actionInProgress"
-                                  OnClick="InviteAsync">
-                        Send invite
-                    </FluentButton>
+                <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
+                    <FluentLabel Typo="Typography.Body"><strong>Invite</strong> — pending invitation (30-day expiry)</FluentLabel>
+                    <FluentStack Orientation="Orientation.Horizontal"
+                                 HorizontalGap="16"
+                                 VerticalAlignment="VerticalAlignment.Center"
+                                 Wrap="true">
+                        <FluentTextInput @bind-Value="_inviteEmail"
+                                         Label="Email"
+                                         LabelPosition="LabelPosition.Before"
+                                         LabelWidth="@MemberFormLabelWidth"
+                                         Required="true"
+                                         Width="20rem"
+                                         Margin="@MemberFormFieldMargin" />
+                        <FluentSelect TOption="string"
+                                      TValue="string"
+                                      Label="Role"
+                                      LabelPosition="LabelPosition.Before"
+                                      LabelWidth="@MemberFormLabelWidth"
+                                      Items="@_roleOptions"
+                                      OptionText="@(r => r)"
+                                      OptionValue="@(r => r)"
+                                      @bind-Value="_inviteRole"
+                                      Width="12rem"
+                                      Margin="@MemberFormFieldMargin" />
+                        <FluentSpacer Width="20px" Orientation="Orientation.Horizontal" />
+                        <FluentButton Appearance="ButtonAppearance.Primary"
+                                      Disabled="_actionInProgress"
+                                      Margin="@MemberFormFieldMargin"
+                                      OnClick="InviteAsync">
+                            Send invite
+                        </FluentButton>
+                    </FluentStack>
                 </FluentStack>
 
-                <FluentLabel Typo="Typography.Body"><strong>Provision</strong> — immediate active membership</FluentLabel>
-                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8" VerticalAlignment="VerticalAlignment.Center">
-                    <FluentTextInput @bind-Value="_provisionEmail" Label="Email" Required="true" />
-                    <FluentSelect TOption="string"
-                                  TValue="string"
-                                  Label="Role"
-                                  Items="@_roleOptions"
-                                  OptionText="@(r => r)"
-                                  OptionValue="@(r => r)"
-                                  @bind-Value="_provisionRole"
-                                  Width="200px" />
-                    <FluentButton Appearance="ButtonAppearance.Outline"
-                                  Disabled="_actionInProgress"
-                                  OnClick="ProvisionAsync">
-                        Provision member
-                    </FluentButton>
+                <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
+                    <FluentLabel Typo="Typography.Body"><strong>Provision</strong> — immediate active membership</FluentLabel>
+                    <FluentStack Orientation="Orientation.Horizontal"
+                                 HorizontalGap="16"
+                                 VerticalAlignment="VerticalAlignment.Center"
+                                 Wrap="true">
+                        <FluentTextInput @bind-Value="_provisionEmail"
+                                         Label="Email"
+                                         LabelPosition="LabelPosition.Before"
+                                         LabelWidth="@MemberFormLabelWidth"
+                                         Required="true"
+                                         Width="20rem"
+                                         Margin="@MemberFormFieldMargin" />
+                        <FluentSelect TOption="string"
+                                      TValue="string"
+                                      Label="Role"
+                                      LabelPosition="LabelPosition.Before"
+                                      LabelWidth="@MemberFormLabelWidth"
+                                      Items="@_roleOptions"
+                                      OptionText="@(r => r)"
+                                      OptionValue="@(r => r)"
+                                      @bind-Value="_provisionRole"
+                                      Width="12rem"
+                                      Margin="@MemberFormFieldMargin" />
+                        <FluentSpacer Width="20px" Orientation="Orientation.Horizontal" />
+                        <FluentButton Appearance="ButtonAppearance.Outline"
+                                      Disabled="_actionInProgress"
+                                      Margin="@MemberFormFieldMargin"
+                                      OnClick="ProvisionAsync">
+                            Provision member
+                        </FluentButton>
+                    </FluentStack>
                 </FluentStack>
             </FluentStack>
         }
@@ -82,8 +114,13 @@
         else
         {
             <FluentDataGrid Items="@_roster.AsQueryable()"
-                            GridTemplateColumns="@(_canManage ? "2fr 1fr 1fr 2fr" : "2fr 1fr 1fr")">
-                <PropertyColumn Property="@(m => m.Email)" Title="Email" Sortable="true" />
+                            GridTemplateColumns="@(_canManage ? "3fr 1fr 1fr 2fr" : "3fr 1fr 1fr")">
+                <TemplateColumn Title="Email" SortBy="EmailSort" Sortable="true">
+                    @{
+                        var emailRow = context;
+                    }
+                    <FluentLabel Tooltip="@emailRow.Email">@emailRow.Email</FluentLabel>
+                </TemplateColumn>
                 <PropertyColumn Property="@(m => m.Role)" Title="Role" Sortable="true" />
                 <PropertyColumn Property="@(m => m.Status)" Title="Status" Sortable="true" />
                 @if (_canManage)
@@ -147,6 +184,9 @@
 </FluentStack>
 
 @code {
+    private const string MemberFormLabelWidth = "2.75rem";
+    private const string MemberFormFieldMargin = "Margin.Top0 Margin.Bottom0";
+
     [Inject]
     private AgencyContextState AgencyContext { get; set; } = default!;
 
@@ -179,6 +219,9 @@
     private string _inviteRole = "StandardMember";
     private string _provisionEmail = string.Empty;
     private string _provisionRole = "StandardMember";
+
+    private static readonly GridSort<MembershipRosterDto> EmailSort =
+        GridSort<MembershipRosterDto>.ByAscending(m => m.Email);
 
     protected override async Task OnInitializedAsync()
     {
