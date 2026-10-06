@@ -1,14 +1,14 @@
 # Letoryn
 
-**Letoryn for Microsoft 365.** A **multi-tenant**, **Microsoft 365–centric** property catalogue for small UK letting agencies (typically 1–25 staff) and very small portfolios. It stays native to **Entra ID and Microsoft Graph**, stores listing media in **SharePoint**, and exposes **one canonical listing feed** for the agency's **WordPress** site and syndication tools. It is not a replacement for the CRM, compliance, referencing, accounting, or other systems an agency already runs.
+**Letoryn for Microsoft 365.** A **multi-tenant**, **Microsoft 365-centric** property catalogue for small UK letting agencies (typically 1-25 staff) and very small portfolios. It stays native to **Entra ID and Microsoft Graph**, stores listing media in **SharePoint**, and exposes **one canonical listing feed** for the agency's **WordPress** site and syndication tools. It is not a replacement for the CRM, compliance, referencing, accounting, or other systems an agency already runs.
 
 The repository is **open source** (MIT) and an early **.NET Aspire** scaffold ([tech stack](docs/tech-stack.md)). All product work is **Spec Kit** SDD: a [platform roadmap](specs/letoryn-platform/roadmap.md) decomposes the epic; each slice runs specify → plan → tasks → implement ([Spec Kit](https://github.com/github/spec-kit), [spec of specs](https://github.github.com/spec-kit/concepts/spec-of-specs.html)).
 
 ## Collaboration and project status
 
-**Looking for a UK lettings domain expert to partner** on Vision-phase modules (tenancies, compliance depth, finance, and similar). Catalogue and Operations slices are intended to be buildable without that expertise; see [CONTRIBUTING.md](CONTRIBUTING.md) for how to get in touch.
-
 **Origin (public-safe):** the project started as an idea to bring fragmented agency tooling into one M365-native platform. That full scope needs lettings domain knowledge the maintainer cannot supply alone, so the repo is open for use, contribution, and partnership while the **Catalogue** ships first.
+
+**Looking for a UK lettings domain expert to partner** on Vision-phase modules (tenancies, compliance depth, finance, and similar). Catalogue and Operations slices are intended to be buildable without that expertise; see [CONTRIBUTING.md](CONTRIBUTING.md) for how to get in touch.
 
 Delivery phases and module map: [product vision](docs/product-vision.md); slice index: [roadmap](specs/letoryn-platform/roadmap.md).
 
@@ -28,7 +28,7 @@ An agency already has a website, Microsoft 365, and specialist tools for CRM, re
 | Hosting | Azure (Aspire deployment flows when introduced) |
 | Catalogue (first release) | Listings (R3), SharePoint media (R8), one listing feed for WordPress (R13) and syndication (R14); foundation **R1 done** |
 | Operations | Optional contacts, repairs/work orders, dashboard (R2, R5, R6) |
-| Vision | Tenancies, compliance, finance, portals, reporting, AI, complaints (R4, R7, R9–R12, R15): may not ship without domain expert input |
+| Vision | Tenancies, compliance, finance, portals, reporting, AI, complaints (R4, R7, R9-R12, R15): may not ship without domain expert input |
 
 Full module and process context: [product vision](docs/product-vision.md). Capability slices: [roadmap](specs/letoryn-platform/roadmap.md). There is no separate PRD process.
 
@@ -36,7 +36,7 @@ Full module and process context: [product vision](docs/product-vision.md). Capab
 
 The repo is **public open source** (MIT). Do not commit customer-confidential material, internal process maps, or private M365 links. See [product vision: confidentiality](docs/product-vision.md#confidentiality-and-private-assets).
 
-## Trademark
+## Branding
 
 **Letoryn** is the project name. The MIT license does not grant rights to use the name or any official branding to imply you operate the official Letoryn hosted service. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
@@ -87,10 +87,6 @@ Details: [docs/local-development.md](docs/local-development.md).
 | Operations and Vision | Recorded on roadmap |
 
 ## Spec-driven work
-
-**Catalogue:** **R1 (done) → R3 → R8 → R13/R14** (one shared listing feed for WordPress and syndication).
-
-**Operations:** **R2**, **R5**, **R6**. **Vision:** **R4**, **R7**, **R9–R12**, **R15**.
 
 See [platform roadmap](specs/letoryn-platform/roadmap.md) for Spec Kit workflow and phase definitions. GitHub milestone rules: [milestone-strategy.md](docs/milestone-strategy.md).
 

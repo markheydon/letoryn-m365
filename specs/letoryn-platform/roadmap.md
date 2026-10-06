@@ -1,6 +1,6 @@
 # Roadmap: Letoryn platform
 
-Letoryn is a **multi-tenant** Microsoft 365–centric **property catalogue** for small UK letting agencies; the epic is too large for one Spec Kit cycle, so work is split into independently specifiable slices ([spec of specs](https://github.github.com/spec-kit/concepts/spec-of-specs.html)). Each slice is a normal feature (`spec.md`, `plan.md`, `tasks.md`); product context and delivery phases live in [docs/product-vision.md](../../docs/product-vision.md).
+Letoryn is a **multi-tenant** Microsoft 365-centric **property catalogue** for small UK letting agencies; the epic is too large for one Spec Kit cycle, so work is split into independently specifiable slices ([spec of specs](https://github.github.com/spec-kit/concepts/spec-of-specs.html)). Each slice is a normal feature (`spec.md`, `plan.md`, `tasks.md`); product context and delivery phases live in [docs/product-vision.md](../../docs/product-vision.md).
 
 The product **sits beside** the agency's existing website, syndication path, and specialist systems. It does not aim to be the single application that makes a CRM, tenancy platform, compliance product, or accounting package unnecessary. The **first feature set** is the catalogue an agency can publish to its existing WordPress site and syndication tools from **one outbound listing feed**. Rows in **Operations** and **Vision** are recorded ideas. Scheduling one is not a decision to replace the third-party system that already covers that job.
 
@@ -44,7 +44,7 @@ Recorded long-term intent. Rows here need lettings domain expertise and are **no
 |----|-------------|--------|----------------|------------|--------|----------|
 | R4 | Tenancies & lettings flow | Applications, tenancy creation, move-in, renewals, arrears **tracking** (not collection) | Lightweight marketing/viewings; no payment execution; complaints in R15 | R2, R3 | planned | n/a |
 | R7 | Compliance | EPC, gas, EICR, inspections, expiry and renewal workflows | Certificate metadata in-app; documents/media in SharePoint where applicable. A displayed EPC rating on a listing belongs to R3; expiry chasing belongs here | R3, R8 | planned | n/a |
-| R9 | Reporting | KPIs, occupancy, arrears, compliance dashboards | Not full BI/custom report builder | R3–R7, R15 | planned | n/a |
+| R9 | Reporting | KPIs, occupancy, arrears, compliance dashboards | Not full BI/custom report builder | R3-R7, R15 | planned | n/a |
 | R10 | Finance & payments | Rent schedules, statements, Stripe/GoCardless, later open banking | Does not replace full accounting or specialist rent platforms; reconciliation in sub-spec | R4 | planned | n/a |
 | R11 | Customer portals | Tenant, landlord, contractor self-service | Per-portal scope in sub-spec | R4, R6, R10 | planned | n/a |
 | R12 | AI-assisted operations | Document Q&A, email triage, assisted workflows | No autonomous legal decisions; builds on R7/R8 | R7, R8 | planned | n/a |
