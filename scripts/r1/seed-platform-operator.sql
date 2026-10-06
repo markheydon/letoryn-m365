@@ -1,11 +1,11 @@
--- Tenancy Hub R1: seed initial platform operator (run AFTER EF migrations).
+-- Letoryn R1: seed initial platform operator (run AFTER EF migrations).
 -- Aligned with EF migration InitialPlatformFoundation ("UserIdentities" table).
 --
 -- Usage:
 --   1. Replace ENTRA_OID and EMAIL below.
---   2. Connect to the tenancyhub database (aspire describe apiservice --format Json →
---      ConnectionStrings__tenancyhub or TENANCYHUB_URI; not aspire describe postgres alone).
---   3. psql "<tenancyhub-connection-string>" -f scripts/r1/seed-platform-operator.sql
+--   2. Connect to the letoryn database (aspire describe apiservice --format Json →
+--      ConnectionStrings__letoryn or LETORYN_URI; not aspire describe postgres alone).
+--   3. psql "<letoryn-connection-string>" -f scripts/r1/seed-platform-operator.sql
 
 DO $$
 DECLARE

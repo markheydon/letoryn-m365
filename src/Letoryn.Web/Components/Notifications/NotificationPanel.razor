@@ -1,0 +1,254 @@
+@implements IDisposable
+@using Letoryn.Web.Components.Layout
+
+@if (_visible)
+{
+    <FluentCounterBadge Count="@_unreadCount">
+        <FluentButton Id="@_anchorId"
+                      Appearance="ButtonAppearance.Transparent"
+                      Style="@_headerButtonStyle"
+                      Title="Notifications"
+                      AriaLabel="Notifications"
+                      OnClick="TogglePanelAsync">
+            <FluentIcon Value="@(new Icons.Regular.Size20.Alert())" />
+        </FluentButton>
+    </FluentCounterBadge>
+
+    <FluentPopover AnchorId="@_anchorId"
+                   @bind-Opened="_panelOpen"
+                   Width="380px"
+                   OffsetVertical="8">
+        <FluentStack Orientation="Orientation.Vertical" VerticalGap="12" Padding="Padding12">
+            <FluentLabel Typo="Typography.Body"><strong>Notifications</strong></FluentLabel>
+
+            @if (!string.IsNullOrWhiteSpace(_actionMessage))
+            {
+                <FluentMessageBar Intent="@_actionMessageIntent">@_actionMessage</FluentMessageBar>
+            }
+
+            @if (_loading)
+            {
+                <FluentSpinner />
+            }
+            else if (_loadState is LoadState.AccessDenied)
+            {
+                <FluentLabel>You do not have permission to view notifications for this agency.</FluentLabel>
+            }
+            else if (_loadState is LoadState.Failed)
+            {
+                <FluentLabel>@_loadErrorMessage</FluentLabel>
+                <FluentButton Appearance="ButtonAppearance.Outline" OnClick="LoadNotificationsAsync">Try again</FluentButton>
+            }
+            else if (_notifications.Count == 0)
+            {
+                <FluentLabel>No notifications yet.</FluentLabel>
+            }
+            else
+            {
+                <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
+                    @foreach (var item in _notifications)
+                    {
+                        <FluentCard>
+                            <FluentStack Orientation="Orientation.Vertical" VerticalGap="4" Padding="Padding12">
+                                <FluentStack Orientation="Orientation.Horizontal"
+                                             HorizontalGap="8"
+                                             VerticalAlignment="VerticalAlignment.Center">
+                                    @if (!item.IsRead)
+                                    {
+                                        <FluentBadge Appearance="BadgeAppearance.Filled" Color="BadgeColor.Brand">Unread</FluentBadge>
+                                    }
+                                    <FluentLabel Typo="Typography.Body"><strong>@item.Title</strong></FluentLabel>
+                                </FluentStack>
+                                <FluentLabel Typo="Typography.Body">@item.Body</FluentLabel>
+                                <FluentLabel Typo="Typography.Caption">@FormatTimestamp(item.CreatedAt)</FluentLabel>
+                                @if (!item.IsRead && _canMarkRead)
+                                {
+                                    <FluentButton Appearance="ButtonAppearance.Outline"
+                                                  Size="ButtonSize.Small"
+                                                  Disabled="_markReadInProgress == item.Id"
+                                                  OnClick="@(() => MarkReadAsync(item.Id))">
+                                        Mark as read
+                                    </FluentButton>
+                                }
+                            </FluentStack>
+                        </FluentCard>
+                    }
+                </FluentStack>
+            }
+        </FluentStack>
+    </FluentPopover>
+}
+
+@code {
+    private const string AnchorIdPrefix = "letoryn-notification-bell-";
+
+    [CascadingParameter(Name = "OnBrandHeader")]
+    private bool OnBrandHeader { get; set; }
+
+    private string? _headerButtonStyle =>
+        OnBrandHeader ? ShellHeaderStyles.OnBrandTransparentButton : null;
+
+    [Inject]
+    private AgencyContextState AgencyContext { get; set; } = default!;
+
+    [Inject]
+    private LetorynApiClient ApiClient { get; set; } = default!;
+
+    private readonly string _anchorId = AnchorIdPrefix + Guid.NewGuid().ToString("N");
+
+    private bool _visible;
+    private bool _canMarkRead;
+    private bool _panelOpen;
+    private bool _loading;
+    private LoadState _loadState = LoadState.Idle;
+    private string? _loadErrorMessage;
+    private string? _actionMessage;
+    private MessageBarIntent _actionMessageIntent = MessageBarIntent.Info;
+    private Guid? _markReadInProgress;
+    private IReadOnlyList<NotificationListItemDto> _notifications = [];
+    private int _unreadCount;
+    private Guid? _loadedAgencyId;
+
+    protected override void OnInitialized()
+    {
+        AgencyContext.Changed += OnContextChanged;
+        RefreshVisibility();
+    }
+
+    private void OnContextChanged()
+    {
+        RefreshVisibility();
+        if (_visible && AgencyContext.ActiveAgencyId != _loadedAgencyId)
+        {
+            _notifications = [];
+            _unreadCount = 0;
+            _loadState = LoadState.Idle;
+            if (_panelOpen)
+            {
+                _ = InvokeAsync(LoadNotificationsAsync);
+            }
+        }
+
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void RefreshVisibility()
+    {
+        var wasVisible = _visible;
+        _visible = AgencyContext.CanShowAgencyNotificationBell;
+        _canMarkRead = AgencyContext.CanMarkAgencyNotificationsRead;
+        if (!_visible)
+        {
+            _panelOpen = false;
+            _notifications = [];
+            _unreadCount = 0;
+            _loadedAgencyId = null;
+            _loadState = LoadState.Idle;
+            _actionMessage = null;
+            return;
+        }
+
+        if ((!wasVisible || AgencyContext.ActiveAgencyId != _loadedAgencyId)
+            && AgencyContext.ActiveAgencyId is not null)
+        {
+            _ = InvokeAsync(LoadNotificationsAsync);
+        }
+    }
+
+    private async Task TogglePanelAsync()
+    {
+        _panelOpen = !_panelOpen;
+        if (_panelOpen)
+        {
+            await LoadNotificationsAsync();
+        }
+    }
+
+    private async Task LoadNotificationsAsync()
+    {
+        if (!_visible || AgencyContext.ActiveAgencyId is not Guid agencyId)
+        {
+            return;
+        }
+
+        _loading = true;
+        _loadState = LoadState.Idle;
+        _loadErrorMessage = null;
+        _actionMessage = null;
+        await InvokeAsync(StateHasChanged);
+
+        var result = await ApiClient.GetAgencyNotificationsAsync(agencyId);
+
+        _loading = false;
+        _loadedAgencyId = agencyId;
+
+        if (result.Succeeded)
+        {
+            _notifications = result.Items.OrderByDescending(n => n.CreatedAt).ToList();
+            _unreadCount = _notifications.Count(n => !n.IsRead);
+            _loadState = LoadState.Ready;
+        }
+        else if (result.AccessDenied)
+        {
+            _notifications = [];
+            _unreadCount = 0;
+            _loadState = LoadState.AccessDenied;
+        }
+        else
+        {
+            _notifications = [];
+            _unreadCount = 0;
+            _loadErrorMessage = result.ErrorMessage;
+            _loadState = LoadState.Failed;
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task MarkReadAsync(Guid notificationId)
+    {
+        if (!_canMarkRead || AgencyContext.ActiveAgencyId is not Guid agencyId)
+        {
+            return;
+        }
+
+        _markReadInProgress = notificationId;
+        _actionMessage = null;
+        await InvokeAsync(StateHasChanged);
+
+        var result = await ApiClient.MarkAgencyNotificationReadAsync(agencyId, notificationId);
+        _markReadInProgress = null;
+
+        if (result.Succeeded)
+        {
+            _notifications = _notifications
+                .Select(n => n.Id == notificationId
+                    ? n with { IsRead = true, ReadAt = DateTimeOffset.UtcNow }
+                    : n)
+                .ToList();
+            _unreadCount = _notifications.Count(n => !n.IsRead);
+        }
+        else
+        {
+            _actionMessage = result.ErrorMessage;
+            _actionMessageIntent = result.AccessDenied
+                ? MessageBarIntent.Warning
+                : MessageBarIntent.Error;
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private static string FormatTimestamp(DateTimeOffset createdAt) =>
+        createdAt.ToLocalTime().ToString("g");
+
+    public void Dispose() => AgencyContext.Changed -= OnContextChanged;
+
+    private enum LoadState
+    {
+        Idle,
+        Ready,
+        AccessDenied,
+        Failed,
+    }
+}

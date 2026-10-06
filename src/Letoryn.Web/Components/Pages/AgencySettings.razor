@@ -1,0 +1,224 @@
+@page "/agency-settings"
+@attribute [Authorize]
+@implements IDisposable
+
+<PageTitle>Agency settings</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
+    <FluentLabel Typo="Typography.H4">Agency settings</FluentLabel>
+
+    @if (_viewState is ViewState.PermissionDenied)
+    {
+        <FluentMessageBar Intent="MessageBarIntent.Warning">
+            You do not have permission to view or change settings for this agency.
+        </FluentMessageBar>
+    }
+    else if (_viewState is ViewState.Loading)
+    {
+        <FluentSpinner />
+    }
+    else if (_viewState is ViewState.LoadFailed)
+    {
+        <FluentMessageBar Intent="MessageBarIntent.Error">
+            @_loadErrorMessage
+        </FluentMessageBar>
+        <FluentButton Appearance="ButtonAppearance.Primary" OnClick="LoadSettingsAsync">Try again</FluentButton>
+    }
+    else
+    {
+        @if (!string.IsNullOrWhiteSpace(_lifecycleStatus))
+        {
+            <FluentLabel Typo="Typography.Body">
+                Agency status: <strong>@_lifecycleStatus</strong>
+            </FluentLabel>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(_statusMessage))
+        {
+            <FluentMessageBar Intent="@_statusMessageIntent">
+                @_statusMessage
+            </FluentMessageBar>
+        }
+
+        <EditForm Model="_formModel" OnValidSubmit="SaveSettingsAsync">
+            <DataAnnotationsValidator />
+            <FluentStack Orientation="Orientation.Vertical" VerticalGap="12">
+                <FluentTextInput @bind-Value="_formModel.DisplayName"
+                                 Label="Display name"
+                                 Required="true"
+                                 Maxlength="200"
+                                 Style="max-width: 32rem;" />
+                <ValidationMessage For="@(() => _formModel.DisplayName)" />
+
+                <FluentTextInput @bind-Value="_formModel.PrimaryContactEmail"
+                                 Label="Primary contact email"
+                                 Required="true"
+                                 Type="TextInputType.Email"
+                                 Style="max-width: 32rem;" />
+                <ValidationMessage For="@(() => _formModel.PrimaryContactEmail)" />
+
+                <FluentTextInput @bind-Value="_formModel.PrimaryContactPhone"
+                                 Label="Primary contact phone (optional)"
+                                 Maxlength="32"
+                                 Style="max-width: 32rem;" />
+                <ValidationMessage For="@(() => _formModel.PrimaryContactPhone)" />
+
+                <FluentButton Type="ButtonType.Submit"
+                              Appearance="ButtonAppearance.Primary"
+                              Disabled="_saveInProgress">
+                    @(_saveInProgress ? "Saving…" : "Save settings")
+                </FluentButton>
+            </FluentStack>
+        </EditForm>
+    }
+</FluentStack>
+
+@code {
+    [Inject]
+    private AgencyContextState AgencyContext { get; set; } = default!;
+
+    [Inject]
+    private LetorynApiClient ApiClient { get; set; } = default!;
+
+    private enum ViewState
+    {
+        Loading,
+        Ready,
+        PermissionDenied,
+        LoadFailed,
+    }
+
+    private ViewState _viewState = ViewState.Loading;
+    private bool _saveInProgress;
+    private string? _lifecycleStatus;
+    private string? _statusMessage;
+    private MessageBarIntent _statusMessageIntent = MessageBarIntent.Info;
+    private string _loadErrorMessage = "Unable to load agency settings.";
+    private readonly AgencySettingsFormModel _formModel = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        AgencyContext.Changed += OnContextChanged;
+        await AgencyContext.WaitForShellBootstrapAsync();
+        await LoadSettingsAsync();
+    }
+
+    private void OnContextChanged()
+    {
+        _ = InvokeAsync(async () =>
+        {
+            ClearStatusMessage();
+            await LoadSettingsAsync();
+            StateHasChanged();
+        });
+    }
+
+    private async Task LoadSettingsAsync()
+    {
+        if (AgencyContext.Profile is null)
+        {
+            _viewState = ViewState.LoadFailed;
+            _loadErrorMessage = "Unable to load your profile. Try again later.";
+            return;
+        }
+
+        if (!AgencyContext.CanManageAgencySettings || AgencyContext.ActiveAgencyId is not Guid agencyId)
+        {
+            _viewState = ViewState.PermissionDenied;
+            return;
+        }
+
+        _viewState = ViewState.Loading;
+
+        var result = await ApiClient.GetAgencySettingsAsync(agencyId);
+        switch (result.Access)
+        {
+            case AgencySettingsLoadAccess.Success when result.Settings is not null:
+                _formModel.Apply(result.Settings);
+                _lifecycleStatus = result.Settings.LifecycleStatus;
+                _viewState = ViewState.Ready;
+                break;
+            case AgencySettingsLoadAccess.Denied:
+                _viewState = ViewState.PermissionDenied;
+                break;
+            default:
+                _loadErrorMessage = "Unable to load agency settings. Try again later.";
+                _viewState = ViewState.LoadFailed;
+                break;
+        }
+    }
+
+    private async Task SaveSettingsAsync()
+    {
+        if (!AgencyContext.CanManageAgencySettings || AgencyContext.ActiveAgencyId is not Guid agencyId)
+        {
+            return;
+        }
+
+        _saveInProgress = true;
+        ClearStatusMessage();
+
+        try
+        {
+            var result = await ApiClient.UpdateAgencySettingsAsync(
+                agencyId,
+                new UpdateAgencySettingsApiRequest(
+                    _formModel.DisplayName.Trim(),
+                    _formModel.PrimaryContactEmail.Trim(),
+                    string.IsNullOrWhiteSpace(_formModel.PrimaryContactPhone)
+                        ? null
+                        : _formModel.PrimaryContactPhone.Trim()));
+
+            if (result.Succeeded)
+            {
+                _statusMessage = "Settings saved.";
+                _statusMessageIntent = MessageBarIntent.Success;
+
+                var profile = await ApiClient.GetMeAsync();
+                if (profile is not null)
+                {
+                    AgencyContext.SetProfile(profile);
+                }
+
+                AgencyContext.SetActiveAgency(agencyId, _formModel.DisplayName.Trim());
+                await LoadSettingsAsync();
+            }
+            else
+            {
+                _statusMessage = result.ErrorMessage ?? "Settings could not be saved.";
+                _statusMessageIntent = MessageBarIntent.Error;
+            }
+        }
+        finally
+        {
+            _saveInProgress = false;
+        }
+    }
+
+    private void ClearStatusMessage() => _statusMessage = null;
+
+    public void Dispose() => AgencyContext.Changed -= OnContextChanged;
+
+    private sealed class AgencySettingsFormModel
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Display name is required.")]
+        [System.ComponentModel.DataAnnotations.MaxLength(200, ErrorMessage = "Display name must be 200 characters or fewer.")]
+        public string DisplayName { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Primary contact email is required.")]
+        [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Primary contact email is not a valid email address.")]
+        public string PrimaryContactEmail { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.MaxLength(32, ErrorMessage = "Primary contact phone must be 32 characters or fewer.")]
+        public string? PrimaryContactPhone { get; set; }
+
+        public void Apply(AgencySettingsApiDto settings)
+        {
+            DisplayName = settings.DisplayName;
+            PrimaryContactEmail = settings.PrimaryContactEmail;
+            PrimaryContactPhone = string.IsNullOrWhiteSpace(settings.PrimaryContactPhone)
+                ? null
+                : settings.PrimaryContactPhone;
+        }
+    }
+}

@@ -18,7 +18,7 @@ Deliver the R1 platform foundation as an Aspire-orchestrated distributed app: Po
 
 **Language/Version**: C# / .NET 10 (`global.json`)
 
-**Primary Dependencies**: Aspire 13.6 AppHost (`AddDotnetProject`), `Aspire.Hosting.PostgreSQL`, `Aspire.Npgsql.EntityFrameworkCore.PostgreSQL`, EF Core 10, Microsoft.Identity.Web, Fluent UI Blazor v5, `TenancyHub.ServiceDefaults`
+**Primary Dependencies**: Aspire 13.6 AppHost (`AddDotnetProject`), `Aspire.Hosting.PostgreSQL`, `Aspire.Npgsql.EntityFrameworkCore.PostgreSQL`, EF Core 10, Microsoft.Identity.Web, Fluent UI Blazor v5, `Letoryn.ServiceDefaults`
 
 **Storage**: PostgreSQL (Aspire-hosted locally; Azure PostgreSQL via Aspire Azure integrations when deploying)
 
@@ -70,21 +70,21 @@ specs/001-platform-foundation/
 
 ```text
 src/
-├── TenancyHub.AppHost/           # AddPostgres, parameters, WithReference wiring
-├── TenancyHub.ServiceDefaults/   # Existing OTEL, discovery, resilience
-├── TenancyHub.Domain/            # NEW: entities, enums, domain errors
-├── TenancyHub.Application/       # NEW: use cases, IAgencyContext, authz rules
-├── TenancyHub.Infrastructure/    # NEW: DbContext, EF configs, migrations
-├── TenancyHub.ApiService/        # Minimal APIs/controllers, JWT, tenancy middleware
-└── TenancyHub.Web/               # Fluent shell, Identity.Web, typed API client
+├── Letoryn.AppHost/           # AddPostgres, parameters, WithReference wiring
+├── Letoryn.ServiceDefaults/   # Existing OTEL, discovery, resilience
+├── Letoryn.Domain/            # NEW: entities, enums, domain errors
+├── Letoryn.Application/       # NEW: use cases, IAgencyContext, authz rules
+├── Letoryn.Infrastructure/    # NEW: DbContext, EF configs, migrations
+├── Letoryn.ApiService/        # Minimal APIs/controllers, JWT, tenancy middleware
+└── Letoryn.Web/               # Fluent shell, Identity.Web, typed API client
 
 tests/
-├── TenancyHub.Application.UnitTests/   # NEW
-├── TenancyHub.ApiService.UnitTests/    # Extend existing
-└── TenancyHub.E2E/                     # NEW when journeys added (Playwright C#)
+├── Letoryn.Application.UnitTests/   # NEW
+├── Letoryn.ApiService.UnitTests/    # Extend existing
+└── Letoryn.E2E/                     # NEW when journeys added (Playwright C#)
 ```
 
-**Structure Decision**: Extend current Aspire solution with three product libraries plus tests. Matches `docs/tech-stack.md` layout conventions (`TenancyHub.*` prefix).
+**Structure Decision**: Extend current Aspire solution with three product libraries plus tests. Matches `docs/tech-stack.md` layout conventions (`Letoryn.*` prefix).
 
 ## Authoritative operational documentation
 
@@ -142,33 +142,33 @@ See [research.md](./research.md). All **NEEDS CLARIFICATION** items resolved:
 
 ```csharp
 // Illustrative: confirm APIs via `aspire docs api search` before coding
-var postgres = builder.AddPostgres("postgres").AddDatabase("tenancyhub");
+var postgres = builder.AddPostgres("postgres").AddDatabase("letoryn");
 
-var apiService = builder.AddDotnetProject("apiservice", "../TenancyHub.ApiService/...")
+var apiService = builder.AddDotnetProject("apiservice", "../Letoryn.ApiService/...")
     .WithReference(postgres)
     .WithHttpHealthCheck("/health");
 
-builder.AddDotnetProject("webfrontend", "../TenancyHub.Web/...")
+builder.AddDotnetProject("webfrontend", "../Letoryn.Web/...")
     .WithExternalHttpEndpoints()
     .WithReference(apiService)
     .WaitFor(apiService)
     .WithHttpHealthCheck("/health");
 ```
 
-**Aspire resource names** (must match [quickstart.md](./quickstart.md) and `aspire wait` commands): `postgres`, `apiservice`, `webfrontend`: project paths point at `TenancyHub.ApiService` and `TenancyHub.Web` under `src/`.
+**Aspire resource names** (must match [quickstart.md](./quickstart.md) and `aspire wait` commands): `postgres`, `apiservice`, `webfrontend`: project paths point at `Letoryn.ApiService` and `Letoryn.Web` under `src/`.
 
 Entra parameters injected with `AddParameter(..., secret: true)` and environment mapping: details in [docs/operations-rebuild-runbook.md §3](../../docs/operations-rebuild-runbook.md#3-local-configuration-aspire-parameters).
 
 ### API service registration (implement)
 
-- `builder.AddNpgsqlDbContext<TenancyHubDbContext>(connectionName: "tenancyhub")`: connection name matches database resource.
-- Register application services in `TenancyHub.Application` extension methods.
+- `builder.AddNpgsqlDbContext<LetorynDbContext>(connectionName: "letoryn")`: connection name matches database resource.
+- Register application services in `Letoryn.Application` extension methods.
 - Tenancy middleware: resolve active agency header + membership validation before handlers.
 
 ### Web (implement)
 
 - `AddMicrosoftIdentityWebApp` + cookie options for idle/absolute session policy.
-- `AddHttpClient<TenancyHubApiClient>()` with base address from service discovery.
+- `AddHttpClient<LetorynApiClient>()` with base address from service discovery.
 - Fluent UI layout: header agency context, nav from permission model, operator area.
 
 ### Aspire workflow references

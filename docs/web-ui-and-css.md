@@ -1,6 +1,6 @@
 # Web UI and custom CSS
 
-Tenancy Hub’s web front end uses **Microsoft Fluent UI Blazor v5** (`TenancyHub.Web`). The component library should own look, layout primitives, spacing, and theme behavior. Custom CSS is the exception, not the default.
+Letoryn’s web front end uses **Microsoft Fluent UI Blazor v5** (`Letoryn.Web`). The component library should own look, layout primitives, spacing, and theme behavior. Custom CSS is the exception, not the default.
 
 For Fluent component usage and theming APIs, see `.agents/skills/fluentui-blazor-usage/` (especially `references/THEMING.md` and `references/SETUP.md`).
 
@@ -29,9 +29,9 @@ If something looks wrong, first check whether Fluent already exposes the behavio
 
 When product branding requires overrides beyond Fluent’s theme:
 
-1. **Single ownership**: e.g. `wwwroot/branding.css` (or `wwwroot/css/tenancy-hub-brand.css`) imported once from `App.razor`, after Fluent/reboot styles.
-2. **Scoped root**: apply a root class on the app shell (e.g. `tenancy-hub-brand` on `body` or the top-level layout) so brand rules do not leak globally.
-3. **Tokens, not literals**: define brand values as CSS custom properties on that root, and map surfaces to Fluent tokens where possible (`--colorBrandBackground`, `--colorBrandForeground1`, spacing/typography variables). Pages and components reference `var(--tenancy-hub-…)` or Fluent `var(--color…)`, not `#1b6ec2` in Razor.
+1. **Single ownership**: e.g. `wwwroot/branding.css` (or `wwwroot/css/letoryn-m365-brand.css`) imported once from `App.razor`, after Fluent/reboot styles.
+2. **Scoped root**: apply a root class on the app shell (e.g. `letoryn-m365-brand` on `body` or the top-level layout) so brand rules do not leak globally.
+3. **Tokens, not literals**: define brand values as CSS custom properties on that root, and map surfaces to Fluent tokens where possible (`--colorBrandBackground`, `--colorBrandForeground1`, spacing/typography variables). Pages and components reference `var(--letoryn-m365-…)` or Fluent `var(--color…)`, not `#1b6ec2` in Razor.
 4. **No component surgery**: branding adjusts tokens and approved wrapper classes; it does not restyle `fluent-button` internals.
 
 Until `branding.css` exists, do not introduce one-off brand colors in the codebase.

@@ -8,7 +8,7 @@
       "args": [
         "start",
         "--apphost",
-        "${workspaceFolder}/src/TenancyHub.AppHost/TenancyHub.AppHost.csproj"
+        "${workspaceFolder}/src/Letoryn.AppHost/Letoryn.AppHost.csproj"
       ],
       "isBackground": true,
       "group": "build",
@@ -25,7 +25,7 @@
         "start",
         "--isolated",
         "--apphost",
-        "${workspaceFolder}/src/TenancyHub.AppHost/TenancyHub.AppHost.csproj"
+        "${workspaceFolder}/src/Letoryn.AppHost/Letoryn.AppHost.csproj"
       ],
       "isBackground": true,
       "group": "build",
@@ -62,7 +62,7 @@
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/TenancyHub.slnx",
+        "${workspaceFolder}/Letoryn.slnx",
         "--configuration",
         "Debug"
       ],
@@ -80,7 +80,7 @@
       "label": "test",
       "command": "dotnet",
       "type": "process",
-      "args": ["test", "${workspaceFolder}/TenancyHub.slnx"],
+      "args": ["test", "${workspaceFolder}/Letoryn.slnx"],
       "problemMatcher": "$msCompile",
       "group": {
         "kind": "test",
@@ -98,7 +98,7 @@
       "args": [
         "watch",
         "--project",
-        "${workspaceFolder}/src/TenancyHub.Web/TenancyHub.Web.csproj",
+        "${workspaceFolder}/src/Letoryn.Web/Letoryn.Web.csproj",
         "run"
       ],
       "problemMatcher": [
@@ -132,7 +132,7 @@
       "args": [
         "watch",
         "--project",
-        "${workspaceFolder}/src/TenancyHub.Web/TenancyHub.Web.csproj",
+        "${workspaceFolder}/src/Letoryn.Web/Letoryn.Web.csproj",
         "run"
       ],
       "options": {
@@ -168,7 +168,7 @@
       "label": "clean",
       "command": "dotnet",
       "type": "process",
-      "args": ["clean", "${workspaceFolder}/TenancyHub.slnx"],
+      "args": ["clean", "${workspaceFolder}/Letoryn.slnx"],
       "problemMatcher": "$msCompile",
       "group": "build",
       "presentation": {

@@ -1,0 +1,115 @@
+@implements IDisposable
+@using Letoryn.Web.Components.Layout
+
+@if (_options.Count == 1)
+{
+    <FluentLabel Typo="Typography.Body" Margin="Margin0" Style="@_headerLabelStyle">
+        @_options[0].Label
+    </FluentLabel>
+}
+else if (_options.Count > 1)
+{
+    <FluentStack Orientation="Orientation.Horizontal"
+                 HorizontalGap="8"
+                 VerticalAlignment="VerticalAlignment.Center"
+                 Margin="Margin0">
+        <FluentLabel Typo="Typography.Body" Margin="Margin0" Style="@_headerLabelStyle">Agency</FluentLabel>
+        <FluentSelect TOption="AgencyOption"
+                      TValue="string"
+                      Width="220px"
+                      Items="@_options"
+                      OptionText="@(item => item.Label)"
+                      OptionValue="@(item => item.Value)"
+                      @bind-Value="_selectedValue"
+                      @bind-Value:after="OnAgencyChangedAsync" />
+    </FluentStack>
+}
+
+@code {
+    [CascadingParameter(Name = "OnBrandHeader")]
+    private bool OnBrandHeader { get; set; }
+
+    private string? _headerLabelStyle => OnBrandHeader ? ShellHeaderStyles.OnBrandForeground : null;
+
+    [Inject]
+    private AgencyContextState AgencyContext { get; set; } = default!;
+
+    [Inject]
+    private LetorynApiClient ApiClient { get; set; } = default!;
+
+    private string? _selectedValue;
+    private IReadOnlyList<AgencyOption> _options = [];
+
+    protected override void OnInitialized()
+    {
+        AgencyContext.Changed += OnContextChanged;
+        RefreshOptions();
+    }
+
+    private void OnContextChanged()
+    {
+        RefreshOptions();
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void RefreshOptions()
+    {
+        if (AgencyContext.Profile is null)
+        {
+            _options = [];
+            _selectedValue = null;
+            return;
+        }
+
+        var profile = AgencyContext.Profile;
+        var membershipAgencyIds = new HashSet<Guid>();
+        var options = new List<AgencyOption>();
+
+        foreach (var membership in profile.Memberships.Where(m =>
+                     string.Equals(m.Status, "Active", StringComparison.Ordinal)
+                     && string.Equals(m.AgencyLifecycleStatus, "Active", StringComparison.Ordinal)))
+        {
+            membershipAgencyIds.Add(membership.AgencyId);
+            options.Add(new AgencyOption(membership.AgencyId.ToString(), membership.DisplayName));
+        }
+
+        foreach (var assignment in profile.OperatorAssignments.Where(a =>
+                     !string.Equals(a.AgencyLifecycleStatus, "Archived", StringComparison.Ordinal)))
+        {
+            if (membershipAgencyIds.Add(assignment.AgencyId))
+            {
+                options.Add(new AgencyOption(assignment.AgencyId.ToString(), assignment.DisplayName));
+            }
+        }
+
+        _options = options;
+
+        _selectedValue = AgencyContext.ActiveAgencyId?.ToString()
+            ?? profile.LastUsedAgencyId?.ToString()
+            ?? _options.FirstOrDefault()?.Value;
+    }
+
+    private async Task OnAgencyChangedAsync()
+    {
+        if (!Guid.TryParse(_selectedValue, out var agencyId))
+        {
+            return;
+        }
+
+        var displayName = _options.FirstOrDefault(o => o.Value == _selectedValue)?.Label;
+        var ok = await ApiClient.SetActiveAgencyAsync(agencyId);
+        if (!ok)
+        {
+            RefreshOptions();
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        AgencyContext.SetActiveAgency(agencyId, displayName);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose() => AgencyContext.Changed -= OnContextChanged;
+
+    private sealed record AgencyOption(string Value, string Label);
+}

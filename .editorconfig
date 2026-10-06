@@ -277,16 +277,16 @@ dotnet_diagnostic.CA1062.severity = none
 dotnet_diagnostic.CA1848.severity = suggestion
 
 # CS1591: Missing XML comment for publicly visible type or member
-#         Enforced on Tenancy Hub class libraries (see docs/build-quality.md)
+#         Enforced on Letoryn class libraries (see docs/build-quality.md)
 dotnet_diagnostic.CS1591.severity = none
 
-[src/TenancyHub.ServiceDefaults/**/*.cs]
+[src/Letoryn.ServiceDefaults/**/*.cs]
 dotnet_diagnostic.CS1591.severity = error
 
-[src/TenancyHub.Domain/**/*.cs]
+[src/Letoryn.Domain/**/*.cs]
 dotnet_diagnostic.CS1591.severity = error
 
-[src/TenancyHub.Infrastructure/**/*.cs]
+[src/Letoryn.Infrastructure/**/*.cs]
 dotnet_diagnostic.CS1591.severity = error
 
 # ──────────────────────────────────────

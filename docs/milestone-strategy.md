@@ -1,11 +1,11 @@
-# Tenancy Hub: Milestone strategy
+# Letoryn: Milestone strategy
 
 <!-- AI collaborator instructions: This is the canonical milestone policy. When creating or updating GitHub issues and pull requests, assign the delivery-phase milestone defined here. Do not invent ad-hoc milestone names (for example "MVP", "Sprint 3") unless the maintainer adds them in this file first. -->
 
 GitHub **milestones** group issues and pull requests by **delivery phase** from [product-vision.md](./product-vision.md#delivery-phases). They are separate from:
 
 - **`type/epic`** labels (roadmap themes such as R1: not a milestone substitute; see [label-strategy.md](./label-strategy.md)).
-- **Roadmap rows** **R1–R15** (scope and dependencies; see [roadmap.md](../specs/tenancy-hub-platform/roadmap.md)).
+- **Roadmap rows** **R1–R15** (scope and dependencies; see [roadmap.md](../specs/letoryn-platform/roadmap.md)).
 
 Related artefacts:
 
@@ -17,7 +17,7 @@ Related artefacts:
 
 ## Canonical milestones (GitHub)
 
-Create and maintain **exactly these** open milestones on `markheydon/tenancy-hub` unless this document is updated first.
+Create and maintain **exactly these** open milestones on `markheydon/letoryn-m365` unless this document is updated first.
 
 | Milestone title | Delivery phase | Roadmap rows (primary) | Meaning |
 |-----------------|----------------|------------------------|---------|
@@ -25,7 +25,7 @@ Create and maintain **exactly these** open milestones on `markheydon/tenancy-hub
 | **Go-live** | Go-live | **R4**, **R5**, **R6**, **R13**, **R14**, **R15**; **R7** when compliance tracking is in scope for launch | Partner cutover: operational modules plus website/syndication paths. |
 | **Later** | Later | **R9**, **R10**, **R11**, **R12** | Post go-live expansion (reporting, finance, portals, AI). |
 
-Row-to-phase mapping matches the **Phase** column in [roadmap.md](../specs/tenancy-hub-platform/roadmap.md). If the roadmap phase changes, update this table and move open issues/PRs to the correct milestone.
+Row-to-phase mapping matches the **Phase** column in [roadmap.md](../specs/letoryn-platform/roadmap.md). If the roadmap phase changes, update this table and move open issues/PRs to the correct milestone.
 
 ### POC vs “MVP” in conversation
 
@@ -58,7 +58,7 @@ When in doubt, prefer the milestone of the **primary** `area/*` / **R#** in the 
 ## Issues
 
 - Set **milestone** when creating or grooming an issue if the delivery phase is known.
-- Keep **milestone** aligned with the linked roadmap row when reprioritising (update [roadmap.md](../specs/tenancy-hub-platform/roadmap.md) first, then issues).
+- Keep **milestone** aligned with the linked roadmap row when reprioritising (update [roadmap.md](../specs/letoryn-platform/roadmap.md) first, then issues).
 - **`type/epic`** issues for a roadmap row (for example “R1 Platform foundation”) use that row’s phase milestone (**POC** for R1).
 - Do not use milestones as a substitute for `status/*` or `priority/*` labels.
 
@@ -86,7 +86,7 @@ gh pr edit 10 --milestone "POC"
 
 | Event | Action |
 |-------|--------|
-| New roadmap row or phase change | Update [roadmap.md](../specs/tenancy-hub-platform/roadmap.md), then this file’s table, then re-milestone open issues. |
+| New roadmap row or phase change | Update [roadmap.md](../specs/letoryn-platform/roadmap.md), then this file’s table, then re-milestone open issues. |
 | Phase complete (for example POC rows done) | Close the **POC** milestone on GitHub when all POC-scope issues for that programme goal are closed; open a new **POC** milestone only if the maintainer resets scope (document in this file). |
 | New milestone name needed | Add it here first, create it on GitHub, then use it: do not create orphan milestones. |
 
@@ -96,7 +96,7 @@ gh pr edit 10 --milestone "POC"
 
 When creating or updating an issue or PR:
 
-1. Identify primary **R#** or Spec Kit path → lookup **Phase** in [roadmap.md](../specs/tenancy-hub-platform/roadmap.md).
+1. Identify primary **R#** or Spec Kit path → lookup **Phase** in [roadmap.md](../specs/letoryn-platform/roadmap.md).
 2. Set milestone to **POC**, **Go-live**, or **Later** per the table above (or leave unset per rules).
 3. On PRs, copy milestone from the issue when linked.
 4. Do not create milestones named MVP, Sprint, or version numbers unless this document is updated.

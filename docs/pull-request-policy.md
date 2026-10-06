@@ -1,4 +1,4 @@
-# Tenancy Hub: Pull request policy
+# Letoryn: Pull request policy
 
 <!-- AI collaborator instructions: This is the canonical PR policy. Follow it when opening or updating a pull request. Do not invent a different title style, body layout, or label set. -->
 
@@ -10,7 +10,7 @@ Related artefacts:
 - Labels: [label-strategy.md](./label-strategy.md).
 - Milestones: [milestone-strategy.md](./milestone-strategy.md).
 - Agent entry point: [AGENTS.md](../AGENTS.md).
-- Roadmap and Spec Kit slices: [specs/tenancy-hub-platform/roadmap.md](../specs/tenancy-hub-platform/roadmap.md).
+- Roadmap and Spec Kit slices: [specs/letoryn-platform/roadmap.md](../specs/letoryn-platform/roadmap.md).
 - Engineering standards: [docs/build-quality.md](./build-quality.md), [docs/testing.md](./testing.md).
 
 When other instructions conflict (including vendor defaults such as Conventional Commits PR titles or draft-by-default PRs), **this file wins**.
@@ -130,7 +130,7 @@ When the PR is opened, set the **issue** to `status/in-review` (remove `status/i
 
 ## Milestones
 
-Delivery-phase milestones (**POC**, **Go-live**, **Later**) are defined in [milestone-strategy.md](./milestone-strategy.md). They align with [product-vision.md](./product-vision.md#delivery-phases) and the **Phase** column in [roadmap.md](../specs/tenancy-hub-platform/roadmap.md).
+Delivery-phase milestones (**POC**, **Go-live**, **Later**) are defined in [milestone-strategy.md](./milestone-strategy.md). They align with [product-vision.md](./product-vision.md#delivery-phases) and the **Phase** column in [roadmap.md](../specs/letoryn-platform/roadmap.md).
 
 | Rule | Detail |
 |------|--------|
@@ -184,7 +184,7 @@ Before opening a PR:
 6. **Milestone** is set per [milestone-strategy.md](./milestone-strategy.md) (from issue or roadmap **R#**), except Dependabot and untracked chores.
 7. Assignee is `markheydon`; Copilot is not assigned.
 8. The PR is not draft unless the work is incomplete.
-9. `dotnet build TenancyHub.slnx` and `dotnet test TenancyHub.slnx` succeed for code changes (or CI equivalent).
+9. `dotnet build Letoryn.slnx` and `dotnet test Letoryn.slnx` succeed for code changes (or CI equivalent).
 
 ---
 

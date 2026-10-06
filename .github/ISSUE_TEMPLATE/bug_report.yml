@@ -1,0 +1,36 @@
+name: Bug report
+description: Report unexpected behaviour in Letoryn
+title: "[Bug] "
+labels:
+  - type/bug
+  - priority/medium
+  - status/todo
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve Letoryn. Do not include secrets, tokens, or customer-identifiable data.
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: What you expected vs what you saw.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      placeholder: "1. ... 2. ..."
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Commit or version
+      placeholder: main @ abc1234 or release tag
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: Redact secrets before pasting.

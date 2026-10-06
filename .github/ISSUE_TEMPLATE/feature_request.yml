@@ -1,0 +1,29 @@
+name: Feature request
+description: Propose user-facing or platform capability
+title: "[Feature] "
+labels:
+  - type/feature
+  - priority/medium
+  - status/todo
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Check the [platform roadmap](https://github.com/markheydon/letoryn-m365/blob/main/specs/letoryn-platform/roadmap.md) before filing. For large scope, Spec Kit under `specs/` may be required.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or opportunity
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+    validations:
+      required: true
+  - type: input
+    id: roadmap
+    attributes:
+      label: Roadmap row (if known)
+      placeholder: R1, R8, etc.

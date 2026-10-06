@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Generates a self-signed dev client certificate for the Tenancy Hub web Entra app registration.
+# Generates a self-signed dev client certificate for the Letoryn web Entra app registration.
 # Outputs .cer (upload to Entra) and .pfx (Base64 into AppHost user secrets). Never commit these files.
 
 set -euo pipefail
 
-CERT_DIR="${CERT_DIR:-${HOME}/.local/share/tenancy-hub/certs}"
+CERT_DIR="${CERT_DIR:-${HOME}/.local/share/letoryn-m365/certs}"
 CERT_NAME="${CERT_NAME:-entra-web-dev}"
 DAYS_VALID="${DAYS_VALID:-825}"
 PFX_PASSWORD="${PFX_PASSWORD:-}"
@@ -18,7 +18,7 @@ Creates:
   <cert-dir>/entra-web-dev.pfx : encode for Parameters:EntraWebClientCertificatePfx
 
 Environment:
-  CERT_DIR       Output directory (default: ~/.local/share/tenancy-hub/certs)
+  CERT_DIR       Output directory (default: ~/.local/share/letoryn-m365/certs)
   CERT_NAME      Base file name without extension (default: entra-web-dev)
   DAYS_VALID     Certificate validity in days (default: 825)
   PFX_PASSWORD   PFX password; if unset, a random password is generated and printed once
@@ -61,10 +61,10 @@ if [[ -z "$PFX_PASSWORD" ]]; then
 fi
 
 openssl req -new -newkey rsa:2048 -nodes -keyout "$KEY_PATH" -out "$CSR_PATH" \
-  -subj "/CN=Tenancy Hub Web (Dev)/O=Tenancy Hub/C=GB" \
+  -subj "/CN=Letoryn Web (Dev)/O=Letoryn/C=GB" \
   -addext "subjectAltName=DNS:localhost" 2>/dev/null \
   || openssl req -new -newkey rsa:2048 -nodes -keyout "$KEY_PATH" -out "$CSR_PATH" \
-  -subj "/CN=Tenancy Hub Web (Dev)/O=Tenancy Hub/C=GB"
+  -subj "/CN=Letoryn Web (Dev)/O=Letoryn/C=GB"
 
 openssl x509 -req -in "$CSR_PATH" -signkey "$KEY_PATH" -out "$CER_PATH" -days "$DAYS_VALID" -sha256
 
@@ -82,7 +82,7 @@ Certificate files written:
 
 Next steps:
   1. Entra admin center → web app → Certificates & secrets → Upload certificate → $CER_PATH
-  2. From src/TenancyHub.AppHost:
+  2. From src/Letoryn.AppHost:
      dotnet user-secrets set "Parameters:EntraWebClientCertificatePfx" "\$(base64 -w0 $PFX_PATH)"
      dotnet user-secrets set "Parameters:EntraWebClientCertificatePassword" "<pfx-password>"
   3. Remove legacy Parameters:EntraWebClientSecret if present.

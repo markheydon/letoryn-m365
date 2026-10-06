@@ -1,0 +1,11 @@
+@page "/membership-suspended"
+@attribute [Authorize]
+@layout Letoryn.Web.Components.Layout.MinimalLayout
+@using Letoryn.Application.Agencies
+
+<PageTitle>Membership suspended</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
+    <FluentLabel Typo="Typography.H4">Membership suspended</FluentLabel>
+    <FluentLabel>@AgencyAccessRules.MembershipSuspendedMessage</FluentLabel>
+</FluentStack>

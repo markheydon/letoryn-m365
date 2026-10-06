@@ -1,0 +1,20 @@
+name: Documentation
+description: Improve docs, specs, or contributor guides
+title: "[Documentation] "
+labels:
+  - type/documentation
+  - priority/low
+  - status/todo
+  - area/docs
+body:
+  - type: textarea
+    id: change
+    attributes:
+      label: What should we document or fix?
+    validations:
+      required: true
+  - type: input
+    id: location
+    attributes:
+      label: File or area
+      placeholder: docs/local-development.md, README, specs/...

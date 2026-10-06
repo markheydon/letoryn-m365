@@ -21,7 +21,7 @@ MSBuild and analyzer settings applied solution-wide via `Directory.Build.props` 
 | `<GenerateDocumentationFile>true</GenerateDocumentationFile>` | Emits `.xml` doc files for assemblies |
 | CS1591 suppressed for **Exe** / **WinExe** | AppHost, Web, and ApiService are not required to have `///` on every public member |
 | CS1591 suppressed for **test projects** | Test assemblies are not required to document test types |
-| CS1591 **not** suppressed for other class libraries | `ServiceDefaults`, `TenancyHub.Domain`, and `TenancyHub.Infrastructure` must document public API or the build fails (see `.editorconfig`) |
+| CS1591 **not** suppressed for other class libraries | `ServiceDefaults`, `Letoryn.Domain`, and `Letoryn.Infrastructure` must document public API or the build fails (see `.editorconfig`) |
 
 When adding a new **class library** under `src/`, assume XML docs are required on public types and members.
 
@@ -36,5 +36,5 @@ GitHub Actions runs Release **lint** (`dotnet format --verify-no-changes`), **bu
 Fix local formatting before push:
 
 ```bash
-dotnet format TenancyHub.slnx
+dotnet format Letoryn.slnx
 ```

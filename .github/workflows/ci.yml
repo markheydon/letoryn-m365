@@ -21,13 +21,13 @@ jobs:
           global-json-file: global.json
 
       - name: Restore
-        run: dotnet restore TenancyHub.slnx
+        run: dotnet restore Letoryn.slnx
 
       - name: Lint
-        run: dotnet format TenancyHub.slnx --verify-no-changes --verbosity minimal
+        run: dotnet format Letoryn.slnx --verify-no-changes --verbosity minimal
 
       - name: Build
-        run: dotnet build TenancyHub.slnx --configuration Release --no-restore
+        run: dotnet build Letoryn.slnx --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test TenancyHub.slnx --configuration Release --no-build --verbosity normal
+        run: dotnet test Letoryn.slnx --configuration Release --no-build --verbosity normal
