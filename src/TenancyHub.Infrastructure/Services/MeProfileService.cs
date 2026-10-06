@@ -3,6 +3,7 @@ using TenancyHub.Application.Abstractions.Authorization;
 using TenancyHub.Application.Abstractions.Me;
 using TenancyHub.Application.Agencies;
 using TenancyHub.Application.Me;
+using TenancyHub.Application.Memberships;
 using TenancyHub.Domain.Agencies;
 using TenancyHub.Domain.Memberships;
 using TenancyHub.Infrastructure.Persistence;
@@ -10,7 +11,7 @@ using TenancyHub.Infrastructure.Persistence;
 namespace TenancyHub.Infrastructure.Services;
 
 /// <inheritdoc />
-public sealed class MeProfileService(TenancyHubDbContext dbContext) : IMeProfileService
+public sealed class MeProfileService(TenancyHubDbContext dbContext, TimeProvider timeProvider) : IMeProfileService
 {
     /// <inheritdoc />
     public async Task<MeProfileResponse?> GetProfileAsync(
@@ -46,8 +47,10 @@ public sealed class MeProfileService(TenancyHubDbContext dbContext) : IMeProfile
                 x.Agency.LifecycleStatus.ToString()))
             .ToList();
 
+        var now = timeProvider.GetUtcNow();
         var pendingInvites = memberships
             .Where(x => x.Membership.Status == MembershipStatus.Invited)
+            .Where(x => !InvitationRules.IsExpired(x.Membership, now))
             .Select(x => new MePendingInviteSummary(
                 x.Membership.Id,
                 x.Agency.Id,

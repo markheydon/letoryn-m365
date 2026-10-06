@@ -139,6 +139,9 @@ public sealed class MembershipOperationsService(
         }
 
         membership.Status = MembershipStatus.Active;
+        membership.InvitedRoleSnapshot = null;
+        membership.InvitedAt = null;
+        membership.ExpiresAt = null;
         membership.ActivatedAt = now;
         membership.UpdatedAt = now;
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -557,12 +560,8 @@ public sealed class MembershipOperationsService(
                 existing.ExpiresAt = InvitationRules.ComputeExpiresAt(now);
                 existing.UpdatedAt = now;
                 await dbContext.SaveChangesAsync(cancellationToken);
-                return new MembershipOperationResult(
-                    MembershipOperationStatus.Succeeded,
-                    MembershipId: existing.Id);
             }
-
-            if (existing.Status == MembershipStatus.Invited && !invited)
+            else if (existing.Status == MembershipStatus.Invited && !invited)
             {
                 existing.Status = MembershipStatus.Active;
                 existing.AgencyRole = role;

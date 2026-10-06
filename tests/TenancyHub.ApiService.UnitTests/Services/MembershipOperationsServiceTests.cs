@@ -115,7 +115,8 @@ public sealed class MembershipOperationsServiceTests
         });
         await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var service = CreateService(db);
+        var auditWriter = Substitute.For<IAuditWriter>();
+        var service = CreateService(db, auditWriter);
         var result = await service.InviteMemberAsync(
             actorId,
             agencyId,
@@ -129,6 +130,9 @@ public sealed class MembershipOperationsServiceTests
         var row = await db.AgencyMemberships.SingleAsync(m => m.Id == membershipId, TestContext.Current.CancellationToken);
         Assert.Equal(AgencyRole.ReadOnlyMember, row.AgencyRole);
         Assert.True(row.ExpiresAt > DateTimeOffset.UtcNow);
+        await auditWriter.Received(1).WriteAsync(
+            Arg.Is<AuditEventWrite>(e => e.ActionType == AuditActionTypes.MembershipInvited),
+            Arg.Any<CancellationToken>());
     }
 
     [Fact]
