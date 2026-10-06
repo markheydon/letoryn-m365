@@ -66,7 +66,7 @@ Maps Entra **object id** and **email** (UPN/preferred username) to product ident
 | ActivatedAt | timestamptz? | |
 | UpdatedAt | timestamptz | |
 
-**Uniqueness**: At most one **pending** `Invited` row per (AgencyId, Email/User) — idempotent invites (FR-007).
+**Uniqueness**: At most one **pending** `Invited` row per (AgencyId, Email/User): idempotent invites (FR-007).
 
 **Invariants**:
 

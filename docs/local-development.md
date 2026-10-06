@@ -95,6 +95,6 @@ VS Code tasks: **aspire start**, **build**, **test** (`.vscode/tasks.json`).
 
 ## Related docs
 
-- [operations-rebuild-runbook.md](./operations-rebuild-runbook.md) — authoritative recovery after Entra/DB/environment loss
-- [tech-stack.md](./tech-stack.md) — architecture and AppHost modelling
-- [../AGENTS.md](../AGENTS.md) — agent entry point
+- [operations-rebuild-runbook.md](./operations-rebuild-runbook.md): authoritative recovery after Entra/DB/environment loss
+- [tech-stack.md](./tech-stack.md): architecture and AppHost modelling
+- [../AGENTS.md](../AGENTS.md): agent entry point

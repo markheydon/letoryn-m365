@@ -22,7 +22,7 @@ namespace TenancyHub.ApiService.Middleware;
 /// </para>
 /// <para>
 /// On success, downstream handlers read agency id, lifecycle, membership role, and operator-assignment flags from
-/// <see cref="AgencyContextAccessor"/>—the header alone is never treated as proof of access.
+/// <see cref="AgencyContextAccessor"/>: the header alone is never treated as proof of access.
 /// </para>
 /// </remarks>
 public sealed class TenancyContextMiddleware(

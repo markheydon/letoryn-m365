@@ -4,7 +4,7 @@ Contributor and E2E reference for **platform foundation** (roadmap **R1**). Each
 
 **Prerequisites**: [operations-rebuild-runbook.md](./operations-rebuild-runbook.md) (Entra, secrets, Postgres, platform operator seed). **Contracts**: [contracts/api-v1.md](../specs/001-platform-foundation/contracts/api-v1.md).
 
-**Automation**: [testing.md](./testing.md) — Playwright C# E2E in `tests/TenancyHub.E2E/` cites journey IDs from the index below (`[Trait("Journey", "R1-J…")]`). Prefer stable API + UI paths over brittle selectors.
+**Automation**: [testing.md](./testing.md): Playwright C# E2E in `tests/TenancyHub.E2E/` cites journey IDs from the index below (`[Trait("Journey", "R1-J…")]`). Prefer stable API + UI paths over brittle selectors.
 
 ---
 
@@ -15,7 +15,7 @@ Contributor and E2E reference for **platform foundation** (roadmap **R1**). Each
 | R1-J3.1 | §3.1 | US1 | Anonymous hit → Microsoft sign-in | E2E |
 | R1-J3.2 | §3.2 | US1 | Agency member sign-in → agency shell | E2E |
 | R1-J3.3 | §3.3 | US1 | `GET /api/v1/me` scoped to active agency | API / E2E |
-| R1-J3.4 | §3.4 | US1 | Second agency user — no cross-agency UI data | E2E |
+| R1-J3.4 | §3.4 | US1 | Second agency user: no cross-agency UI data | E2E |
 | R1-J3.5 | §3.5 | US1 | Sign-out one browser; other session remains | E2E |
 | R1-J3.6 | §3.6 | US1+US3 | Active + pending invite → last-used active shell; invite prompt | E2E |
 | R1-J3.7 | §3.7 | US1+US3 | Invite-only user → invitation-acceptance only | E2E |
@@ -40,7 +40,7 @@ Steps **§3.6–§3.7** need invitation APIs and UI (US3). **§3.12–§3.13** a
 
 ## §3 Sign-in and agency context (US1)
 
-### R1-J3.1 — Redirect to Microsoft sign-in
+### R1-J3.1: Redirect to Microsoft sign-in
 
 | | |
 |--|--|
@@ -48,15 +48,15 @@ Steps **§3.6–§3.7** need invitation APIs and UI (US3). **§3.12–§3.13** a
 | **Path** | Browser → `webfrontend` base URL |
 | **Expected** | Redirect to Microsoft sign-in; no agency data |
 
-### R1-J3.2 — Member lands in agency shell
+### R1-J3.2: Member lands in agency shell
 
 | | |
 |--|--|
-| **Actor** | User A — **Active** member of Agency 1 |
+| **Actor** | User A: **Active** member of Agency 1 |
 | **Path** | Complete Entra sign-in after §3.1 |
 | **Expected** | Shell shows Agency 1 name; home loads |
 
-### R1-J3.3 — `/me` reflects active membership scope
+### R1-J3.3: `/me` reflects active membership scope
 
 | | |
 |--|--|
@@ -64,17 +64,17 @@ Steps **§3.6–§3.7** need invitation APIs and UI (US3). **§3.12–§3.13** a
 | **Path** | `GET /api/v1/me` |
 | **Expected** | Response membership scope is Agency 1 only (matches active context) |
 
-### R1-J3.4 — Tenant-scoped UI for second agency
+### R1-J3.4: Tenant-scoped UI for second agency
 
 | | |
 |--|--|
-| **Actor** | User B — **Active** member of Agency 2 (separate browser/profile) |
+| **Actor** | User B: **Active** member of Agency 2 (separate browser/profile) |
 | **Path** | Sign in → browse shell |
 | **Expected** | Agency 2 context; no Agency 1 data in UI |
 
-**Multi-agency same user**: Last-used agency is the default after sign-in; switching agency clears stale UI state (spec scenario 3) — exercise when validating **R1-J3.6** or dedicated switch flows.
+**Multi-agency same user**: Last-used agency is the default after sign-in; switching agency clears stale UI state (spec scenario 3): exercise when validating **R1-J3.6** or dedicated switch flows.
 
-### R1-J3.5 — Sign-out is per browser session
+### R1-J3.5: Sign-out is per browser session
 
 | | |
 |--|--|
@@ -82,7 +82,7 @@ Steps **§3.6–§3.7** need invitation APIs and UI (US3). **§3.12–§3.13** a
 | **Path** | Sign out in browser A only |
 | **Expected** | Browser A requires sign-in again; browser B remains signed in (FR-001 concurrent sessions) |
 
-### R1-J3.6 — Active agency + pending invitation
+### R1-J3.6: Active agency + pending invitation
 
 | | |
 |--|--|
@@ -92,7 +92,7 @@ Steps **§3.6–§3.7** need invitation APIs and UI (US3). **§3.12–§3.13** a
 
 **Depends on**: US3 invite flow ([quickstart §5.2](../specs/001-platform-foundation/quickstart.md)).
 
-### R1-J3.7 — Invite-only sign-in
+### R1-J3.7: Invite-only sign-in
 
 | | |
 |--|--|
@@ -100,7 +100,7 @@ Steps **§3.6–§3.7** need invitation APIs and UI (US3). **§3.12–§3.13** a
 | **Path** | Sign in |
 | **Expected** | **Invitation-acceptance** experience only (not routine agency shell); no agency notification bell; accept or decline required per invite |
 
-### R1-J3.8 — Sign-in audit (success and intentional failure)
+### R1-J3.8: Sign-in audit (success and intentional failure)
 
 | | |
 |--|--|
@@ -108,15 +108,15 @@ Steps **§3.6–§3.7** need invitation APIs and UI (US3). **§3.12–§3.13** a
 | **Path** | Complete §3.2; query authorized audit API/UI within 1 minute |
 | **Expected** | **Successful sign-in** audit for User A (`AgencyId` may be Agency 1 when shell context is established). Intentional failed sign-in → **failed sign-in** audit without agency data leakage (FR-008) |
 
-### R1-J3.9 — Disabled directory account
+### R1-J3.9: Disabled directory account
 
 | | |
 |--|--|
 | **Actor** | Work account disabled in Entra (or token refresh rejected) while Tenancy Hub membership remains |
 | **Path** | Sign-in or next API call after disable |
-| **Expected** | Access denied; no agency data; **failed sign-in** or terminated-session audit (FR-001; POC access token lifetime ≤ 60 minutes — [runbook](./operations-rebuild-runbook.md)) |
+| **Expected** | Access denied; no agency data; **failed sign-in** or terminated-session audit (FR-001; POC access token lifetime ≤ 60 minutes: [runbook](./operations-rebuild-runbook.md)) |
 
-### R1-J3.10 — Access not configured
+### R1-J3.10: Access not configured
 
 | | |
 |--|--|
@@ -124,7 +124,7 @@ Steps **§3.6–§3.7** need invitation APIs and UI (US3). **§3.12–§3.13** a
 | **Path** | Sign in |
 | **Expected** | **Access not configured** page; no agency data in UI or API |
 
-### R1-J3.11 — Operator without agency assignments
+### R1-J3.11: Operator without agency assignments
 
 | | |
 |--|--|
@@ -132,7 +132,7 @@ Steps **§3.6–§3.7** need invitation APIs and UI (US3). **§3.12–§3.13** a
 | **Path** | Sign in |
 | **Expected** | **Operator home** / operator-only flows (create agency, manage operators); no active agency shell until assigned |
 
-### R1-J3.12 — Idle session timeout (optional)
+### R1-J3.12: Idle session timeout (optional)
 
 | | |
 |--|--|
@@ -140,7 +140,7 @@ Steps **§3.6–§3.7** need invitation APIs and UI (US3). **§3.12–§3.13** a
 | **Path** | No activity that resets idle timer for **30 minutes** |
 | **Expected** | Session ends; sign-in required; unsaved client state discarded (FR-001) |
 
-### R1-J3.13 — Absolute session cap (optional)
+### R1-J3.13: Absolute session cap (optional)
 
 | | |
 |--|--|
@@ -152,7 +152,7 @@ Steps **§3.6–§3.7** need invitation APIs and UI (US3). **§3.12–§3.13** a
 
 ## §4 Tenant isolation (US2)
 
-### R1-J4.0 — Cross-tenant API denial
+### R1-J4.0: Cross-tenant API denial
 
 | | |
 |--|--|
@@ -160,22 +160,22 @@ Steps **§3.6–§3.7** need invitation APIs and UI (US3). **§3.12–§3.13** a
 | **Path** | `GET /api/v1/agencies/{agency2Id}/audit` (or any Agency 2 resource id); repeat with forged `X-TenancyHub-Agency-Id` |
 | **Expected** | **403** or **404** with no Agency 2 payload fields |
 
-### R1-J4.1 — Lifecycle and membership gates
+### R1-J4.1: Lifecycle and membership gates
 
 Validate US2 scenarios 3–5; after each state change, **R1-J4.0** still holds.
 
 | Sub-step | Condition | Actor | Expected |
 |----------|-----------|-------|----------|
-| 4.1a | Agency **Suspended** | Member of that agency | Sign-in or active context denied — clear **agency suspended** message; assigned platform operator may still use operator flows for that agency (invite/provision/roles) |
+| 4.1a | Agency **Suspended** | Member of that agency | Sign-in or active context denied: clear **agency suspended** message; assigned platform operator may still use operator flows for that agency (invite/provision/roles) |
 | 4.1b | Agency **Archived** | Member | Cannot operate; assigned operator can read audit/diagnostics; operator invite/provision/role change denied until reactivation to **Active** or **Suspended** |
 | 4.1c | Membership **Suspended** (agency **Active**) | Affected user | Blocked for that agency only; may access other valid agencies; message distinct from agency-level suspension |
-| 4.1d | Regression | Any prior actor | Cross-tenant checks — no Agency B payload leakage |
+| 4.1d | Regression | Any prior actor | Cross-tenant checks: no Agency B payload leakage |
 
 ---
 
 ## §5 Membership and roles (US3)
 
-### R1-J5.1 — Operator provisioning
+### R1-J5.1: Operator provisioning
 
 | | |
 |--|--|
@@ -186,7 +186,7 @@ Validate US2 scenarios 3–5; after each state change, **R1-J4.0** still holds.
 | 3 | Attempt to revoke the **last** platform operator |
 | **Expected** | Steps 1–2 succeed with audit trail; step 3 **blocked** with clear message (FR-016, FR-006) |
 
-### R1-J5.2 — Invites, provision, settings, decline
+### R1-J5.2: Invites, provision, settings, decline
 
 | | |
 |--|--|
@@ -200,7 +200,7 @@ Validate US2 scenarios 3–5; after each state change, **R1-J4.0** still holds.
 | 6 | **Suspended** agency: agency admin cannot sign in; assigned operator may still update settings via same API |
 | **Expected** | States and permissions match each step; ties to **R1-J3.6**, **R1-J3.7**, **R1-J7** |
 
-### R1-J5.3 — Permissions and guards
+### R1-J5.3: Permissions and guards
 
 | | |
 |--|--|
@@ -216,7 +216,7 @@ Validate US2 scenarios 3–5; after each state change, **R1-J4.0** still holds.
 
 ---
 
-## §6 Audit (US4) — R1-J6
+## §6 Audit (US4): R1-J6
 
 | Step | Path | Expected |
 |------|------|----------|
@@ -229,7 +229,7 @@ Operator agency audit: `GET /operator/agencies/{agencyId}/audit` per [api-v1](..
 
 ---
 
-## §7 Notifications (US5) — R1-J7
+## §7 Notifications (US5): R1-J7
 
 **Prerequisite**: User has **Active** membership and routine shell agency context. No agency notification bell on invite-only layout (**R1-J3.7**).
 
@@ -240,15 +240,15 @@ Operator agency audit: `GET /operator/agencies/{agencyId}/audit` per [api-v1](..
 | Membership suspended / reactivated / removed | Affected user sees in-app notice (users with **Active** or **Suspended** membership where applicable for lifecycle-related agency events) |
 | Agency display name or contact change | Affected users + agency administrators (where applicable) see notice |
 | Agency lifecycle → **Suspended**, **Archived**, or reactivated to **Active** / **Suspended** | Users with **Active** or **Suspended** membership in that agency see notice; **Invited-only** and **Removed** do not |
-| Pending **Invited** membership (invite sent) | Invitee sees pending invite in **invitation-acceptance** flow only — not in agency notification bell until **Active** |
+| Pending **Invited** membership (invite sent) | Invitee sees pending invite in **invitation-acceptance** flow only: not in agency notification bell until **Active** |
 
-**R1 bounds**: No email or push. No dismiss/remove from list — mark read only for standard members.
+**R1 bounds**: No email or push. No dismiss/remove from list: mark read only for standard members.
 
 **E2E hint**: Pair each row with the mutating journey (**R1-J5.2**, **R1-J5.3**, **R1-J4.1**, settings patch) then assert list + read permission via **R1-J5.3** step 1–2.
 
 ---
 
-## §8 Shell (US6) — R1-J8
+## §8 Shell (US6): R1-J8
 
 | | |
 |--|--|

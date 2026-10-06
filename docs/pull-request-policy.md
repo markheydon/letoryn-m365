@@ -1,4 +1,4 @@
-# Tenancy Hub — Pull request policy
+# Tenancy Hub: Pull request policy
 
 <!-- AI collaborator instructions: This is the canonical PR policy. Follow it when opening or updating a pull request. Do not invent a different title style, body layout, or label set. -->
 
@@ -134,7 +134,7 @@ Delivery-phase milestones (**POC**, **Go-live**, **Later**) are defined in [mile
 
 | Rule | Detail |
 |------|--------|
-| Source of truth | [milestone-strategy.md](./milestone-strategy.md) — do not invent milestone names (for example “MVP”, “Sprint 2”) without updating that file first. |
+| Source of truth | [milestone-strategy.md](./milestone-strategy.md): do not invent milestone names (for example “MVP”, “Sprint 2”) without updating that file first. |
 | PR default | Same milestone as the tracking issue. |
 | PR without issue | Derive from **Roadmap / Spec Kit** (**R#** → phase). Example: **R1** → **POC**. |
 | Dependabot | No milestone. |

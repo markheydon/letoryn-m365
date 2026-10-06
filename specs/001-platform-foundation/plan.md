@@ -2,12 +2,12 @@
 
 **Branch**: `001-platform-foundation` | **Date**: 2026-10-01 | **Spec**: [spec.md](./spec.md)
 
-**Input**: Roadmap **R1** — multi-tenant SaaS shell (PostgreSQL, Entra ID, agency isolation, roles, audit, notifications, shared Fluent UI chrome).
+**Input**: Roadmap **R1**: multi-tenant SaaS shell (PostgreSQL, Entra ID, agency isolation, roles, audit, notifications, shared Fluent UI chrome).
 
 **Planning constraints** (from `/speckit-plan` input):
 
 - Wire **infrastructure through .NET Aspire integrations** (`AddPostgres`, `WithReference`, client packages such as `Aspire.Npgsql.EntityFrameworkCore.PostgreSQL`).
-- Application code uses **DI-provided** `DbContext`, `HttpClient`, and Identity.Web services—no hand-built connection strings, token endpoints, or `new HttpClient()`.
+- Application code uses **DI-provided** `DbContext`, `HttpClient`, and Identity.Web services: no hand-built connection strings, token endpoints, or `new HttpClient()`.
 - **Operational rebuild docs**: authoritative **[docs/operations-rebuild-runbook.md](../../docs/operations-rebuild-runbook.md)** (maintained in `docs/` for incident recovery; spec folder holds a pointer only).
 
 ## Summary
@@ -26,7 +26,7 @@ Deliver the R1 platform foundation as an Aspire-orchestrated distributed app: Po
 
 **Target Platform**: ASP.NET Core API + Blazor Server; local via `aspire run`; production direction Azure (Aspire publish)
 
-**Performance Goals**: POC-scale (small agencies). Informal local-dev target: API p95 &lt; 500 ms for shell/API reads on Aspire—**not** a release gate, success criterion (SC-002 is manual sign-in timing only), or load-test obligation in R1; no performance tasks in [tasks.md](./tasks.md) unless product adds an explicit gate later.
+**Performance Goals**: POC-scale (small agencies). Informal local-dev target: API p95 &lt; 500 ms for shell/API reads on Aspire: **not** a release gate, success criterion (SC-002 is manual sign-in timing only), or load-test obligation in R1; no performance tasks in [tasks.md](./tasks.md) unless product adds an explicit gate later.
 
 **Constraints**: Security-first tenant isolation; English-only UI; in-app notifications only; warnings as errors; XML docs on public library APIs
 
@@ -53,7 +53,7 @@ Deliver the R1 platform foundation as an Aspire-orchestrated distributed app: Po
 
 ```text
 docs/
-└── operations-rebuild-runbook.md   # AUTHORITATIVE — Entra, Postgres, incident recovery
+└── operations-rebuild-runbook.md   # AUTHORITATIVE: Entra, Postgres, incident recovery
 
 specs/001-platform-foundation/
 ├── plan.md              # This file
@@ -72,9 +72,9 @@ specs/001-platform-foundation/
 src/
 ├── TenancyHub.AppHost/           # AddPostgres, parameters, WithReference wiring
 ├── TenancyHub.ServiceDefaults/   # Existing OTEL, discovery, resilience
-├── TenancyHub.Domain/            # NEW — entities, enums, domain errors
-├── TenancyHub.Application/       # NEW — use cases, IAgencyContext, authz rules
-├── TenancyHub.Infrastructure/    # NEW — DbContext, EF configs, migrations
+├── TenancyHub.Domain/            # NEW: entities, enums, domain errors
+├── TenancyHub.Application/       # NEW: use cases, IAgencyContext, authz rules
+├── TenancyHub.Infrastructure/    # NEW: DbContext, EF configs, migrations
 ├── TenancyHub.ApiService/        # Minimal APIs/controllers, JWT, tenancy middleware
 └── TenancyHub.Web/               # Fluent shell, Identity.Web, typed API client
 
@@ -99,7 +99,7 @@ Rebuild and incident-recovery procedures MUST live under **`docs/`**, not only u
 
 **Implement phase obligations**:
 
-1. **Create or extend** `docs/operations-rebuild-runbook.md` when Entra wiring, Aspire parameters, migrations, or seed scripts land—same PR as the code that changes those steps.
+1. **Create or extend** `docs/operations-rebuild-runbook.md` when Entra wiring, Aspire parameters, migrations, or seed scripts land: same PR as the code that changes those steps.
 2. **Never** add a second full runbook under another `specs/*` folder; new features append sections to the docs runbook (or add clearly linked `docs/` pages) and reference them from specs.
 3. **Index** the runbook from [docs/README.md](../../docs/README.md) (done in plan refresh).
 4. After major incidents or process changes, update the docs runbook first, then adjust spec pointers/quickstart links if section anchors change.
@@ -112,11 +112,11 @@ Rationale: contributors and on-call should not assemble recovery steps from scat
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|
-| — | — | — |
+| (none) | (none) | (none) |
 
 ---
 
-## Phase 0 — Research (complete)
+## Phase 0: Research (complete)
 
 See [research.md](./research.md). All **NEEDS CLARIFICATION** items resolved:
 
@@ -128,7 +128,7 @@ See [research.md](./research.md). All **NEEDS CLARIFICATION** items resolved:
 
 ---
 
-## Phase 1 — Design (complete)
+## Phase 1: Design (complete)
 
 | Artifact | Path |
 |----------|------|
@@ -141,7 +141,7 @@ See [research.md](./research.md). All **NEEDS CLARIFICATION** items resolved:
 ### AppHost target graph (implement)
 
 ```csharp
-// Illustrative — confirm APIs via `aspire docs api search` before coding
+// Illustrative: confirm APIs via `aspire docs api search` before coding
 var postgres = builder.AddPostgres("postgres").AddDatabase("tenancyhub");
 
 var apiService = builder.AddDotnetProject("apiservice", "../TenancyHub.ApiService/...")
@@ -155,13 +155,13 @@ builder.AddDotnetProject("webfrontend", "../TenancyHub.Web/...")
     .WithHttpHealthCheck("/health");
 ```
 
-**Aspire resource names** (must match [quickstart.md](./quickstart.md) and `aspire wait` commands): `postgres`, `apiservice`, `webfrontend` — project paths point at `TenancyHub.ApiService` and `TenancyHub.Web` under `src/`.
+**Aspire resource names** (must match [quickstart.md](./quickstart.md) and `aspire wait` commands): `postgres`, `apiservice`, `webfrontend`: project paths point at `TenancyHub.ApiService` and `TenancyHub.Web` under `src/`.
 
-Entra parameters injected with `AddParameter(..., secret: true)` and environment mapping—details in [docs/operations-rebuild-runbook.md §3](../../docs/operations-rebuild-runbook.md#3-local-configuration-aspire-parameters).
+Entra parameters injected with `AddParameter(..., secret: true)` and environment mapping: details in [docs/operations-rebuild-runbook.md §3](../../docs/operations-rebuild-runbook.md#3-local-configuration-aspire-parameters).
 
 ### API service registration (implement)
 
-- `builder.AddNpgsqlDbContext<TenancyHubDbContext>(connectionName: "tenancyhub")` — connection name matches database resource.
+- `builder.AddNpgsqlDbContext<TenancyHubDbContext>(connectionName: "tenancyhub")`: connection name matches database resource.
 - Register application services in `TenancyHub.Application` extension methods.
 - Tenancy middleware: resolve active agency header + membership validation before handlers.
 
@@ -180,9 +180,9 @@ Entra parameters injected with `AddParameter(..., secret: true)` and environment
 
 ---
 
-## Phase 2 — Tasks (complete)
+## Phase 2: Tasks (complete)
 
-Dependency-ordered implementation tasks: [tasks.md](./tasks.md) (updated after `/speckit-analyze` remediation through **pass 8** on 2026-10-01—operator audit route `GET /operator/agencies/{agencyId}/audit`, quickstart §3.9 disabled-account / §3.10–§3.13 renumber, US1/quickstart joint gates, T090→T089, shell nav policy, FR-001 POC bound, §4.1 / §7 matrix, FR-008 sign-in audit).
+Dependency-ordered implementation tasks: [tasks.md](./tasks.md) (updated after `/speckit-analyze` remediation through **pass 8** on 2026-10-01: operator audit route `GET /operator/agencies/{agencyId}/audit`, quickstart §3.9 disabled-account / §3.10–§3.13 renumber, US1/quickstart joint gates, T090→T089, shell nav policy, FR-001 POC bound, §4.1 / §7 matrix, FR-008 sign-in audit).
 
 **Next command**: `/speckit-implement` (or `/speckit-analyze` again after material spec/plan changes).
 

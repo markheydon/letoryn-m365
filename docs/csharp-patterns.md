@@ -40,10 +40,10 @@ Consumers inject `GitHubApiClient`, not raw `HttpClient` or `IHttpClientFactory`
 | `async/await` | All codebases |
 | `CancellationToken` on public async methods | All codebases; in ASP.NET pass `HttpContext.RequestAborted` when appropriate |
 | DI (constructors in libraries; `IServiceCollection` in apps) | All codebases |
-| `IOptions<T>` | Hosted apps only—not libraries (libraries take plain options objects or configure via extension methods) |
-| `IHttpContextAccessor` | ASP.NET web apps only—not libraries |
+| `IOptions<T>` | Hosted apps only: not libraries (libraries take plain options objects or configure via extension methods) |
+| `IHttpContextAccessor` | ASP.NET web apps only: not libraries |
 | `IHttpClientFactory` / typed clients | Any code that calls HTTP; libraries expose `IServiceCollection` extension methods that call `AddHttpClient<T>()`, they do not construct `HttpClient` internally |
-| Retries, timeouts, circuit breaking | Configure on the `AddHttpClient` handler pipeline (e.g. `Microsoft.Extensions.Http.Resilience`) in hosted apps—not hand-rolled per call |
+| Retries, timeouts, circuit breaking | Configure on the `AddHttpClient` handler pipeline (e.g. `Microsoft.Extensions.Http.Resilience`) in hosted apps: not hand-rolled per call |
 | Nullable reference types | All new projects; tighten existing projects when touching an area |
 | `record` DTOs | API models, config binding types, domain events; use classes when you need mutable identity or inheritance |
 

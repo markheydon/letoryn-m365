@@ -12,7 +12,7 @@ MSBuild and analyzer settings applied solution-wide via `Directory.Build.props` 
 
 ## Nullable reference types
 
-`<Nullable>enable</Nullable>` is enabled for all projects. Treat nullability warnings seriously—they are errors under WAE.
+`<Nullable>enable</Nullable>` is enabled for all projects. Treat nullability warnings seriously: they are errors under WAE.
 
 ## XML documentation
 

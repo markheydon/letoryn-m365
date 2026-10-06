@@ -24,8 +24,8 @@ namespace TenancyHub.ApiService.Endpoints;
 /// The issued session id is returned on the response as <see cref="TenancyHttpHeaders.SessionId"/>.
 /// </para>
 /// <para>
-/// <c>PUT /active-agency</c> persists shell agency selection; it does not set tenancy headers—
-/// callers must continue sending <see cref="TenancyHttpHeaders.AgencyId"/> on agency-scoped API traffic.
+/// <c>PUT /active-agency</c> persists shell agency selection; it does not set tenancy headers.
+/// Callers must continue sending <see cref="TenancyHttpHeaders.AgencyId"/> on agency-scoped API traffic.
 /// </para>
 /// </remarks>
 public static class MeEndpoints

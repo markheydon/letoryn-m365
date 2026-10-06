@@ -1,6 +1,6 @@
 # Tenancy Hub
 
-**Working name.** A **multi-tenant**, **Microsoft 365–centric** operating platform for small UK letting agencies (typically 1–25 staff). The goal is one integrated product—CRM, property and tenancy operations, maintenance, compliance, communications, and (over time) finance and portals—while **staying native to Entra ID and Microsoft Graph**, not replacing Microsoft 365.
+**Working name.** A **multi-tenant**, **Microsoft 365–centric** operating platform for small UK letting agencies (typically 1–25 staff). The goal is one integrated product: CRM, property and tenancy operations, maintenance, compliance, communications, and (over time) finance and portals: while **staying native to Entra ID and Microsoft Graph**, not replacing Microsoft 365.
 
 The repository is an early **.NET Aspire** scaffold ([tech stack](docs/tech-stack.md)). All product work is **Spec Kit** SDD: a [platform roadmap](specs/tenancy-hub-platform/roadmap.md) decomposes the epic; each slice runs specify → plan → tasks → implement ([Spec Kit](https://github.com/github/spec-kit), [spec of specs](https://github.github.com/spec-kit/concepts/spec-of-specs.html)).
 
@@ -20,14 +20,14 @@ Many agencies stitch together a CRM, referencing tools, rent and compliance prod
 | Integrations | Microsoft Graph (mail, calendar, SharePoint documents **and media library**); see roadmap phases |
 | System of record | PostgreSQL |
 | Hosting | Azure (Aspire deployment flows when introduced) |
-| Go-live integrations | WordPress property showcase plugin (R13), property feed for aggregators such as [Data Export](https://dataexport.co.uk/) (R14)—not replacing those platforms |
-| Later | Reporting, finance, portals, AI—roadmap **Later** phase |
+| Go-live integrations | WordPress property showcase plugin (R13), property feed for aggregators such as [Data Export](https://dataexport.co.uk/) (R14): not replacing those platforms |
+| Later | Reporting, finance, portals, AI: roadmap **Later** phase |
 
 Full module and process context: [product vision](docs/product-vision.md). Capability slices: [roadmap](specs/tenancy-hub-platform/roadmap.md). There is no separate PRD process.
 
 ## Repository hygiene
 
-The repo may go **public/OSS**. Do not commit customer-confidential material, internal process maps, or private M365 links. See [product vision — confidentiality](docs/product-vision.md#confidentiality-and-private-assets).
+The repo may go **public/OSS**. Do not commit customer-confidential material, internal process maps, or private M365 links. See [product vision: confidentiality](docs/product-vision.md#confidentiality-and-private-assets).
 
 ## Repository layout
 
@@ -76,7 +76,7 @@ Details: [docs/local-development.md](docs/local-development.md).
 
 ## Spec-driven work
 
-POC, go-live, and later delivery phases (including **R15** complaints): [product vision — delivery phases](docs/product-vision.md#delivery-phases). GitHub milestone rules: [milestone-strategy.md](docs/milestone-strategy.md). Pick the next slice from the [roadmap](specs/tenancy-hub-platform/roadmap.md) by dependency and status.
+POC, go-live, and later delivery phases (including **R15** complaints): [product vision: delivery phases](docs/product-vision.md#delivery-phases). GitHub milestone rules: [milestone-strategy.md](docs/milestone-strategy.md). Pick the next slice from the [roadmap](specs/tenancy-hub-platform/roadmap.md) by dependency and status.
 
 CI: Release build, format check, and tests on push/PR to `main` (`.github/workflows/ci.yml`).
 

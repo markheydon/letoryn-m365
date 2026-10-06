@@ -18,7 +18,7 @@ namespace TenancyHub.Web.Services;
 /// <para>
 /// After bootstrap, <see cref="UserSessionState"/> supplies <see cref="TenancyHttpHeaders.SessionId"/> on API calls.
 /// The first <c>GET /api/v1/me</c> after sign-in may send <see cref="TenancyHttpHeaders.EstablishSession"/> instead,
-/// gated on the establishment cookie and a trusted internal audit key—see <c>TryPrepareRequestAsync</c>.
+/// gated on the establishment cookie and a trusted internal audit key: see <c>TryPrepareRequestAsync</c>.
 /// </para>
 /// <para>
 /// When the shell has selected an agency, <see cref="AgencyContextState.ActiveAgencyId"/> is forwarded as

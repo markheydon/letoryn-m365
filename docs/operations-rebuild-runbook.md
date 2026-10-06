@@ -1,6 +1,6 @@
 # Operations rebuild runbook
 
-**Authoritative** step-by-step procedures to restore Tenancy Hub after environment loss, credential rotation, database volume corruption, or a major incident. Maintainers and automation should treat **`docs/operations-rebuild-runbook.md`** as the single source of truth—not copies under `specs/`.
+**Authoritative** step-by-step procedures to restore Tenancy Hub after environment loss, credential rotation, database volume corruption, or a major incident. Maintainers and automation should treat **`docs/operations-rebuild-runbook.md`** as the single source of truth: not copies under `specs/`.
 
 | Also useful | Purpose |
 |-------------|---------|
@@ -32,7 +32,7 @@ Repeat when the registration is deleted or client certificates are rotated.
 
 1. Open [Microsoft Entra admin center](https://entra.microsoft.com/) → **Applications** → **App registrations** → **New registration**.
 2. **Name**: `Tenancy Hub (Dev)` (or environment-specific).
-3. **Supported account types**: *Accounts in this organizational directory only* (single tenant) unless POC requires multitenant—match product tenant strategy.
+3. **Supported account types**: *Accounts in this organizational directory only* (single tenant) unless POC requires multitenant: match product tenant strategy.
 4. **Redirect URI**: Web → `https://localhost:{PORT}/signin-oidc`  
    - `{PORT}` comes from `aspire describe webfrontend` after first run (Aspire assigns dynamic HTTPS port). For stable dev, note the port from the dashboard and update the registration when it changes, or configure a fixed launch profile when the app supports it.
 5. Register. Record **Application (client) ID** and **Directory (tenant) ID**.
@@ -56,13 +56,13 @@ Either **single app** or **two registrations** (recommended for production parit
 
 ### 2.4 Client certificate (confidential client)
 
-Tenancy Hub uses a **client certificate** for the web app (auth-code exchange and token refresh). Do **not** use client secrets—many Entra tenants block secret creation by admin policy.
+Tenancy Hub uses a **client certificate** for the web app (auth-code exchange and token refresh). Do **not** use client secrets: many Entra tenants block secret creation by admin policy.
 
 1. Generate a dev certificate (see [scripts/r1/create-entra-web-client-certificate.sh](../scripts/r1/create-entra-web-client-certificate.sh) or your own PKI process). You need:
    - **`.cer`** (public key only) for Entra
-   - **`.pfx`** (private key + cert) for the app—never commit; `*.pfx` is gitignored
+   - **`.pfx`** (private key + cert) for the app: never commit; `*.pfx` is gitignored
 2. Entra admin center → web app registration → **Certificates & secrets** → **Upload certificate** → select the **`.cer`** file.
-3. Store the Base64-encoded `.pfx` in `Parameters:EntraWebClientCertificatePfx` and the password in `Parameters:EntraWebClientCertificatePassword` (section 3)—never commit.
+3. Store the Base64-encoded `.pfx` in `Parameters:EntraWebClientCertificatePfx` and the password in `Parameters:EntraWebClientCertificatePassword` (section 3): never commit.
 4. **Rotation**: Entra allows multiple certificates. Upload the new `.cer`, update AppHost secrets, verify sign-in, then remove the old certificate from Entra.
 
 **Troubleshooting**: If sign-in fails at the token step with client authentication errors, confirm the thumbprint of the cert in Entra matches the `.pfx` you encoded (Entra portal shows thumbprints for uploaded certs). Wrong password on the PFX or stale Base64 in user secrets are the other common causes.
@@ -110,11 +110,11 @@ AppHost parameter names (secret parameters via `AddParameter`):
 | Parameter | Mapped to `apiservice` | Mapped to `webfrontend` |
 |-----------|------------------------|-------------------------|
 | `EntraTenantId` | `AzureAd__TenantId` | `AzureAd__TenantId` |
-| `EntraApiClientId` | `AzureAd__ClientId` | — |
+| `EntraApiClientId` | `AzureAd__ClientId` | n/a |
 | `EntraApiAudience` | `AzureAd__Audience` | `TenancyHub__ApiScope` = `{EntraApiAudience}/access_as_user` (AppHost expression) |
-| `EntraWebClientId` | — | `AzureAd__ClientId` |
-| `EntraWebClientCertificatePfx` | — | `AzureAd__ClientCredentials__0__Base64EncodedValue` |
-| `EntraWebClientCertificatePassword` | — | `AzureAd__ClientCredentials__0__CertificatePassword` |
+| `EntraWebClientId` | n/a | `AzureAd__ClientId` |
+| `EntraWebClientCertificatePfx` | n/a | `AzureAd__ClientCredentials__0__Base64EncodedValue` |
+| `EntraWebClientCertificatePassword` | n/a | `AzureAd__ClientCredentials__0__CertificatePassword` |
 | `TenancyHubInternalSignInAuditKey` | `TenancyHub__InternalSignInAuditKey` | `TenancyHub__InternalSignInAuditKey` |
 
 `webfrontend` also receives `AzureAd__ClientCredentials__0__SourceType` = `Base64Encoded` (fixed in AppHost).
@@ -173,8 +173,8 @@ Creating new migrations is unchanged: `dotnet ef migrations add <Name> --project
 Symptoms: `password authentication failed` for Postgres in Aspire logs after AppHost recreation.
 
 1. Stop Aspire: `aspire stop`
-2. Remove the Postgres container **and** its volume (Docker Desktop → Volumes, or `docker volume rm pg-data` — see §4.1 if the dashboard shows a different generated name on older runs).
-3. Start again: `aspire run` — the integration generates fresh credentials.
+2. Remove the Postgres container **and** its volume (Docker Desktop → Volumes, or `docker volume rm pg-data`: see §4.1 if the dashboard shows a different generated name on older runs).
+3. Start again: `aspire run`: the integration generates fresh credentials.
 
 See `.agents/skills/aspireify/references/apphost-wiring.md` (stale volume section).
 
@@ -187,7 +187,7 @@ R1 allows seeding **outside** the product before the “at least one operator”
 After **`tenancyhub-migrations`** is **Finished** and `apiservice` is healthy (`aspire describe`):
 
 1. Identify your Entra **object id** (`oid` claim) after first sign-in attempt or from Entra user profile.
-2. Run [scripts/r1/seed-platform-operator.sql](../scripts/r1/seed-platform-operator.sql) against the **`tenancyhub`** database (same as `TenancyHubDbContext` / EF migrations—not the parent `postgres` server connection alone):
+2. Run [scripts/r1/seed-platform-operator.sql](../scripts/r1/seed-platform-operator.sql) against the **`tenancyhub`** database (same as `TenancyHubDbContext` / EF migrations: not the parent `postgres` server connection alone):
 
    ```bash
    # From repo root while Aspire is running. Do not use `aspire describe postgres` for seeding:
@@ -205,7 +205,7 @@ After **`tenancyhub-migrations`** is **Finished** and `apiservice` is healthy (`
 
 ## 6. Verification smoke test
 
-1. `aspire describe` — `postgres`, `apiservice`, `webfrontend` healthy.
+1. `aspire describe`: `postgres`, `apiservice`, `webfrontend` healthy.
 2. Browse web URL → redirect to Entra → sign in.
 3. `GET /api/v1/me` (browser devtools or curl with token) returns identity payload.
 4. Run cross-agency isolation checks from [specs/001-platform-foundation/quickstart.md](../specs/001-platform-foundation/quickstart.md) when R1 is implemented.
@@ -214,7 +214,7 @@ After **`tenancyhub-migrations`** is **Finished** and `apiservice` is healthy (`
 
 ## 7. Production / Azure (pointer)
 
-Production Entra apps, Key Vault, and Azure Database for PostgreSQL use Aspire publish and Azure provisioning integrations when deployment is documented. Mirror the Entra steps in section 2 for production redirect URIs (including **client certificates**, not secrets). For hosted environments, prefer Microsoft.Identity.Web **`ClientCredentials`** with **`SourceType: KeyVault`** or certificateless **`SignedAssertionFromManagedIdentity`**—not Base64 PFX in app settings. Follow `.agents/skills/aspire-deployment/` when publishing; extend **this runbook** with environment-specific sections rather than scattering steps in feature specs.
+Production Entra apps, Key Vault, and Azure Database for PostgreSQL use Aspire publish and Azure provisioning integrations when deployment is documented. Mirror the Entra steps in section 2 for production redirect URIs (including **client certificates**, not secrets). For hosted environments, prefer Microsoft.Identity.Web **`ClientCredentials`** with **`SourceType: KeyVault`** or certificateless **`SignedAssertionFromManagedIdentity`**: not Base64 PFX in app settings. Follow `.agents/skills/aspire-deployment/` when publishing; extend **this runbook** with environment-specific sections rather than scattering steps in feature specs.
 
 ---
 
@@ -222,12 +222,12 @@ Production Entra apps, Key Vault, and Azure Database for PostgreSQL use Aspire p
 
 Use this sequence after a major loss (new tenant, wiped laptop, corrupted Docker volume):
 
-1. Section 1 — prerequisites  
-2. Section 2 — Entra (web + API registrations)  
-3. Section 3 — AppHost user secrets  
-4. Section 4 — Postgres (include 4.3 if auth errors persist)  
-5. Section 4.2 — migrations (automatic on `aspire run`; use manual `dotnet ef database update` only when not using AppHost)  
-6. Section 5 — platform operator seed  
-7. Section 6 — smoke test  
+1. Section 1: prerequisites  
+2. Section 2: Entra (web + API registrations)  
+3. Section 3: AppHost user secrets  
+4. Section 4: Postgres (include 4.3 if auth errors persist)  
+5. Section 4.2: migrations (automatic on `aspire run`; use manual `dotnet ef database update` only when not using AppHost)  
+6. Section 5: platform operator seed  
+7. Section 6: smoke test  
 
 For Aspire diagnostics: `.agents/skills/aspire-monitoring/` (`aspire logs`, `aspire describe`, `aspire otel traces`).

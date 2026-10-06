@@ -1,10 +1,10 @@
-# Tenancy Hub — Milestone strategy
+# Tenancy Hub: Milestone strategy
 
 <!-- AI collaborator instructions: This is the canonical milestone policy. When creating or updating GitHub issues and pull requests, assign the delivery-phase milestone defined here. Do not invent ad-hoc milestone names (for example "MVP", "Sprint 3") unless the maintainer adds them in this file first. -->
 
 GitHub **milestones** group issues and pull requests by **delivery phase** from [product-vision.md](./product-vision.md#delivery-phases). They are separate from:
 
-- **`type/epic`** labels (roadmap themes such as R1—not a milestone substitute; see [label-strategy.md](./label-strategy.md)).
+- **`type/epic`** labels (roadmap themes such as R1: not a milestone substitute; see [label-strategy.md](./label-strategy.md)).
 - **Roadmap rows** **R1–R15** (scope and dependencies; see [roadmap.md](../specs/tenancy-hub-platform/roadmap.md)).
 
 Related artefacts:
@@ -29,9 +29,9 @@ Row-to-phase mapping matches the **Phase** column in [roadmap.md](../specs/tenan
 
 ### POC vs “MVP” in conversation
 
-The repository uses **POC**, **Go-live**, and **Later** as milestone names—not a separate **MVP** milestone. Informal “MVP” usually means either:
+The repository uses **POC**, **Go-live**, and **Later** as milestone names: not a separate **MVP** milestone. Informal “MVP” usually means either:
 
-- **POC complete** — all POC rows shipped (demo-ready), or  
+- **POC complete**: all POC rows shipped (demo-ready), or  
 - A **Go-live minimum** agreed with a design partner (subset of Go-live rows).
 
 When opening issues, use the **roadmap Phase column**, not informal MVP wording.
@@ -88,7 +88,7 @@ gh pr edit 10 --milestone "POC"
 |-------|--------|
 | New roadmap row or phase change | Update [roadmap.md](../specs/tenancy-hub-platform/roadmap.md), then this file’s table, then re-milestone open issues. |
 | Phase complete (for example POC rows done) | Close the **POC** milestone on GitHub when all POC-scope issues for that programme goal are closed; open a new **POC** milestone only if the maintainer resets scope (document in this file). |
-| New milestone name needed | Add it here first, create it on GitHub, then use it—do not create orphan milestones. |
+| New milestone name needed | Add it here first, create it on GitHub, then use it: do not create orphan milestones. |
 
 ---
 

@@ -4,7 +4,7 @@ Public-safe product context for **Tenancy Hub**. Implementation slices and statu
 
 ## Summary
 
-Tenancy Hub is a **multi-tenant**, **Microsoft 365–centric** operating platform for **small UK letting agencies** (typically 1–25 staff, Microsoft 365 Business customers). The product combines CRM, property and tenancy operations, maintenance, compliance, communications, and (over time) finance and customer portals—**integrated with Entra ID and Microsoft Graph**, not a replacement for Microsoft 365.
+Tenancy Hub is a **multi-tenant**, **Microsoft 365–centric** operating platform for **small UK letting agencies** (typically 1–25 staff, Microsoft 365 Business customers). The product combines CRM, property and tenancy operations, maintenance, compliance, communications, and (over time) finance and customer portals: **integrated with Entra ID and Microsoft Graph**, not a replacement for Microsoft 365.
 
 The idea evolved from replacing a fragmented legacy agency CRM toward a **vertical SaaS** that reduces tool sprawl while staying native to how agencies already work in Outlook, SharePoint, and Teams.
 
@@ -20,7 +20,7 @@ Tenancy Hub aims to **consolidate operational software** in one platform that st
 - **Early validation:** an initial **design-partner agency** supplies domain expertise and realistic workflows; **mid–long term** the product is **commercial SaaS** for any qualifying agency.
 - **Delivery narrative:** a demonstrable **proof of concept (POC)** first, then a broader **go-live** cutover if the partner commits, then **later** capabilities (reporting, finance, portals, AI).
 
-Detailed row-level planning uses Spec Kit under `specs/`—there is no separate PRD track in this repository.
+Detailed row-level planning uses Spec Kit under `specs/`: there is no separate PRD track in this repository.
 
 ## Product modules (conceptual map)
 
@@ -36,12 +36,12 @@ These areas align with roadmap slices (R1–R15); design detail appears in each 
 | Maintenance & work orders | R6 | Contractor portal deferred |
 | Compliance | R7 | Certificates, inspections, expiry workflows |
 | Graph / Outlook / SharePoint | R8 | Mail, calendar, documents and media library |
-| Reporting | R9 | KPIs—not a full BI builder |
+| Reporting | R9 | KPIs: not a full BI builder |
 | Finance & payments | R10 | Schedules, statements; Stripe / GoCardless / open banking direction |
 | Customer portals | R11 | Tenant, landlord, contractor (later) |
 | AI-assisted operations | R12 | Document Q&A, email triage, assisted workflows |
 | WordPress property showcase | R13 | Plugin on **existing** agency site |
-| Property feed for aggregators | R14 | Outbound feed (e.g. [Data Export](https://dataexport.co.uk/))—not direct portal APIs |
+| Property feed for aggregators | R14 | Outbound feed (e.g. [Data Export](https://dataexport.co.uk/)): not direct portal APIs |
 | Complaints & case management | R15 | UK lettings complaint tracking with tenancy context |
 
 ## Letting agency process areas
@@ -67,7 +67,7 @@ Real agencies run end-to-end processes (prospecting through compliance). **Step-
 
 ## Delivery phases
 
-Phases appear on the [roadmap](../specs/tenancy-hub-platform/roadmap.md) **Phase** column. Build in **dependency order** within each phase; re-prioritise by updating the roadmap first, then affected sub-specs. Assign GitHub issues and PRs to the matching milestone (**POC**, **Go-live**, **Later**) per [milestone-strategy.md](./milestone-strategy.md)—there is no separate **MVP** milestone; informal “MVP” usually means POC complete or an agreed Go-live minimum.
+Phases appear on the [roadmap](../specs/tenancy-hub-platform/roadmap.md) **Phase** column. Build in **dependency order** within each phase; re-prioritise by updating the roadmap first, then affected sub-specs. Assign GitHub issues and PRs to the matching milestone (**POC**, **Go-live**, **Later**) per [milestone-strategy.md](./milestone-strategy.md): there is no separate **MVP** milestone; informal “MVP” usually means POC complete or an agreed Go-live minimum.
 
 | Phase | Meaning |
 |-------|---------|
@@ -75,7 +75,7 @@ Phases appear on the [roadmap](../specs/tenancy-hub-platform/roadmap.md) **Phase
 | **Go-live** | Partner cutover: operational modules plus website/syndication paths that no longer treat a legacy CRM as the property hub |
 | **Later** | Full product vision items after go-live unless reprioritised |
 
-**POC (demo):** **R1 → R2 → R3 → R8** — agency sign-in, contacts and properties, Outlook/calendar relevance, property-related media via SharePoint.
+**POC (demo):** **R1 → R2 → R3 → R8**: agency sign-in, contacts and properties, Outlook/calendar relevance, property-related media via SharePoint.
 
 **Go-live (if partner proceeds):** **R4, R5, R6, R15**, optionally **R7**, plus **R13** (WordPress showcase) and **R14** (aggregator feed).
 
@@ -92,26 +92,26 @@ Phases appear on the [roadmap](../specs/tenancy-hub-platform/roadmap.md) **Phase
 Users sign in with **Entra ID / Microsoft 365 work accounts**. The product should feel like an extension of M365:
 
 - **In initial Graph slice (R8):** mail and calendar in context; SharePoint for documents and operational media; email capture to enquiries/tasks (and work orders when R6 exists).
-- **Planned Graph direction (see tech-stack):** Teams, SharePoint, To Do, and broader comms—scoped in future slices or R8 follow-on, not all in the first R8 delivery.
-- **Not chosen as platform core:** Dataverse as the primary datastore—Graph integration is required either way; **PostgreSQL** keeps long-term SaaS flexibility ([tech-stack.md](./tech-stack.md)).
+- **Planned Graph direction (see tech-stack):** Teams, SharePoint, To Do, and broader comms: scoped in future slices or R8 follow-on, not all in the first R8 delivery.
+- **Not chosen as platform core:** Dataverse as the primary datastore: Graph integration is required either way; **PostgreSQL** keeps long-term SaaS flexibility ([tech-stack.md](./tech-stack.md)).
 
 ## AI strategy (later)
 
 Roadmap **R12** covers, at a high level:
 
-- **Knowledge assistant:** answers from operational data and documents stored in SharePoint (e.g. certificate expiry questions)—no autonomous legal decisions.
+- **Knowledge assistant:** answers from operational data and documents stored in SharePoint (e.g. certificate expiry questions): no autonomous legal decisions.
 - **Ticket triage:** email → enquiries, work orders, follow-up tasks.
 - **Workflow assistance:** tenancy, inspections, communications, document generation support.
 
 ## Finance and portals (later)
 
-- **R10:** rent schedules and statements; payment provider integrations (Stripe, GoCardless, open banking direction); does **not** replace full accounting—reconciliation and export details belong in the R10 sub-spec.
-- **R11:** tenant portal (repairs, statements, payments over time), landlord and contractor portals—scoped per portal in sub-specs; depends on R4, R6, R10 as appropriate.
+- **R10:** rent schedules and statements; payment provider integrations (Stripe, GoCardless, open banking direction); does **not** replace full accounting: reconciliation and export details belong in the R10 sub-spec.
+- **R11:** tenant portal (repairs, statements, payments over time), landlord and contractor portals: scoped per portal in sub-specs; depends on R4, R6, R10 as appropriate.
 
 ## Website and portal syndication (go-live)
 
-- **R13:** property showcase on an **existing** WordPress site via a plugin (custom post type)—not a full website builder in v1.
-- **R14:** **outbound property feed** compatible with syndication services (e.g. Data Export)—Tenancy Hub becomes the **source of property data**, not a replacement for aggregator relationships or Rightmove/Zoopla contracts.
+- **R13:** property showcase on an **existing** WordPress site via a plugin (custom post type): not a full website builder in v1.
+- **R14:** **outbound property feed** compatible with syndication services (e.g. Data Export): Tenancy Hub becomes the **source of property data**, not a replacement for aggregator relationships or Rightmove/Zoopla contracts.
 
 ## Deferred capabilities
 
@@ -133,7 +133,7 @@ This repository may become **public/OSS**. Do **not** commit:
 
 Keep Spec Kit artifacts **public-safe** at the level needed to implement. Partner-specific cutover (exact WordPress stack, feed credentials) stays in private runbooks and conversations; specs describe integrations generically.
 
-**Held outside git (recommended):** detailed business process library, design-partner commercial notes, and links to private M365 content—the **ideas** are captured here and in the roadmap; the **proprietary blueprint** stays private.
+**Held outside git (recommended):** detailed business process library, design-partner commercial notes, and links to private M365 content: the **ideas** are captured here and in the roadmap; the **proprietary blueprint** stays private.
 
 ## Related documents
 

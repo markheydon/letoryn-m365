@@ -24,7 +24,7 @@ Do **not** introduce:
 
 ## AppHost testing (.NET Aspire)
 
-AppHost modelling and orchestration are **not** tested. Validate AppHost changes by running the distributed application locally (for example `aspire start`) and through application-level tests—not dedicated AppHost unit tests.
+AppHost modelling and orchestration are **not** tested. Validate AppHost changes by running the distributed application locally (for example `aspire start`) and through application-level tests: not dedicated AppHost unit tests.
 
 ## End-to-end testing
 
@@ -51,4 +51,4 @@ After building the E2E project, install browsers once: `pwsh tests/TenancyHub.E2
 ## Layout
 
 - Production code: `src/`
-- Test projects: `tests/` — example: `tests/TenancyHub.ApiService.UnitTests/` (xUnit v3, NSubstitute, `WebApplicationFactory` for API smoke tests); `tests/TenancyHub.E2E/` (Playwright C# journeys). Add new test projects to `TenancyHub.slnx`.
+- Test projects: `tests/`: example: `tests/TenancyHub.ApiService.UnitTests/` (xUnit v3, NSubstitute, `WebApplicationFactory` for API smoke tests); `tests/TenancyHub.E2E/` (Playwright C# journeys). Add new test projects to `TenancyHub.slnx`.

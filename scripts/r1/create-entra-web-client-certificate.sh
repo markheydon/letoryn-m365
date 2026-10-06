@@ -14,8 +14,8 @@ usage() {
 Usage: create-entra-web-client-certificate.sh [--password <pfx-password>]
 
 Creates:
-  <cert-dir>/entra-web-dev.cer  — upload to Entra (Certificates & secrets)
-  <cert-dir>/entra-web-dev.pfx  — encode for Parameters:EntraWebClientCertificatePfx
+  <cert-dir>/entra-web-dev.cer : upload to Entra (Certificates & secrets)
+  <cert-dir>/entra-web-dev.pfx : encode for Parameters:EntraWebClientCertificatePfx
 
 Environment:
   CERT_DIR       Output directory (default: ~/.local/share/tenancy-hub/certs)

@@ -46,7 +46,7 @@ Apply platform operator seed per [docs/operations-rebuild-runbook.md §5](../../
 
 ## 3. Sign-in and agency context (User Story 1)
 
-**Scope**: Steps **3.1–3.5** and **3.8–3.11** validate US1 alone (including disabled-directory denial, access-not-configured, operator-without-assignments). **3.12–3.13** are optional manual session-cap checks. Steps **3.6–3.7** require US3 invitation APIs and UI ([tasks.md](./tasks.md) T053, T064, T096, T101)—run after membership work or as a joint US1+US3 gate.
+**Scope**: Steps **3.1–3.5** and **3.8–3.11** validate US1 alone (including disabled-directory denial, access-not-configured, operator-without-assignments). **3.12–3.13** are optional manual session-cap checks. Steps **3.6–3.7** require US3 invitation APIs and UI ([tasks.md](./tasks.md) T053, T064, T096, T101): run after membership work or as a joint US1+US3 gate.
 
 | Step | Action | Expected |
 |------|--------|----------|
@@ -69,7 +69,7 @@ Multi-agency user: verify last-used agency default and agency switch clears stal
 | 3.12 | *(Optional manual)* Signed-in user idle **30 minutes** without activity that resets the idle timer | Session ends; sign-in required; unsaved client state discarded (FR-001, T031/T034) |
 | 3.13 | *(Optional manual)* Signed-in session reaches **12 hours** from initial sign-in | Session ends even if recently active; sign-in required (FR-001, T031/T034) |
 
-**SC-002 (informal)**: With membership pre-provisioned, first sign-in to shell completes in under 3 minutes—manual check only, not a CI gate in R1 (see [plan.md](./plan.md) — not a load-test or CI obligation).
+**SC-002 (informal)**: With membership pre-provisioned, first sign-in to shell completes in under 3 minutes: manual check only, not a CI gate in R1 (see [plan.md](./plan.md): not a load-test or CI obligation).
 
 ---
 
@@ -122,7 +122,7 @@ Verify last-administrator guard by attempting to demote sole admin → blocked.
 
 4. **Read-only member** calls `GET /api/v1/agencies/{agencyId}/memberships` or opens member list URL → **403** / permission denied; nav hidden. **Standard member** → read-only roster **200**.
 
-5. Change a member’s role → within **one minute** the member’s permitted actions reflect the new role without full logout (SC-003; authorization reads DB or cache TTL ≤ 1 minute per **T058**—re-test with a second browser session or wait ≤ 60s).
+5. Change a member’s role → within **one minute** the member’s permitted actions reflect the new role without full logout (SC-003; authorization reads DB or cache TTL ≤ 1 minute per **T058**: re-test with a second browser session or wait ≤ 60s).
 
 ---
 
@@ -147,9 +147,9 @@ Prerequisites: user has **Active** membership and routine shell agency context (
 | Membership suspended / reactivated / removed | Affected user sees in-app notice (users with **Active** or **Suspended** membership for lifecycle-related agency events where applicable) |
 | Agency display name or contact change | Affected users + agency administrators (where applicable) see notice |
 | Agency lifecycle → **Suspended**, **Archived**, or reactivated to **Active**/**Suspended** | Users with **Active** or **Suspended** membership in that agency see notice; **Invited-only** and **Removed** do not |
-| Pending **Invited** membership (invite sent) | Invitee sees pending invite in **invitation-acceptance** flow only—not in agency notification bell until **Active** (T080/T087) |
+| Pending **Invited** membership (invite sent) | Invitee sees pending invite in **invitation-acceptance** flow only: not in agency notification bell until **Active** (T080/T087) |
 
-No email or push in R1. No dismiss/remove from list—mark read only for standard members.
+No email or push in R1. No dismiss/remove from list: mark read only for standard members.
 
 ---
 
@@ -173,7 +173,7 @@ Playwright C# journeys (when added) map to [docs/platform-foundation-user-journe
 
 1. Follow [docs/operations-rebuild-runbook.md](../../docs/operations-rebuild-runbook.md) from §2 (Entra) and §4 (Postgres volume if needed).
 2. Re-run sections 1–2 of this quickstart.
-3. **Expected**: Same functional outcomes without code changes—proves documentation accuracy.
+3. **Expected**: Same functional outcomes without code changes: proves documentation accuracy.
 
 ---
 
@@ -186,4 +186,4 @@ Playwright C# journeys (when added) map to [docs/platform-foundation-user-journe
 | Postgres auth failed | [operations-rebuild-runbook.md §4.3](../../docs/operations-rebuild-runbook.md#43-fix-password--volume-mismatch) volume reset |
 | Empty operator flows | [operations-rebuild-runbook.md §5](../../docs/operations-rebuild-runbook.md#5-seed-initial-platform-operator) seed |
 
-Aspire investigation: `.agents/skills/aspire-monitoring/` — `aspire logs`, `aspire otel traces`.
+Aspire investigation: `.agents/skills/aspire-monitoring/`: `aspire logs`, `aspire otel traces`.
