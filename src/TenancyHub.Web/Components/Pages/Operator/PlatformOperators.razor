@@ -167,6 +167,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await AgencyContext.WaitForShellBootstrapAsync();
         _isPlatformOperator = AgencyContext.Profile?.IsPlatformOperator == true;
         if (!_isPlatformOperator)
         {

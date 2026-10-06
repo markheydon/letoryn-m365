@@ -8,6 +8,11 @@ namespace TenancyHub.Web.Services;
 /// </summary>
 public sealed class AgencyContextState
 {
+    private TaskCompletionSource _shellBootstrapTcs =
+        new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    private volatile bool _shellBootstrapCompleted;
+
     /// <summary>Currently selected agency id for API calls.</summary>
     public Guid? ActiveAgencyId { get; private set; }
 
@@ -19,6 +24,32 @@ public sealed class AgencyContextState
 
     /// <summary>Raised when the active agency or profile changes.</summary>
     public event Action? Changed;
+
+    /// <summary>
+    /// Waits until shell bootstrap has finished its initial <c>/me</c> attempt
+    /// (avoids pages missing <see cref="Changed"/> when they initialize after the profile is set).
+    /// </summary>
+    public Task WaitForShellBootstrapAsync(CancellationToken cancellationToken = default)
+    {
+        if (_shellBootstrapCompleted)
+        {
+            return Task.CompletedTask;
+        }
+
+        return _shellBootstrapTcs.Task.WaitAsync(cancellationToken);
+    }
+
+    /// <summary>Signals that initial shell bootstrap has completed (with or without a profile).</summary>
+    public void CompleteShellBootstrap()
+    {
+        if (_shellBootstrapCompleted)
+        {
+            return;
+        }
+
+        _shellBootstrapCompleted = true;
+        _shellBootstrapTcs.TrySetResult();
+    }
 
     /// <summary>Stores the profile and resolves default agency selection.</summary>
     public void SetProfile(MeProfileResponse profile)
@@ -46,7 +77,14 @@ public sealed class AgencyContextState
         Profile = null;
         ActiveAgencyId = null;
         ActiveAgencyDisplayName = null;
+        ResetShellBootstrap();
         Changed?.Invoke();
+    }
+
+    private void ResetShellBootstrap()
+    {
+        _shellBootstrapCompleted = false;
+        _shellBootstrapTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
     }
 
     /// <summary>Whether the user has at least one active agency membership.</summary>

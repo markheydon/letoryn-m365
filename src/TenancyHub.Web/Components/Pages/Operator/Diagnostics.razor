@@ -193,13 +193,14 @@
     private string _summaryErrorMessage = "Unable to load agency summary.";
     private string _auditErrorMessage = "Unable to load audit history.";
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         AgencyContext.Changed += OnContextChanged;
+        await AgencyContext.WaitForShellBootstrapAsync();
         RefreshAccessAndAssignments();
         if (!_accessDenied && _assignments.Count > 0)
         {
-            _ = ReloadAllAsync();
+            await ReloadAllAsync();
         }
     }
 

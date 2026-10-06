@@ -96,10 +96,11 @@
     private string _loadErrorMessage = "Unable to load agency settings.";
     private readonly AgencySettingsFormModel _formModel = new();
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         AgencyContext.Changed += OnContextChanged;
-        _ = LoadSettingsAsync();
+        await AgencyContext.WaitForShellBootstrapAsync();
+        await LoadSettingsAsync();
     }
 
     private void OnContextChanged()
@@ -113,6 +114,13 @@
 
     private async Task LoadSettingsAsync()
     {
+        if (AgencyContext.Profile is null)
+        {
+            _viewState = ViewState.LoadFailed;
+            _loadErrorMessage = "Unable to load your profile. Try again later.";
+            return;
+        }
+
         if (!AgencyContext.CanManageAgencySettings || AgencyContext.ActiveAgencyId is not Guid agencyId)
         {
             _viewState = ViewState.PermissionDenied;

@@ -80,6 +80,7 @@
     protected override async Task OnInitializedAsync()
     {
         AgencyContext.Changed += OnContextChanged;
+        await AgencyContext.WaitForShellBootstrapAsync();
         _signedInEmail = AgencyContext.Profile?.Email;
         await LoadInvitationsAsync();
     }

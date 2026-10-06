@@ -145,9 +145,10 @@
     private string? _lifecycleSuccessMessage;
     private string? _lifecycleErrorMessage;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         AgencyContext.Changed += OnContextChanged;
+        await AgencyContext.WaitForShellBootstrapAsync();
         RefreshAccessAndAssignments();
     }
 

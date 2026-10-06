@@ -32,9 +32,10 @@
 @code {
     private bool _showComingSoon;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         AgencyContext.Changed += OnContextChanged;
+        await AgencyContext.WaitForShellBootstrapAsync();
         Refresh();
     }
 

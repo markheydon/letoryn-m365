@@ -10,15 +10,22 @@
     {
         Navigation.LocationChanged += OnLocationChanged;
 
-        if (AgencyContext.Profile is not null)
+        try
         {
-            return;
-        }
+            if (AgencyContext.Profile is not null)
+            {
+                return;
+            }
 
-        var profile = await ApiClient.GetMeAsync();
-        if (profile is not null)
+            var profile = await ApiClient.GetMeAsync();
+            if (profile is not null)
+            {
+                ApplyRouting(profile);
+            }
+        }
+        finally
         {
-            ApplyRouting(profile);
+            AgencyContext.CompleteShellBootstrap();
         }
     }
 

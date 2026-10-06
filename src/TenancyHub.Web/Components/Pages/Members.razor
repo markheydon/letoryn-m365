@@ -180,10 +180,11 @@
     private string _provisionEmail = string.Empty;
     private string _provisionRole = "StandardMember";
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         AgencyContext.Changed += OnContextChanged;
-        _ = LoadRosterAsync();
+        await AgencyContext.WaitForShellBootstrapAsync();
+        await LoadRosterAsync();
     }
 
     private void OnContextChanged()
@@ -197,6 +198,13 @@
 
     private async Task LoadRosterAsync()
     {
+        if (AgencyContext.Profile is null)
+        {
+            _viewState = ViewState.LoadFailed;
+            _loadErrorMessage = "Unable to load your profile. Try again later.";
+            return;
+        }
+
         if (!AgencyContext.CanViewMemberRoster || AgencyContext.ActiveAgencyId is not Guid agencyId)
         {
             _viewState = ViewState.PermissionDenied;

@@ -92,10 +92,11 @@
     private bool _loadingMore;
     private string _loadErrorMessage = "Unable to load audit history.";
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         AgencyContext.Changed += OnContextChanged;
-        _ = ReloadAsync();
+        await AgencyContext.WaitForShellBootstrapAsync();
+        await ReloadAsync();
     }
 
     private void OnContextChanged()
@@ -117,6 +118,17 @@
 
     private async Task LoadPageAsync(bool isInitialLoad)
     {
+        if (AgencyContext.Profile is null)
+        {
+            if (isInitialLoad)
+            {
+                _viewState = ViewState.LoadFailed;
+                _loadErrorMessage = "Unable to load your profile. Try again later.";
+            }
+
+            return;
+        }
+
         if (!AgencyContext.CanViewAgencyAudit || AgencyContext.ActiveAgencyId is not Guid agencyId)
         {
             _viewState = ViewState.PermissionDenied;
