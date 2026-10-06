@@ -553,6 +553,8 @@ public sealed class MembershipOperationsService(
             {
                 existing.AgencyRole = role;
                 existing.InvitedRoleSnapshot = role;
+                existing.InvitedAt = now;
+                existing.ExpiresAt = InvitationRules.ComputeExpiresAt(now);
                 existing.UpdatedAt = now;
                 await dbContext.SaveChangesAsync(cancellationToken);
                 return new MembershipOperationResult(
@@ -560,7 +562,18 @@ public sealed class MembershipOperationsService(
                     MembershipId: existing.Id);
             }
 
-            if (existing.Status is MembershipStatus.Active or MembershipStatus.Suspended)
+            if (existing.Status == MembershipStatus.Invited && !invited)
+            {
+                existing.Status = MembershipStatus.Active;
+                existing.AgencyRole = role;
+                existing.InvitedRoleSnapshot = null;
+                existing.InvitedAt = null;
+                existing.ExpiresAt = null;
+                existing.ActivatedAt = now;
+                existing.UpdatedAt = now;
+                await dbContext.SaveChangesAsync(cancellationToken);
+            }
+            else if (existing.Status is MembershipStatus.Active or MembershipStatus.Suspended)
             {
                 return new MembershipOperationResult(
                     MembershipOperationStatus.Conflict,
