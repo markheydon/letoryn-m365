@@ -38,17 +38,17 @@ When end-to-end coverage is required:
 
 For local browser automation against a running Aspire app, discover endpoints from Aspire first (see `.agents/skills/aspire-monitoring/references/playwright-handoff.md` in this repo).
 
-E2E project: `tests/TenancyHub.E2E/` (Playwright C#, xUnit v3). Journeys cite IDs from [platform-foundation-user-journeys.md](./platform-foundation-user-journeys.md).
+E2E project: `tests/Letoryn.E2E/` (Playwright C#, xUnit v3). Journeys cite IDs from [platform-foundation-user-journeys.md](./platform-foundation-user-journeys.md).
 
 | Variable | Purpose |
 |----------|---------|
-| `TENANCYHUB_E2E_BASE_URL` | Web frontend URL (required to run E2E; omit in CI to skip) |
-| `TENANCYHUB_E2E_MEMBER_STORAGE_STATE` | Playwright storage state for an active agency member |
-| `TENANCYHUB_E2E_NO_ACCESS_STORAGE_STATE` | Storage state for Entra user with no Tenancy Hub membership |
+| `LETORYN_E2E_BASE_URL` | Web frontend URL (required to run E2E; omit in CI to skip) |
+| `LETORYN_E2E_MEMBER_STORAGE_STATE` | Playwright storage state for an active agency member |
+| `LETORYN_E2E_NO_ACCESS_STORAGE_STATE` | Storage state for Entra user with no Letoryn membership |
 
-After building the E2E project, install browsers once: `pwsh tests/TenancyHub.E2E/bin/Release/net10.0/playwright.ps1 install chromium` (path matches your configuration).
+After building the E2E project, install browsers once: `pwsh tests/Letoryn.E2E/bin/Release/net10.0/playwright.ps1 install chromium` (path matches your configuration).
 
 ## Layout
 
 - Production code: `src/`
-- Test projects: `tests/`: example: `tests/TenancyHub.ApiService.UnitTests/` (xUnit v3, NSubstitute, `WebApplicationFactory` for API smoke tests); `tests/TenancyHub.E2E/` (Playwright C# journeys). Add new test projects to `TenancyHub.slnx`.
+- Test projects: `tests/`: example: `tests/Letoryn.ApiService.UnitTests/` (xUnit v3, NSubstitute, `WebApplicationFactory` for API smoke tests); `tests/Letoryn.E2E/` (Playwright C# journeys). Add new test projects to `Letoryn.slnx`.

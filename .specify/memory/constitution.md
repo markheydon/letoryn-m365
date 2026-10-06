@@ -1,10 +1,10 @@
-# Tenancy Hub Constitution
+# Letoryn Constitution
 
 ## Core Principles
 
 ### I. Security First (NON-NEGOTIABLE)
 
-Tenancy Hub is a **security-first** application. Threat modeling, least privilege, and safe defaults
+Letoryn is a **security-first** application. Threat modeling, least privilege, and safe defaults
 MUST guide every feature and integration.
 
 - All **user-supplied and external input** MUST be validated at trust boundaries (HTTP APIs, forms,
@@ -43,7 +43,7 @@ independent of UI, hosting, and infrastructure; dependencies point inward.
   immutable DTOs, nullable reference types, and centralized package/MSBuild policy.
 - New code MUST match existing project conventions before introducing new abstractions; complexity
   MUST be justified in review.
-- Aspire orchestration stays in AppHost; cross-cutting defaults in `TenancyHub.ServiceDefaults`;
+- Aspire orchestration stays in AppHost; cross-cutting defaults in `Letoryn.ServiceDefaults`;
   product logic MUST NOT leak into orchestration-only projects.
 
 **Rationale:** Predictable structure lets contributors apply standard .NET and Aspire skills without
@@ -97,7 +97,7 @@ Technology choices and non-negotiable build rules for this repository:
 | Area | Requirement |
 |------|-------------|
 | Runtime & orchestration | .NET 10, Aspire 13.6+ AppHost with Project v2 (`AddDotnetProject`) |
-| Front end | Blazor + Fluent UI Blazor v5 (`TenancyHub.Web`) |
+| Front end | Blazor + Fluent UI Blazor v5 (`Letoryn.Web`) |
 | Quality bar | `TreatWarningsAsErrors`, nullable enabled, EditorConfig enforced in build |
 | Packages | Central versions in `Directory.Packages.props` |
 | Product planning | Spec Kit SDD under `specs/`; keep public-repo specs free of confidential detail |
@@ -110,12 +110,12 @@ Technology choices and non-negotiable build rules for this repository:
   explicit amendment to this constitution.
 - Features SHOULD flow specify → plan → tasks → implement using Spec Kit workflows when scope is
   non-trivial.
-- Local verification before push: `dotnet build TenancyHub.slnx`, `dotnet test TenancyHub.slnx`, and
-  format as needed (`dotnet format TenancyHub.slnx`).
+- Local verification before push: `dotnet build Letoryn.slnx`, `dotnet test Letoryn.slnx`, and
+  format as needed (`dotnet format Letoryn.slnx`).
 
 ## Governance
 
-This constitution is the highest-level engineering governance for Tenancy Hub. When `AGENTS.md`,
+This constitution is the highest-level engineering governance for Letoryn. When `AGENTS.md`,
 `docs/`, or team habit conflict with a principle here, **this document wins** until amended.
 
 **Amendments:** Propose changes via `/speckit-constitution` (or equivalent constitution workflow)
@@ -129,7 +129,7 @@ redefinitions require MINOR or MAJOR version increments per semantic versioning 
 - **PATCH:** Clarifications, wording, typo fixes without changing intent.
 
 **Compliance review:** Periodic review SHOULD occur when platform direction changes (see
-`docs/tech-stack.md` and `specs/tenancy-hub-platform/roadmap.md`) or after significant security
+`docs/tech-stack.md` and `specs/letoryn-platform/roadmap.md`) or after significant security
 incidents.
 
 **Version**: 1.0.0 | **Ratified**: 2026-09-30 | **Last Amended**: 2026-09-30

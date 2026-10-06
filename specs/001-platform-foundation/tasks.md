@@ -19,7 +19,7 @@ description: "Task list for feature implementation"
 
 ## Path conventions
 
-Per [plan.md](./plan.md): `src/TenancyHub.*` libraries, `tests/TenancyHub.*` test projects, AppHost orchestration-only.
+Per [plan.md](./plan.md): `src/Letoryn.*` libraries, `tests/Letoryn.*` test projects, AppHost orchestration-only.
 
 ---
 
@@ -27,14 +27,14 @@ Per [plan.md](./plan.md): `src/TenancyHub.*` libraries, `tests/TenancyHub.*` tes
 
 **Purpose**: Solution layout, packages, and Aspire integration baseline before domain work.
 
-- [x] T001 Add `TenancyHub.Domain`, `TenancyHub.Application`, and `TenancyHub.Infrastructure` projects under `src/` and include them in `TenancyHub.slnx`
-- [x] T002 Add `TenancyHub.Application.UnitTests` under `tests/` and include it in `TenancyHub.slnx`
+- [x] T001 Add `Letoryn.Domain`, `Letoryn.Application`, and `Letoryn.Infrastructure` projects under `src/` and include them in `Letoryn.slnx`
+- [x] T002 Add `Letoryn.Application.UnitTests` under `tests/` and include it in `Letoryn.slnx`
 - [x] T003 [P] Wire project references: `Infrastructure` → `Domain` + `Application`; `Application` → `Domain`; `ApiService` → `Application` + `Infrastructure`; `Web` → `Application` (DTOs/contracts only, no Infrastructure)
 - [x] T004 [P] Add central package versions in `Directory.Packages.props` for EF Core 10, `Aspire.Npgsql.EntityFrameworkCore.PostgreSQL`, `Microsoft.Identity.Web`, and EF design tools per [research.md](./research.md)
 - [x] T005 [P] Enable XML documentation and nullable settings on new library projects matching `Directory.Build.props` in `docs/build-quality.md`
-- [x] T006 Run Aspire package wiring from repo root: add PostgreSQL hosting to `src/TenancyHub.AppHost/` and Npgsql EF client to `src/TenancyHub.ApiService/` per `.agents/skills/aspireify/` (no hand-rolled connection strings)
-- [x] T007 Update `src/TenancyHub.AppHost/AppHost.cs` with `AddPostgres("postgres").AddDatabase("tenancyhub")`, `WithReference(postgres)` on **apiservice**, and `AddDotnetProject` v2 for **`apiservice`** → `TenancyHub.ApiService` and **`webfrontend`** → `TenancyHub.Web` (resource names MUST match [quickstart.md](./quickstart.md) `aspire wait` targets)
-- [x] T008 [P] Add Entra-related `AddParameter(..., secret: true)` placeholders in `src/TenancyHub.AppHost/AppHost.cs` and map to Web/API environment variables per [docs/operations-rebuild-runbook.md](../../docs/operations-rebuild-runbook.md)
+- [x] T006 Run Aspire package wiring from repo root: add PostgreSQL hosting to `src/Letoryn.AppHost/` and Npgsql EF client to `src/Letoryn.ApiService/` per `.agents/skills/aspireify/` (no hand-rolled connection strings)
+- [x] T007 Update `src/Letoryn.AppHost/AppHost.cs` with `AddPostgres("postgres").AddDatabase("letoryn")`, `WithReference(postgres)` on **apiservice**, and `AddDotnetProject` v2 for **`apiservice`** → `Letoryn.ApiService` and **`webfrontend`** → `Letoryn.Web` (resource names MUST match [quickstart.md](./quickstart.md) `aspire wait` targets)
+- [x] T008 [P] Add Entra-related `AddParameter(..., secret: true)` placeholders in `src/Letoryn.AppHost/AppHost.cs` and map to Web/API environment variables per [docs/operations-rebuild-runbook.md](../../docs/operations-rebuild-runbook.md)
 - [x] T009 [P] Verify `specs/001-platform-foundation/ops-runbook.md` points to `docs/operations-rebuild-runbook.md` only (no duplicated steps; update link text if anchors change)
 
 ---
@@ -45,27 +45,27 @@ Per [plan.md](./plan.md): `src/TenancyHub.*` libraries, `tests/TenancyHub.*` tes
 
 **⚠️ CRITICAL**: No user story phases until this checkpoint passes (`dotnet build`, migration applies, health checks green).
 
-- [x] T010 [P] Add agency lifecycle enum `Active`, `Suspended`, `Archived` in `src/TenancyHub.Domain/Agencies/AgencyLifecycleStatus.cs`
-- [x] T011 [P] Add membership status enum `Invited`, `Active`, `Suspended`, `Removed` in `src/TenancyHub.Domain/Memberships/MembershipStatus.cs`
-- [x] T012 [P] Add agency role enum `Administrator`, `StandardMember`, `ReadOnlyMember` in `src/TenancyHub.Domain/Memberships/AgencyRole.cs`
-- [x] T013 [P] Implement `Agency` entity in `src/TenancyHub.Domain/Agencies/Agency.cs` with required `DisplayName`, `PrimaryContactEmail`, `PrimaryContactPhone`, `LifecycleStatus`, `CreatedAt`, `UpdatedAt`, `LastLifecycleChangeAt` per [data-model.md](./data-model.md)
-- [x] T014 [P] Implement `UserIdentity` entity in `src/TenancyHub.Domain/Identities/UserIdentity.cs` with unique `EntraObjectId`, normalized `Email`, `IsPlatformOperator`, nullable `LastUsedAgencyId`, `CreatedAt`
-- [x] T015 [P] Implement `AgencyMembership` entity in `src/TenancyHub.Domain/Memberships/AgencyMembership.cs` with exactly one `AgencyRole`, invite fields (`InvitedAt`, `ExpiresAt` = Created + 30 days for invites), and status rules from [data-model.md](./data-model.md)
-- [x] T016 [P] Implement `PlatformOperatorAssignment`, `AuditEvent`, `Notification`, and optional `UserSession` entities in `src/TenancyHub.Domain/` matching [data-model.md](./data-model.md) field constraints
-- [x] T017 Add domain guard helpers (last active administrator, last platform operator, archived-agency mutation block) in `src/TenancyHub.Domain/` per FR-006, FR-007, FR-004
-- [x] T018 Implement `TenancyHubDbContext` and fluent EF configurations in `src/TenancyHub.Infrastructure/Persistence/` including indexes listed in [data-model.md](./data-model.md)
-- [x] T019 Register `AddNpgsqlDbContext<TenancyHubDbContext>(connectionName: "tenancyhub")` in `src/TenancyHub.ApiService/Program.cs` and infrastructure DI extension in `src/TenancyHub.Infrastructure/DependencyInjection.cs`
-- [x] T020 Create initial EF Core migration in `src/TenancyHub.Infrastructure/Persistence/Migrations/` and document apply command in [docs/operations-rebuild-runbook.md](../../docs/operations-rebuild-runbook.md)
-- [x] T021 [P] Define `IAgencyContext`, `ICurrentUser`, and authorization result types in `src/TenancyHub.Application/Abstractions/`
-- [x] T022 [P] Add application service interfaces for audit writing and notification writing in `src/TenancyHub.Application/Abstractions/`
-- [x] T023 Implement EF-backed audit and notification writers in `src/TenancyHub.Infrastructure/Services/`
-- [x] T024 Implement agency context resolution from `X-TenancyHub-Agency-Id` header + membership/assignment validation in `src/TenancyHub.ApiService/Middleware/TenancyContextMiddleware.cs`
-- [x] T025 Add global ProblemDetails and safe 403/404 mapping in `src/TenancyHub.ApiService/Program.cs` per FR-013 and [contracts/api-v1.md](./contracts/api-v1.md)
-- [x] T026 [P] Add API request validation at HTTP trust boundaries (membership invite/provision bodies, agency settings, operator agency create/lifecycle, platform operator grant/revoke/assignments) returning 400 ProblemDetails in `src/TenancyHub.ApiService/Validation/` per constitution Principle I and `docs/csharp-patterns.md` (pair with Web form validation in T099)
-- [x] T027 [P] Add PostgreSQL health check via Aspire/EF in `src/TenancyHub.ApiService/Program.cs`
+- [x] T010 [P] Add agency lifecycle enum `Active`, `Suspended`, `Archived` in `src/Letoryn.Domain/Agencies/AgencyLifecycleStatus.cs`
+- [x] T011 [P] Add membership status enum `Invited`, `Active`, `Suspended`, `Removed` in `src/Letoryn.Domain/Memberships/MembershipStatus.cs`
+- [x] T012 [P] Add agency role enum `Administrator`, `StandardMember`, `ReadOnlyMember` in `src/Letoryn.Domain/Memberships/AgencyRole.cs`
+- [x] T013 [P] Implement `Agency` entity in `src/Letoryn.Domain/Agencies/Agency.cs` with required `DisplayName`, `PrimaryContactEmail`, `PrimaryContactPhone`, `LifecycleStatus`, `CreatedAt`, `UpdatedAt`, `LastLifecycleChangeAt` per [data-model.md](./data-model.md)
+- [x] T014 [P] Implement `UserIdentity` entity in `src/Letoryn.Domain/Identities/UserIdentity.cs` with unique `EntraObjectId`, normalized `Email`, `IsPlatformOperator`, nullable `LastUsedAgencyId`, `CreatedAt`
+- [x] T015 [P] Implement `AgencyMembership` entity in `src/Letoryn.Domain/Memberships/AgencyMembership.cs` with exactly one `AgencyRole`, invite fields (`InvitedAt`, `ExpiresAt` = Created + 30 days for invites), and status rules from [data-model.md](./data-model.md)
+- [x] T016 [P] Implement `PlatformOperatorAssignment`, `AuditEvent`, `Notification`, and optional `UserSession` entities in `src/Letoryn.Domain/` matching [data-model.md](./data-model.md) field constraints
+- [x] T017 Add domain guard helpers (last active administrator, last platform operator, archived-agency mutation block) in `src/Letoryn.Domain/` per FR-006, FR-007, FR-004
+- [x] T018 Implement `LetorynDbContext` and fluent EF configurations in `src/Letoryn.Infrastructure/Persistence/` including indexes listed in [data-model.md](./data-model.md)
+- [x] T019 Register `AddNpgsqlDbContext<LetorynDbContext>(connectionName: "letoryn")` in `src/Letoryn.ApiService/Program.cs` and infrastructure DI extension in `src/Letoryn.Infrastructure/DependencyInjection.cs`
+- [x] T020 Create initial EF Core migration in `src/Letoryn.Infrastructure/Persistence/Migrations/` and document apply command in [docs/operations-rebuild-runbook.md](../../docs/operations-rebuild-runbook.md)
+- [x] T021 [P] Define `IAgencyContext`, `ICurrentUser`, and authorization result types in `src/Letoryn.Application/Abstractions/`
+- [x] T022 [P] Add application service interfaces for audit writing and notification writing in `src/Letoryn.Application/Abstractions/`
+- [x] T023 Implement EF-backed audit and notification writers in `src/Letoryn.Infrastructure/Services/`
+- [x] T024 Implement agency context resolution from `X-Letoryn-Agency-Id` header + membership/assignment validation in `src/Letoryn.ApiService/Middleware/TenancyContextMiddleware.cs`
+- [x] T025 Add global ProblemDetails and safe 403/404 mapping in `src/Letoryn.ApiService/Program.cs` per FR-013 and [contracts/api-v1.md](./contracts/api-v1.md)
+- [x] T026 [P] Add API request validation at HTTP trust boundaries (membership invite/provision bodies, agency settings, operator agency create/lifecycle, platform operator grant/revoke/assignments) returning 400 ProblemDetails in `src/Letoryn.ApiService/Validation/` per constitution Principle I and `docs/csharp-patterns.md` (pair with Web form validation in T099)
+- [x] T027 [P] Add PostgreSQL health check via Aspire/EF in `src/Letoryn.ApiService/Program.cs`
 - [x] T028 Extend [docs/operations-rebuild-runbook.md](../../docs/operations-rebuild-runbook.md) §4–§5 with final Aspire parameter names, migration steps, and link to [scripts/r1/seed-platform-operator.sql](../../scripts/r1/seed-platform-operator.sql) (paired with T102)
 - [x] T102 **(execute after T020)** Align [scripts/r1/seed-platform-operator.sql](../../scripts/r1/seed-platform-operator.sql) table/column names with EF migration output, document `psql`/Aspire connection usage in runbook §5, and verify seed grants `IsPlatformOperator` for a known Entra `oid` + email per [quickstart.md](./quickstart.md) §2
-- [x] T029 [P] Document FR-012 tenancy seams (`IAgencyContext`, `ICurrentUser`, authorization entry points) with XML comments on public types in `src/TenancyHub.Application/Abstractions/` for downstream feature modules
+- [x] T029 [P] Document FR-012 tenancy seams (`IAgencyContext`, `ICurrentUser`, authorization entry points) with XML comments on public types in `src/Letoryn.Application/Abstractions/` for downstream feature modules
 
 **Checkpoint**: Foundation ready: user story work may proceed in parallel.
 
@@ -79,24 +79,24 @@ Per [plan.md](./plan.md): `src/TenancyHub.*` libraries, `tests/TenancyHub.*` tes
 
 ### Implementation for User Story 1
 
-- [x] T030 [P] [US1] Configure Microsoft.Identity.Web API JWT validation in `src/TenancyHub.ApiService/Program.cs` per [research.md](./research.md)
-- [x] T031 [P] [US1] Configure Microsoft.Identity.Web interactive sign-in and cookie auth in `src/TenancyHub.Web/Program.cs` with sliding 30-minute idle and 12-hour absolute cap per FR-001
+- [x] T030 [P] [US1] Configure Microsoft.Identity.Web API JWT validation in `src/Letoryn.ApiService/Program.cs` per [research.md](./research.md)
+- [x] T031 [P] [US1] Configure Microsoft.Identity.Web interactive sign-in and cookie auth in `src/Letoryn.Web/Program.cs` with sliding 30-minute idle and 12-hour absolute cap per FR-001
 - [x] T032 [P] [US1] Keep `specs/001-platform-foundation/research.md` **Disabled directory account** and session sections current (token validation + cookie refresh; no Graph in R1; runbook access-token lifetime note): pair with T033, T034, T094
 - [x] T033 [US1] Enforce FR-001 loss of access per research.md **Disabled directory account**: JWT validation on every API request; Web cookie validation with failed Entra token refresh → sign-out; access-token lifetime guidance in runbook §3 (pair with T044 audit)
-- [x] T034 [US1] Implement `UserSession` persistence and per-request session validation in `src/TenancyHub.Infrastructure/Services/UserSessionService.cs` (concurrent sessions = multiple rows; idle/absolute expiry with framework-default clock-skew tolerance per research.md; R1 session store is PostgreSQL)
-- [x] T035 [US1] Implement identity provisioning on first token (`EntraObjectId`, `Email`) in `src/TenancyHub.Infrastructure/Services/EnsureUserIdentityService.cs` (`IEnsureUserIdentityService`)
-- [x] T036 [US1] Implement `GET /api/v1/me` in `src/TenancyHub.ApiService/Endpoints/MeEndpoints.cs` per [contracts/api-v1.md](./contracts/api-v1.md)
-- [x] T037 [US1] Implement `PUT /api/v1/me/active-agency` with membership/assignment checks and `LastUsedAgencyId` update in `src/TenancyHub.ApiService/Endpoints/MeEndpoints.cs` (no FR-008 audit row for agency switch in R1: see [contracts/api-v1.md](./contracts/api-v1.md))
-- [x] T038 [P] [US1] Add typed `TenancyHubApiClient` with `AddHttpClient` + service discovery in `src/TenancyHub.Web/Services/TenancyHubApiClient.cs`
-- [x] T039 [US1] Wire bearer/cookie token forwarding from Web to API in `src/TenancyHub.Web/Services/TenancyHubApiClient.cs` (DI-only HTTP; no `new HttpClient()`)
-- [x] T040 [P] [US1] Add agency context header propagation and switch handler in `src/TenancyHub.Web/Services/AgencyContextState.cs`
-- [x] T041 [US1] Build signed-in shell chrome with agency name in `src/TenancyHub.Web/Components/Layout/MainLayout.razor` using Fluent UI parameters per `docs/web-ui-and-css.md` (reserve header slot for sign-out wired in T094; **do not** render agency notification bell until FR-002 active agency + **Active** membership: T084/T085)
-- [x] T042 [US1] Add agency switcher UI in `src/TenancyHub.Web/Components/AgencySwitcher.razor` (last-used default, invalid last-used fallback)
-- [x] T043 [US1] Add no-membership and operator-no-assignment pages in `src/TenancyHub.Web/Components/Pages/AccessNotConfigured.razor` and `src/TenancyHub.Web/Components/Pages/OperatorHome.razor`
-- [x] T044 [US1] Audit **successful and failed** sign-in attempts, directory-disabled denial, and session termination (idle, absolute cap, validation failure, per-session sign-out) via `IAuditWriter` in `src/TenancyHub.ApiService/` per FR-008: use nullable `AgencyId` on sign-in rows when no active agency context yet; pair with [quickstart.md](./quickstart.md) §3.8–§3.9 and §6 (SC-004)
+- [x] T034 [US1] Implement `UserSession` persistence and per-request session validation in `src/Letoryn.Infrastructure/Services/UserSessionService.cs` (concurrent sessions = multiple rows; idle/absolute expiry with framework-default clock-skew tolerance per research.md; R1 session store is PostgreSQL)
+- [x] T035 [US1] Implement identity provisioning on first token (`EntraObjectId`, `Email`) in `src/Letoryn.Infrastructure/Services/EnsureUserIdentityService.cs` (`IEnsureUserIdentityService`)
+- [x] T036 [US1] Implement `GET /api/v1/me` in `src/Letoryn.ApiService/Endpoints/MeEndpoints.cs` per [contracts/api-v1.md](./contracts/api-v1.md)
+- [x] T037 [US1] Implement `PUT /api/v1/me/active-agency` with membership/assignment checks and `LastUsedAgencyId` update in `src/Letoryn.ApiService/Endpoints/MeEndpoints.cs` (no FR-008 audit row for agency switch in R1: see [contracts/api-v1.md](./contracts/api-v1.md))
+- [x] T038 [P] [US1] Add typed `LetorynApiClient` with `AddHttpClient` + service discovery in `src/Letoryn.Web/Services/LetorynApiClient.cs`
+- [x] T039 [US1] Wire bearer/cookie token forwarding from Web to API in `src/Letoryn.Web/Services/LetorynApiClient.cs` (DI-only HTTP; no `new HttpClient()`)
+- [x] T040 [P] [US1] Add agency context header propagation and switch handler in `src/Letoryn.Web/Services/AgencyContextState.cs`
+- [x] T041 [US1] Build signed-in shell chrome with agency name in `src/Letoryn.Web/Components/Layout/MainLayout.razor` using Fluent UI parameters per `docs/web-ui-and-css.md` (reserve header slot for sign-out wired in T094; **do not** render agency notification bell until FR-002 active agency + **Active** membership: T084/T085)
+- [x] T042 [US1] Add agency switcher UI in `src/Letoryn.Web/Components/AgencySwitcher.razor` (last-used default, invalid last-used fallback)
+- [x] T043 [US1] Add no-membership and operator-no-assignment pages in `src/Letoryn.Web/Components/Pages/AccessNotConfigured.razor` and `src/Letoryn.Web/Components/Pages/OperatorHome.razor`
+- [x] T044 [US1] Audit **successful and failed** sign-in attempts, directory-disabled denial, and session termination (idle, absolute cap, validation failure, per-session sign-out) via `IAuditWriter` in `src/Letoryn.ApiService/` per FR-008: use nullable `AgencyId` on sign-in rows when no active agency context yet; pair with [quickstart.md](./quickstart.md) §3.8–§3.9 and §6 (SC-004)
 - [x] T045 [US1] Update [docs/operations-rebuild-runbook.md](../../docs/operations-rebuild-runbook.md) §3 with Entra redirect URIs and secret parameter names after auth wiring
-- [x] T094 [US1] Implement per-session sign-out per FR-001/FR-011 and [contracts/api-v1.md](./contracts/api-v1.md): `POST /api/v1/me/sign-out` in `src/TenancyHub.ApiService/Endpoints/MeEndpoints.cs` invalidates only the current `UserSession` row; Fluent UI sign-out in `src/TenancyHub.Web/Components/Layout/MainLayout.razor` calls Web sign-out without terminating other concurrent sessions; verify via [quickstart.md](./quickstart.md) §3.5
-- [x] T096 [US1] When `GET /api/v1/me` reports pending **Invited** memberships and at least one **Active** membership, route signed-in users into the normal agency shell on last-used **Active** agency and surface a Fluent UI banner or nav entry in `src/TenancyHub.Web/Components/Layout/MainLayout.razor` linking to `Invitations.razor` until each invite is accepted or declined (no auto-activation); verify [quickstart.md](./quickstart.md) §3.6 (depends on T053 accept/decline APIs and T064 `Invitations.razor`; banner may ship with stub route until T064)
+- [x] T094 [US1] Implement per-session sign-out per FR-001/FR-011 and [contracts/api-v1.md](./contracts/api-v1.md): `POST /api/v1/me/sign-out` in `src/Letoryn.ApiService/Endpoints/MeEndpoints.cs` invalidates only the current `UserSession` row; Fluent UI sign-out in `src/Letoryn.Web/Components/Layout/MainLayout.razor` calls Web sign-out without terminating other concurrent sessions; verify via [quickstart.md](./quickstart.md) §3.5
+- [x] T096 [US1] When `GET /api/v1/me` reports pending **Invited** memberships and at least one **Active** membership, route signed-in users into the normal agency shell on last-used **Active** agency and surface a Fluent UI banner or nav entry in `src/Letoryn.Web/Components/Layout/MainLayout.razor` linking to `Invitations.razor` until each invite is accepted or declined (no auto-activation); verify [quickstart.md](./quickstart.md) §3.6 (depends on T053 accept/decline APIs and T064 `Invitations.razor`; banner may ship with stub route until T064)
 - [x] T101 [US1] When `GET /api/v1/me` reports one or more **Invited** memberships, **no** **Active** agency membership, and **no** valid operator shell path (FR-002), route post-sign-in users to `Invitations.razor` (minimal chrome: not routine agency shell); block routine shell URLs and agency-scoped API calls until accept/decline or operator assignment; no notification bell; verify [quickstart.md](./quickstart.md) §3.7 (depends on T036, T053, T064; may stub `Invitations.razor` until T064 lands)
 
 **Checkpoint**: User Story 1 independently testable via quickstart **§3.1–§3.5 and §3.8–§3.11** (optional §3.12–§3.13; full §3 including §3.6–§3.7 after US3 invitation work).
@@ -111,13 +111,13 @@ Per [plan.md](./plan.md): `src/TenancyHub.*` libraries, `tests/TenancyHub.*` tes
 
 ### Implementation for User Story 2
 
-- [x] T046 [US2] [FR-003] Centralize `IAuthorizationService` / policy checks in `src/TenancyHub.Application/Authorization/AgencyAuthorizationService.cs` for agency `LifecycleStatus` and membership status (`Active`, `Invited`, `Suspended`, `Removed`): **Suspended** membership MUST block agency shell/API access with a clear UK English message while other agencies remain usable
-- [x] T047 [US2] [FR-003] Enforce member sign-in and active-context denial for agency `LifecycleStatus` **Suspended** and **Archived**, and for membership **Suspended**, with clear UK English messages in `src/TenancyHub.Application/Agencies/AgencyAccessRules.cs` (distinct copy for agency vs membership suspension)
-- [x] T048 [US2] [FR-003] Apply authorization filters to all agency-scoped minimal API groups in `src/TenancyHub.ApiService/Program.cs`
-- [x] T049 [US2] [FR-013] Return identical outward shape for cross-tenant not-found vs forbidden in `src/TenancyHub.ApiService/Infrastructure/TenantSafeResults.cs` per FR-013 (supports FR-003 isolation without leakage)
-- [x] T050 [US2] [FR-003] Block agency-scoped routes when active header agency does not match route `agencyId` in `src/TenancyHub.ApiService/Middleware/TenancyContextMiddleware.cs`
-- [x] T051 [US2] [FR-003] Implement operator assignment verification for `/api/v1/operator/agencies/{agencyId}/...` in `src/TenancyHub.Application/Operators/OperatorAssignmentService.cs`
-- [x] T052 [P] [US2] [FR-003] Add integration-focused unit tests for isolation matrix (cross-tenant access, membership **Suspended**, agency **Suspended**/**Archived**) in `tests/TenancyHub.Application.UnitTests/Authorization/AgencyIsolationTests.cs`
+- [x] T046 [US2] [FR-003] Centralize `IAuthorizationService` / policy checks in `src/Letoryn.Application/Authorization/AgencyAuthorizationService.cs` for agency `LifecycleStatus` and membership status (`Active`, `Invited`, `Suspended`, `Removed`): **Suspended** membership MUST block agency shell/API access with a clear UK English message while other agencies remain usable
+- [x] T047 [US2] [FR-003] Enforce member sign-in and active-context denial for agency `LifecycleStatus` **Suspended** and **Archived**, and for membership **Suspended**, with clear UK English messages in `src/Letoryn.Application/Agencies/AgencyAccessRules.cs` (distinct copy for agency vs membership suspension)
+- [x] T048 [US2] [FR-003] Apply authorization filters to all agency-scoped minimal API groups in `src/Letoryn.ApiService/Program.cs`
+- [x] T049 [US2] [FR-013] Return identical outward shape for cross-tenant not-found vs forbidden in `src/Letoryn.ApiService/Infrastructure/TenantSafeResults.cs` per FR-013 (supports FR-003 isolation without leakage)
+- [x] T050 [US2] [FR-003] Block agency-scoped routes when active header agency does not match route `agencyId` in `src/Letoryn.ApiService/Middleware/TenancyContextMiddleware.cs`
+- [x] T051 [US2] [FR-003] Implement operator assignment verification for `/api/v1/operator/agencies/{agencyId}/...` in `src/Letoryn.Application/Operators/OperatorAssignmentService.cs`
+- [x] T052 [P] [US2] [FR-003] Add integration-focused unit tests for isolation matrix (cross-tenant access, membership **Suspended**, agency **Suspended**/**Archived**) in `tests/Letoryn.Application.UnitTests/Authorization/AgencyIsolationTests.cs`
 
 **Checkpoint**: User Story 2 independently testable via quickstart §4.
 
@@ -131,23 +131,23 @@ Per [plan.md](./plan.md): `src/TenancyHub.*` libraries, `tests/TenancyHub.*` tes
 
 ### Implementation for User Story 3
 
-- [x] T053 [P] [US3] Implement invitee routes `GET /api/v1/invitations/pending`, `POST /api/v1/invitations/{membershipId}/accept`, and `POST /api/v1/invitations/{membershipId}/decline` in `src/TenancyHub.ApiService/Endpoints/InvitationEndpoints.cs` per [contracts/api-v1.md](./contracts/api-v1.md)
-- [x] T054 [US3] Implement invite idempotency (at most one pending `Invited` per agency+email) in `src/TenancyHub.Application/Memberships/InviteMemberHandler.cs`
-- [x] T055 [US3] Implement provision → immediate `Active` membership in `src/TenancyHub.Application/Memberships/ProvisionMemberHandler.cs`
-- [x] T056 [US3] Implement membership lifecycle handlers (suspend, reactivate, remove, revoke invitation, role patch) in `src/TenancyHub.Application/Memberships/`
-- [x] T057 [US3] Enforce 30-day invite expiry with lazy evaluation on pending list, accept, and decline; optional `InvitationExpiryHostedService` sweep in `src/TenancyHub.Application/Memberships/InvitationRules.cs` and `src/TenancyHub.ApiService/` registration
-- [x] T058 [US3] Ensure role and membership permission checks read current database state (or cache TTL ≤ 1 minute) so role changes apply within one minute without full logout in `src/TenancyHub.Application/Authorization/AgencyAuthorizationService.cs`; add quickstart §5 verification step
-- [x] T059 [US3] Implement agency membership API group `/api/v1/agencies/{agencyId}/memberships` in `src/TenancyHub.ApiService/Endpoints/MembershipEndpoints.cs`; **read-only members** MUST receive **403** (or tenant-safe equivalent) on roster `GET`: only administrators, operators, and **standard members** may list names and roles per spec US3 scenario 11
-- [x] T060 [US3] Implement canonical `PATCH /api/v1/agencies/{agencyId}/settings` only (no separate operator settings route) with admin-active vs operator-assigned rules in `src/TenancyHub.ApiService/Endpoints/AgencySettingsEndpoints.cs` per [contracts/api-v1.md](./contracts/api-v1.md); deny updates when agency is **Archived** (FR-015); operators may update on **active**/**suspended** assigned agencies only
-- [x] T061 [US3] Implement operator agency create `POST /api/v1/operator/agencies` with auto-assignment in `src/TenancyHub.ApiService/Endpoints/OperatorAgencyEndpoints.cs` per FR-016
-- [x] T062 [US3] Implement operator lifecycle `POST /api/v1/operator/agencies/{agencyId}/lifecycle` in `src/TenancyHub.ApiService/Endpoints/OperatorAgencyEndpoints.cs`
-- [x] T063 [US3] Implement platform operator management in `src/TenancyHub.ApiService/Endpoints/OperatorPlatformEndpoints.cs`: `GET /api/v1/operator/platform/operators`, `POST .../operators/{userId}/grant`, `POST .../operators/{userId}/revoke` (last-operator block), and `PUT .../operators/{userId}/assignments` per [contracts/api-v1.md](./contracts/api-v1.md)
-- [x] T064 [P] [US3] Build invitation acceptance page in `src/TenancyHub.Web/Components/Pages/Invitations.razor` wired to accept/decline API routes (explicit actions; matching email only)
-- [x] T065 [P] [US3] Build member roster and management pages in `src/TenancyHub.Web/Components/Pages/Members.razor` (admin/operator manage; standard member read-only list); omit member-list nav for **read-only members**; direct URL attempts show permission denied without data leakage
-- [x] T066 [P] [US3] Build operator agency create and lifecycle UI in `src/TenancyHub.Web/Components/Pages/Operator/Agencies.razor` (covers [quickstart.md](./quickstart.md) §5.1 agency create)
-- [x] T097 [P] [US3] Build platform operator grant/revoke and agency assignment UI in `src/TenancyHub.Web/Components/Pages/Operator/PlatformOperators.razor` wired to T063 endpoints (FR-006; [quickstart.md](./quickstart.md) §5.1)
-- [x] T098 [P] [US3] Build agency settings page in `src/TenancyHub.Web/Components/Pages/AgencySettings.razor` for administrators on **active** agencies and operators on assigned **active**/**suspended** agencies via T060; **do not** add ad-hoc `NavMenu.razor` links here: agency settings nav entry is wired in T075 via `ShellNavigationPolicy` after T074 (FR-011, FR-015; [quickstart.md](./quickstart.md) §5.2)
-- [x] T099 [US3] Add Fluent UI form validation (required fields, email/phone formats) on invite, provision, agency settings, operator agency create, and platform operator flows in `src/TenancyHub.Web/Components/` with server-side enforcement via API (constitution Principle I; pairs with T026)
+- [x] T053 [P] [US3] Implement invitee routes `GET /api/v1/invitations/pending`, `POST /api/v1/invitations/{membershipId}/accept`, and `POST /api/v1/invitations/{membershipId}/decline` in `src/Letoryn.ApiService/Endpoints/InvitationEndpoints.cs` per [contracts/api-v1.md](./contracts/api-v1.md)
+- [x] T054 [US3] Implement invite idempotency (at most one pending `Invited` per agency+email) in `src/Letoryn.Application/Memberships/InviteMemberHandler.cs`
+- [x] T055 [US3] Implement provision → immediate `Active` membership in `src/Letoryn.Application/Memberships/ProvisionMemberHandler.cs`
+- [x] T056 [US3] Implement membership lifecycle handlers (suspend, reactivate, remove, revoke invitation, role patch) in `src/Letoryn.Application/Memberships/`
+- [x] T057 [US3] Enforce 30-day invite expiry with lazy evaluation on pending list, accept, and decline; optional `InvitationExpiryHostedService` sweep in `src/Letoryn.Application/Memberships/InvitationRules.cs` and `src/Letoryn.ApiService/` registration
+- [x] T058 [US3] Ensure role and membership permission checks read current database state (or cache TTL ≤ 1 minute) so role changes apply within one minute without full logout in `src/Letoryn.Application/Authorization/AgencyAuthorizationService.cs`; add quickstart §5 verification step
+- [x] T059 [US3] Implement agency membership API group `/api/v1/agencies/{agencyId}/memberships` in `src/Letoryn.ApiService/Endpoints/MembershipEndpoints.cs`; **read-only members** MUST receive **403** (or tenant-safe equivalent) on roster `GET`: only administrators, operators, and **standard members** may list names and roles per spec US3 scenario 11
+- [x] T060 [US3] Implement canonical `PATCH /api/v1/agencies/{agencyId}/settings` only (no separate operator settings route) with admin-active vs operator-assigned rules in `src/Letoryn.ApiService/Endpoints/AgencySettingsEndpoints.cs` per [contracts/api-v1.md](./contracts/api-v1.md); deny updates when agency is **Archived** (FR-015); operators may update on **active**/**suspended** assigned agencies only
+- [x] T061 [US3] Implement operator agency create `POST /api/v1/operator/agencies` with auto-assignment in `src/Letoryn.ApiService/Endpoints/OperatorAgencyEndpoints.cs` per FR-016
+- [x] T062 [US3] Implement operator lifecycle `POST /api/v1/operator/agencies/{agencyId}/lifecycle` in `src/Letoryn.ApiService/Endpoints/OperatorAgencyEndpoints.cs`
+- [x] T063 [US3] Implement platform operator management in `src/Letoryn.ApiService/Endpoints/OperatorPlatformEndpoints.cs`: `GET /api/v1/operator/platform/operators`, `POST .../operators/{userId}/grant`, `POST .../operators/{userId}/revoke` (last-operator block), and `PUT .../operators/{userId}/assignments` per [contracts/api-v1.md](./contracts/api-v1.md)
+- [x] T064 [P] [US3] Build invitation acceptance page in `src/Letoryn.Web/Components/Pages/Invitations.razor` wired to accept/decline API routes (explicit actions; matching email only)
+- [x] T065 [P] [US3] Build member roster and management pages in `src/Letoryn.Web/Components/Pages/Members.razor` (admin/operator manage; standard member read-only list); omit member-list nav for **read-only members**; direct URL attempts show permission denied without data leakage
+- [x] T066 [P] [US3] Build operator agency create and lifecycle UI in `src/Letoryn.Web/Components/Pages/Operator/Agencies.razor` (covers [quickstart.md](./quickstart.md) §5.1 agency create)
+- [x] T097 [P] [US3] Build platform operator grant/revoke and agency assignment UI in `src/Letoryn.Web/Components/Pages/Operator/PlatformOperators.razor` wired to T063 endpoints (FR-006; [quickstart.md](./quickstart.md) §5.1)
+- [x] T098 [P] [US3] Build agency settings page in `src/Letoryn.Web/Components/Pages/AgencySettings.razor` for administrators on **active** agencies and operators on assigned **active**/**suspended** agencies via T060; **do not** add ad-hoc `NavMenu.razor` links here: agency settings nav entry is wired in T075 via `ShellNavigationPolicy` after T074 (FR-011, FR-015; [quickstart.md](./quickstart.md) §5.2)
+- [x] T099 [US3] Add Fluent UI form validation (required fields, email/phone formats) on invite, provision, agency settings, operator agency create, and platform operator flows in `src/Letoryn.Web/Components/` with server-side enforcement via API (constitution Principle I; pairs with T026)
 - [x] T067 [US3] Emit audit entries via `IAuditWriter` for every FR-008 category not covered solely by T044/T073: agency creation (T061) and auto-assign; agency lifecycle transitions (T062); agency settings changes (T060); membership invite, provision, accept, decline, revoke, suspend, reactivate, remove, and role changes including concurrent-update attempts (T053–T056); platform operator agency assignment changes and **platform operator** status grant/revoke including blocked last-operator attempts (T063); failed invitation accept/decline identity mismatch
 
 **Checkpoint**: User Story 3 independently testable via quickstart §5.
@@ -162,12 +162,12 @@ Per [plan.md](./plan.md): `src/TenancyHub.*` libraries, `tests/TenancyHub.*` tes
 
 ### Implementation for User Story 4
 
-- [x] T068 [US4] Implement cursor-paginated audit queries in `src/TenancyHub.ApiService/Endpoints/AuditEndpoints.cs` per [contracts/api-v1.md](./contracts/api-v1.md): `GET /api/v1/agencies/{agencyId}/audit` for **agency administrators** (**Active** agency + **Active** membership; requires matching `X-TenancyHub-Agency-Id`) and `GET /api/v1/operator/agencies/{agencyId}/audit` for assigned operators on **Active**, **Suspended**, or **Archived** agencies (no active-agency header requirement; FR-009)
-- [x] T069 [US4] Implement `GET /api/v1/operator/agencies/{agencyId}/summary` (identity ref, display name, lifecycle, contacts, role counts including `Invited`, `LastLifecycleChangeAt`) in `src/TenancyHub.ApiService/Endpoints/OperatorDiagnosticsEndpoints.cs`
-- [x] T070 [US4] Add audit query service with agency filter, descending `OccurredAt`, and caller authorization matching FR-009 (admin + active agency + active membership vs operator assignment) in `src/TenancyHub.Application/Audit/AuditQueryService.cs`
-- [x] T071 [P] [US4] Build agency administrator audit page in `src/TenancyHub.Web/Components/Pages/Audit.razor` with Fluent UI data grid
-- [x] T072 [P] [US4] Build operator diagnostics page in `src/TenancyHub.Web/Components/Pages/Operator/Diagnostics.razor` linking to `GET /api/v1/operator/agencies/{agencyId}/audit` (not the agency-admin route)
-- [x] T073 [US4] Audit every operator cross-agency view action in `src/TenancyHub.Application/Operators/OperatorDiagnosticsService.cs`
+- [x] T068 [US4] Implement cursor-paginated audit queries in `src/Letoryn.ApiService/Endpoints/AuditEndpoints.cs` per [contracts/api-v1.md](./contracts/api-v1.md): `GET /api/v1/agencies/{agencyId}/audit` for **agency administrators** (**Active** agency + **Active** membership; requires matching `X-Letoryn-Agency-Id`) and `GET /api/v1/operator/agencies/{agencyId}/audit` for assigned operators on **Active**, **Suspended**, or **Archived** agencies (no active-agency header requirement; FR-009)
+- [x] T069 [US4] Implement `GET /api/v1/operator/agencies/{agencyId}/summary` (identity ref, display name, lifecycle, contacts, role counts including `Invited`, `LastLifecycleChangeAt`) in `src/Letoryn.ApiService/Endpoints/OperatorDiagnosticsEndpoints.cs`
+- [x] T070 [US4] Add audit query service with agency filter, descending `OccurredAt`, and caller authorization matching FR-009 (admin + active agency + active membership vs operator assignment) in `src/Letoryn.Application/Audit/AuditQueryService.cs`
+- [x] T071 [P] [US4] Build agency administrator audit page in `src/Letoryn.Web/Components/Pages/Audit.razor` with Fluent UI data grid
+- [x] T072 [P] [US4] Build operator diagnostics page in `src/Letoryn.Web/Components/Pages/Operator/Diagnostics.razor` linking to `GET /api/v1/operator/agencies/{agencyId}/audit` (not the agency-admin route)
+- [x] T073 [US4] Audit every operator cross-agency view action in `src/Letoryn.Application/Operators/OperatorDiagnosticsService.cs`
 
 **Checkpoint**: User Story 4 independently testable via quickstart §6.
 
@@ -183,12 +183,12 @@ Per [plan.md](./plan.md): `src/TenancyHub.*` libraries, `tests/TenancyHub.*` tes
 
 ### Implementation for User Story 6
 
-- [x] T074 [P] [US6] Define permission-to-nav map in `src/TenancyHub.Application/Navigation/ShellNavigationPolicy.cs` per FR-011
-- [x] T075 [US6] Refactor `src/TenancyHub.Web/Components/Layout/NavMenu.razor` to render only permitted routes from `ShellNavigationPolicy` (no disabled tease); include agency settings route when T060/T098 page exists and caller is permitted (depends T074, T098)
-- [x] T076 [US6] Update `src/TenancyHub.Web/Components/Pages/Home.razor` with coming-soon module summary for administrator and standard member on active agency only
-- [x] T077 [US6] Add consistent empty, error, and permission-denied components in `src/TenancyHub.Web/Components/Shared/StatusMessage.razor` using Fluent UI
-- [x] T078 [US6] Ensure signed-out users hitting in-app URLs redirect to sign-in without agency data in `src/TenancyHub.Web/Program.cs`
-- [x] T079 [P] [US6] Centralize UK English user strings in `src/TenancyHub.Web/Resources/UiStrings.cs` (no language selector)
+- [x] T074 [P] [US6] Define permission-to-nav map in `src/Letoryn.Application/Navigation/ShellNavigationPolicy.cs` per FR-011
+- [x] T075 [US6] Refactor `src/Letoryn.Web/Components/Layout/NavMenu.razor` to render only permitted routes from `ShellNavigationPolicy` (no disabled tease); include agency settings route when T060/T098 page exists and caller is permitted (depends T074, T098)
+- [x] T076 [US6] Update `src/Letoryn.Web/Components/Pages/Home.razor` with coming-soon module summary for administrator and standard member on active agency only
+- [x] T077 [US6] Add consistent empty, error, and permission-denied components in `src/Letoryn.Web/Components/Shared/StatusMessage.razor` using Fluent UI
+- [x] T078 [US6] Ensure signed-out users hitting in-app URLs redirect to sign-in without agency data in `src/Letoryn.Web/Program.cs`
+- [x] T079 [P] [US6] Centralize UK English user strings in `src/Letoryn.Web/Resources/UiStrings.cs` (no language selector)
 
 **Checkpoint**: User Story 6 independently testable via quickstart §8.
 
@@ -204,12 +204,12 @@ Per [plan.md](./plan.md): `src/TenancyHub.*` libraries, `tests/TenancyHub.*` tes
 
 ### Implementation for User Story 5
 
-- [x] T080 [US5] Implement membership notification triggers in `src/TenancyHub.Application/Notifications/NotificationTriggerService.cs` per FR-010: **agency bell/list** for activated, role changed, membership suspended/reactivated/removed when user has shell context; on **invite** creating **Invited** status, MAY persist a notification row but MUST NOT deliver to agency bell (invitee uses invitation-acceptance experience per T101/T064)
-- [x] T081 [US5] Implement agency settings and lifecycle notification triggers (display name/contact changes, suspend/archive/reactivate) including administrator copies where applicable in `src/TenancyHub.Application/Notifications/AgencyNotificationTriggerService.cs` per FR-010
-- [x] T082 [US5] Implement `GET /api/v1/agencies/{agencyId}/notifications` in `src/TenancyHub.ApiService/Endpoints/NotificationEndpoints.cs`
-- [x] T083 [US5] Implement `POST /api/v1/agencies/{agencyId}/notifications/{id}/read` (standard members only) in `src/TenancyHub.ApiService/Endpoints/NotificationEndpoints.cs`
-- [x] T084 [P] [US5] Add notification bell and list UI in `src/TenancyHub.Web/Components/Notifications/NotificationPanel.razor` only when user has FR-002 routine shell context with **Active** membership for the active agency (hide bell on invite-only layout T101, operator-no-assignment pages, and before accept); wire in `MainLayout.razor` per T041
-- [x] T085 [US5] Scope notification queries to active agency context only in `src/TenancyHub.Infrastructure/Services/NotificationQueryService.cs`
+- [x] T080 [US5] Implement membership notification triggers in `src/Letoryn.Application/Notifications/NotificationTriggerService.cs` per FR-010: **agency bell/list** for activated, role changed, membership suspended/reactivated/removed when user has shell context; on **invite** creating **Invited** status, MAY persist a notification row but MUST NOT deliver to agency bell (invitee uses invitation-acceptance experience per T101/T064)
+- [x] T081 [US5] Implement agency settings and lifecycle notification triggers (display name/contact changes, suspend/archive/reactivate) including administrator copies where applicable in `src/Letoryn.Application/Notifications/AgencyNotificationTriggerService.cs` per FR-010
+- [x] T082 [US5] Implement `GET /api/v1/agencies/{agencyId}/notifications` in `src/Letoryn.ApiService/Endpoints/NotificationEndpoints.cs`
+- [x] T083 [US5] Implement `POST /api/v1/agencies/{agencyId}/notifications/{id}/read` (standard members only) in `src/Letoryn.ApiService/Endpoints/NotificationEndpoints.cs`
+- [x] T084 [P] [US5] Add notification bell and list UI in `src/Letoryn.Web/Components/Notifications/NotificationPanel.razor` only when user has FR-002 routine shell context with **Active** membership for the active agency (hide bell on invite-only layout T101, operator-no-assignment pages, and before accept); wire in `MainLayout.razor` per T041
+- [x] T085 [US5] Scope notification queries to active agency context only in `src/Letoryn.Infrastructure/Services/NotificationQueryService.cs`
 
 **Checkpoint**: User Story 5 independently testable via quickstart §7.
 
@@ -219,16 +219,16 @@ Per [plan.md](./plan.md): `src/TenancyHub.*` libraries, `tests/TenancyHub.*` tes
 
 **Purpose**: OpenAPI, tests, E2E, documentation alignment, and release readiness.
 
-- [x] T086 [P] Expose OpenAPI in Development from `src/TenancyHub.ApiService/Program.cs` and add generated snapshot to `specs/001-platform-foundation/contracts/openapi.yaml` when stable
-- [x] T087 [P] Add focused application unit tests for invite expiry, last-admin guard, last-operator guard, read-only roster **403**, membership/agency suspension access rules, FR-008 sign-in audit (assert **successful** and **failed** sign-in produce `IAuditWriter` calls with expected action types; assert `PUT /api/v1/me/active-agency` does **not** write an audit row in R1), and FR-010 notification trigger matrix (assert invite-pending does **not** enqueue agency-bell delivery; assert bell triggers after **Active** membership) in `tests/TenancyHub.Application.UnitTests/`
-- [x] T088 [P] Extend `tests/TenancyHub.ApiService.UnitTests/` for ProblemDetails shape, validation 400 responses (T026), and `/api/v1/me` mapping
+- [x] T086 [P] Expose OpenAPI in Development from `src/Letoryn.ApiService/Program.cs` and add generated snapshot to `specs/001-platform-foundation/contracts/openapi.yaml` when stable
+- [x] T087 [P] Add focused application unit tests for invite expiry, last-admin guard, last-operator guard, read-only roster **403**, membership/agency suspension access rules, FR-008 sign-in audit (assert **successful** and **failed** sign-in produce `IAuditWriter` calls with expected action types; assert `PUT /api/v1/me/active-agency` does **not** write an audit row in R1), and FR-010 notification trigger matrix (assert invite-pending does **not** enqueue agency-bell delivery; assert bell triggers after **Active** membership) in `tests/Letoryn.Application.UnitTests/`
+- [x] T088 [P] Extend `tests/Letoryn.ApiService.UnitTests/` for ProblemDetails shape, validation 400 responses (T026), and `/api/v1/me` mapping
 - [x] T089 [P] Add `docs/platform-foundation-user-journeys.md` documenting quickstart §3–§8 paths (including §3.6–§3.13, §4.1, §7 notification matrix, §5.1–5.3 operator/settings/decline flows) for contributors and link it from `docs/README.md` (constitution Principle VI)
-- [x] T090 Create `tests/TenancyHub.E2E/` Playwright C# project with journeys mapped to `docs/platform-foundation-user-journeys.md` per `docs/testing.md` (**depends on T089**: Principle VI)
+- [x] T090 Create `tests/Letoryn.E2E/` Playwright C# project with journeys mapped to `docs/platform-foundation-user-journeys.md` per `docs/testing.md` (**depends on T089**: Principle VI)
 - [x] T091 Run full [quickstart.md](./quickstart.md) validation and fix gaps in code or docs
 - [x] T092 [P] Final pass on [docs/operations-rebuild-runbook.md](../../docs/operations-rebuild-runbook.md) for Entra (client certificate parameters `EntraWebClientCertificatePfx` / `EntraWebClientCertificatePassword`, not client secrets), Postgres volume reset, migrations, and seed alignment with implemented parameter names
-- [x] T093 Verify `dotnet build TenancyHub.slnx` and `dotnet test TenancyHub.slnx --configuration Release` clean with warnings-as-errors
-- [x] T095 [P] Add XML documentation on public tenancy and security contracts in `src/TenancyHub.ApiService/Endpoints/MeEndpoints.cs`, `src/TenancyHub.ApiService/Middleware/TenancyContextMiddleware.cs`, and `src/TenancyHub.Web/Services/TenancyHubApiClient.cs` per constitution Principle II (non-obvious auth, agency header, and token-forwarding assumptions)
-- [x] T100 [P] Add XML documentation on all **public** types in `src/TenancyHub.Domain/` and `src/TenancyHub.Infrastructure/` (entities, DbContext surface, DI extensions) per constitution Principle II and `docs/build-quality.md`: build must pass with warnings-as-errors
+- [x] T093 Verify `dotnet build Letoryn.slnx` and `dotnet test Letoryn.slnx --configuration Release` clean with warnings-as-errors
+- [x] T095 [P] Add XML documentation on public tenancy and security contracts in `src/Letoryn.ApiService/Endpoints/MeEndpoints.cs`, `src/Letoryn.ApiService/Middleware/TenancyContextMiddleware.cs`, and `src/Letoryn.Web/Services/LetorynApiClient.cs` per constitution Principle II (non-obvious auth, agency header, and token-forwarding assumptions)
+- [x] T100 [P] Add XML documentation on all **public** types in `src/Letoryn.Domain/` and `src/Letoryn.Infrastructure/` (entities, DbContext surface, DI extensions) per constitution Principle II and `docs/build-quality.md`: build must pass with warnings-as-errors
 
 ---
 
@@ -312,8 +312,8 @@ Per [plan.md](./plan.md): `src/TenancyHub.*` libraries, `tests/TenancyHub.*` tes
 
 ## Notes
 
-- AppHost must stay orchestration-only; no business rules in `TenancyHub.AppHost/`.
-- Blazor must not reference PostgreSQL; all data via `TenancyHubApiClient`.
+- AppHost must stay orchestration-only; no business rules in `Letoryn.AppHost/`.
+- Blazor must not reference PostgreSQL; all data via `LetorynApiClient`.
 - Duplicate agency display names allowed; use internal `AgencyId` everywhere in APIs.
 - Invite expiry: **30 days**; session idle **30 minutes**; absolute cap **12 hours** per session from initial sign-in.
 - Format validation: all tasks use `- [ ] Tnnn` with file paths and story labels where required.
@@ -328,6 +328,6 @@ Per [plan.md](./plan.md): `src/TenancyHub.*` libraries, `tests/TenancyHub.*` tes
 
 ## Phase 10: Convergence
 
-- [x] T103 Emit FR-010 agency notification-list notices when membership is **suspended**, **reactivated**, or **removed** in `src/TenancyHub.Infrastructure/Services/MembershipOperationsService.cs` (extend `NotificationTriggerService` and wire from `ChangeActiveMembershipStatusAsync`) per FR-010 and T080 (missing)
-- [x] T104 Fan out agency **settings** and **lifecycle** in-app notifications to members with **Active** or **Suspended** agency membership (not only **Active**) in `src/TenancyHub.Infrastructure/Services/AgencyOperationsService.cs` `NotifyActiveMembersAsync` per FR-010 (partial)
-- [x] T105 Expand `tests/TenancyHub.E2E/` Playwright journeys for quickstart §3–§8 paths still marked **E2E** in `docs/platform-foundation-user-journeys.md` but lacking automation (e.g. R1-J3.2–J3.8, J3.11, J4.1, J5.1–J5.3, J6, J7) per Constitution Principle VI and T090 (partial)
+- [x] T103 Emit FR-010 agency notification-list notices when membership is **suspended**, **reactivated**, or **removed** in `src/Letoryn.Infrastructure/Services/MembershipOperationsService.cs` (extend `NotificationTriggerService` and wire from `ChangeActiveMembershipStatusAsync`) per FR-010 and T080 (missing)
+- [x] T104 Fan out agency **settings** and **lifecycle** in-app notifications to members with **Active** or **Suspended** agency membership (not only **Active**) in `src/Letoryn.Infrastructure/Services/AgencyOperationsService.cs` `NotifyActiveMembersAsync` per FR-010 (partial)
+- [x] T105 Expand `tests/Letoryn.E2E/` Playwright journeys for quickstart §3–§8 paths still marked **E2E** in `docs/platform-foundation-user-journeys.md` but lacking automation (e.g. R1-J3.2–J3.8, J3.11, J4.1, J5.1–J5.3, J6, J7) per Constitution Principle VI and T090 (partial)

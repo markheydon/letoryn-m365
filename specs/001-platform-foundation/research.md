@@ -9,9 +9,9 @@ Resolves technical unknowns from the implementation plan. User constraint: **use
 
 ## PostgreSQL persistence
 
-**Decision**: Model PostgreSQL in `TenancyHub.AppHost` with `AddPostgres("postgres").AddDatabase("tenancyhub")`, reference the database from `TenancyHub.ApiService` via `WithReference`, and register EF Core with **`Aspire.Npgsql.EntityFrameworkCore.PostgreSQL`** using **`AddNpgsqlDbContext<TenancyHubDbContext>`** in the API.
+**Decision**: Model PostgreSQL in `Letoryn.AppHost` with `AddPostgres("postgres").AddDatabase("letoryn")`, reference the database from `Letoryn.ApiService` via `WithReference`, and register EF Core with **`Aspire.Npgsql.EntityFrameworkCore.PostgreSQL`** using **`AddNpgsqlDbContext<LetorynDbContext>`** in the API.
 
-**Rationale**: Matches `docs/tech-stack.md` (PostgreSQL as system of record), Aspire 13.6 first-party hosting integration, and documented client wiring (`connect-to-postgresql-with-ef-core` on aspire.dev). Connection strings, credentials, and service discovery are injected by Aspire; application code uses `TenancyHubDbContext` from DI only.
+**Rationale**: Matches `docs/tech-stack.md` (PostgreSQL as system of record), Aspire 13.6 first-party hosting integration, and documented client wiring (`connect-to-postgresql-with-ef-core` on aspire.dev). Connection strings, credentials, and service discovery are injected by Aspire; application code uses `LetorynDbContext` from DI only.
 
 **Alternatives considered**:
 
@@ -47,7 +47,7 @@ Resolves technical unknowns from the implementation plan. User constraint: **use
 
 **Per-session sign-out (FR-001 / FR-011)**: Sign-out removes or invalidates only the current session’s `UserSession` row and auth cookie; it MUST NOT revoke other concurrent sessions for the same user (T094: `POST /api/v1/me/sign-out` and Web sign-out in shell chrome).
 
-**Disabled directory account (FR-001)**: Tenancy Hub MUST deny access when Entra rejects authentication or token validation for the work account, even if product membership remains.
+**Disabled directory account (FR-001)**: Letoryn MUST deny access when Entra rejects authentication or token validation for the work account, even if product membership remains.
 
 | Layer | R1 behaviour |
 |-------|--------------|
@@ -66,11 +66,11 @@ Resolves technical unknowns from the implementation plan. User constraint: **use
 
 | Project | Responsibility |
 |---------|----------------|
-| `TenancyHub.Domain` | Entities, value objects, domain invariants (no EF, no HTTP) |
-| `TenancyHub.Application` | Use cases, authorization policies as interfaces, DTOs/records |
-| `TenancyHub.Infrastructure` | EF Core `DbContext`, repositories, audit/notification writers |
-| `TenancyHub.ApiService` | HTTP endpoints, authZ enforcement, maps to application services |
-| `TenancyHub.Web` | Fluent UI shell, Blazor auth state, typed `HttpClient` to API via service discovery |
+| `Letoryn.Domain` | Entities, value objects, domain invariants (no EF, no HTTP) |
+| `Letoryn.Application` | Use cases, authorization policies as interfaces, DTOs/records |
+| `Letoryn.Infrastructure` | EF Core `DbContext`, repositories, audit/notification writers |
+| `Letoryn.ApiService` | HTTP endpoints, authZ enforcement, maps to application services |
+| `Letoryn.Web` | Fluent UI shell, Blazor auth state, typed `HttpClient` to API via service discovery |
 
 **Rationale**: Constitution Principle III (clean architecture); keeps AppHost free of product logic.
 
@@ -102,7 +102,7 @@ Resolves technical unknowns from the implementation plan. User constraint: **use
 
 ## Web ↔ API communication
 
-**Decision**: Blazor Server **does not** access PostgreSQL. Typed **`HttpClient`** registered with **`AddHttpClient<TenancyHubApiClient>()`** and **`AddServiceDefaults()`** service discovery base address for `apiservice`. Pass bearer token or use **cookie + BFF** pattern (Web obtains token via Identity.Web and attaches on outbound API calls): exact variant chosen in implement with security review; both use DI-registered clients, not `new HttpClient()`.
+**Decision**: Blazor Server **does not** access PostgreSQL. Typed **`HttpClient`** registered with **`AddHttpClient<LetorynApiClient>()`** and **`AddServiceDefaults()`** service discovery base address for `apiservice`. Pass bearer token or use **cookie + BFF** pattern (Web obtains token via Identity.Web and attaches on outbound API calls): exact variant chosen in implement with security review; both use DI-registered clients, not `new HttpClient()`.
 
 **Rationale**: `docs/tech-stack.md` and `docs/csharp-patterns.md`.
 
@@ -110,7 +110,7 @@ Resolves technical unknowns from the implementation plan. User constraint: **use
 
 ## Observability and health
 
-**Decision**: Continue `TenancyHub.ServiceDefaults`; add health checks for PostgreSQL via Aspire/EF health checks when DB lands. No custom tracing in R1 operator diagnostics (FR-009).
+**Decision**: Continue `Letoryn.ServiceDefaults`; add health checks for PostgreSQL via Aspire/EF health checks when DB lands. No custom tracing in R1 operator diagnostics (FR-009).
 
 **Rationale**: Constitution and existing AppHost `WithHttpHealthCheck`.
 

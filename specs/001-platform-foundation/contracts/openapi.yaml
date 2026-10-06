@@ -1,13 +1,13 @@
-# Stable route-group snapshot for Tenancy Hub API v1 (platform foundation / R1).
-# Full machine-generated document: run TenancyHub.ApiService in Development and GET /openapi/v1.json.
+# Stable route-group snapshot for Letoryn API v1 (platform foundation / R1).
+# Full machine-generated document: run Letoryn.ApiService in Development and GET /openapi/v1.json.
 # Semantic request/response shapes remain authoritative in api-v1.md until schemas are fully modelled in OpenAPI.
 openapi: 3.1.0
 info:
-  title: Tenancy Hub API
+  title: Letoryn API
   version: v1
   description: |
     Platform foundation HTTP API. Authenticated callers use Entra bearer tokens.
-    Agency-scoped routes require header `X-TenancyHub-Agency-Id` unless the path carries an explicit `{agencyId}` for operator cross-agency access.
+    Agency-scoped routes require header `X-Letoryn-Agency-Id` unless the path carries an explicit `{agencyId}` for operator cross-agency access.
 servers:
   - url: https+http://apiservice
     description: Aspire service discovery (local)
@@ -302,7 +302,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: Entra ID access token for the Tenancy Hub API app registration
+      description: Entra ID access token for the Letoryn API app registration
   parameters:
     agencyId:
       name: agencyId

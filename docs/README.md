@@ -1,6 +1,6 @@
-# Tenancy Hub documentation
+# Letoryn documentation
 
-Internal standards and reference for contributors and automation. Product context: [product-vision.md](./product-vision.md). Spec Kit slice index: [specs/tenancy-hub-platform/roadmap.md](../specs/tenancy-hub-platform/roadmap.md).
+Internal standards and reference for contributors and automation. Product context: [product-vision.md](./product-vision.md). Spec Kit slice index: [specs/letoryn-platform/roadmap.md](../specs/letoryn-platform/roadmap.md).
 
 | Document | Purpose |
 |----------|---------|

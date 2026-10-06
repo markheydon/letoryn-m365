@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Letoryn.ApiService/Letoryn.ApiService.csproj" />
+    <Project Path="src/Letoryn.AppHost/Letoryn.AppHost.csproj" />
+    <Project Path="src/Letoryn.Application/Letoryn.Application.csproj" />
+    <Project Path="src/Letoryn.Domain/Letoryn.Domain.csproj" />
+    <Project Path="src/Letoryn.Infrastructure/Letoryn.Infrastructure.csproj" />
+    <Project Path="src/Letoryn.ServiceDefaults/Letoryn.ServiceDefaults.csproj" />
+    <Project Path="src/Letoryn.Web/Letoryn.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Letoryn.ApiService.UnitTests/Letoryn.ApiService.UnitTests.csproj" />
+    <Project Path="tests/Letoryn.Application.UnitTests/Letoryn.Application.UnitTests.csproj" />
+    <Project Path="tests/Letoryn.E2E/Letoryn.E2E.csproj" />
+  </Folder>
+</Solution>

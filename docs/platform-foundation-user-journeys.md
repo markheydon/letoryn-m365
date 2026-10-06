@@ -4,7 +4,7 @@ Contributor and E2E reference for **platform foundation** (roadmap **R1**). Each
 
 **Prerequisites**: [operations-rebuild-runbook.md](./operations-rebuild-runbook.md) (Entra, secrets, Postgres, platform operator seed). **Contracts**: [contracts/api-v1.md](../specs/001-platform-foundation/contracts/api-v1.md).
 
-**Automation**: [testing.md](./testing.md): Playwright C# E2E in `tests/TenancyHub.E2E/` cites journey IDs from the index below (`[Trait("Journey", "R1-J…")]`). Prefer stable API + UI paths over brittle selectors.
+**Automation**: [testing.md](./testing.md): Playwright C# E2E in `tests/Letoryn.E2E/` cites journey IDs from the index below (`[Trait("Journey", "R1-J…")]`). Prefer stable API + UI paths over brittle selectors.
 
 ---
 
@@ -112,7 +112,7 @@ Steps **§3.6–§3.7** need invitation APIs and UI (US3). **§3.12–§3.13** a
 
 | | |
 |--|--|
-| **Actor** | Work account disabled in Entra (or token refresh rejected) while Tenancy Hub membership remains |
+| **Actor** | Work account disabled in Entra (or token refresh rejected) while Letoryn membership remains |
 | **Path** | Sign-in or next API call after disable |
 | **Expected** | Access denied; no agency data; **failed sign-in** or terminated-session audit (FR-001; POC access token lifetime ≤ 60 minutes: [runbook](./operations-rebuild-runbook.md)) |
 
@@ -120,7 +120,7 @@ Steps **§3.6–§3.7** need invitation APIs and UI (US3). **§3.12–§3.13** a
 
 | | |
 |--|--|
-| **Actor** | Valid Entra user with no Tenancy Hub membership and no platform-operator global path |
+| **Actor** | Valid Entra user with no Letoryn membership and no platform-operator global path |
 | **Path** | Sign in |
 | **Expected** | **Access not configured** page; no agency data in UI or API |
 
@@ -157,7 +157,7 @@ Steps **§3.6–§3.7** need invitation APIs and UI (US3). **§3.12–§3.13** a
 | | |
 |--|--|
 | **Actor** | User A signed in to Agency 1 |
-| **Path** | `GET /api/v1/agencies/{agency2Id}/audit` (or any Agency 2 resource id); repeat with forged `X-TenancyHub-Agency-Id` |
+| **Path** | `GET /api/v1/agencies/{agency2Id}/audit` (or any Agency 2 resource id); repeat with forged `X-Letoryn-Agency-Id` |
 | **Expected** | **403** or **404** with no Agency 2 payload fields |
 
 ### R1-J4.1: Lifecycle and membership gates

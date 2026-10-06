@@ -1,0 +1,313 @@
+@page "/operator/agencies"
+@attribute [Authorize]
+@implements IDisposable
+
+<PageTitle>Operator agencies</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="24">
+    <FluentLabel Typo="Typography.H4">Agencies</FluentLabel>
+
+    @if (_accessDenied)
+    {
+        <FluentMessageBar Intent="MessageBarIntent.Warning">
+            You must be a platform operator to create or manage agency lifecycle here.
+        </FluentMessageBar>
+    }
+    else
+    {
+        <FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
+            <FluentLabel Typo="Typography.H5">Create agency</FluentLabel>
+            <FluentLabel>
+                New agencies start as Active. You are automatically assigned to agencies you create.
+            </FluentLabel>
+
+            @if (!string.IsNullOrEmpty(_createSuccessMessage))
+            {
+                <FluentMessageBar Intent="MessageBarIntent.Success">@_createSuccessMessage</FluentMessageBar>
+            }
+
+            @if (!string.IsNullOrEmpty(_createErrorMessage))
+            {
+                <FluentMessageBar Intent="MessageBarIntent.Error">@_createErrorMessage</FluentMessageBar>
+            }
+
+            <EditForm Model="_createModel" OnValidSubmit="CreateAgencyAsync">
+                <DataAnnotationsValidator />
+                <FluentStack Orientation="Orientation.Vertical" VerticalGap="12">
+                    <FluentTextInput @bind-Value="_createModel.DisplayName"
+                                     Label="Display name"
+                                     Required="true"
+                                     Maxlength="200"
+                                     Style="max-width: 32rem;" />
+                    <ValidationMessage For="@(() => _createModel.DisplayName)" />
+
+                    <FluentTextInput @bind-Value="_createModel.PrimaryContactEmail"
+                                     Label="Primary contact email"
+                                     Required="true"
+                                     Type="TextInputType.Email"
+                                     Style="max-width: 32rem;" />
+                    <ValidationMessage For="@(() => _createModel.PrimaryContactEmail)" />
+
+                    <FluentTextInput @bind-Value="_createModel.PrimaryContactPhone"
+                                     Label="Primary contact phone (optional)"
+                                     Maxlength="32"
+                                     Style="max-width: 32rem;" />
+                    <ValidationMessage For="@(() => _createModel.PrimaryContactPhone)" />
+
+                    <FluentButton Type="ButtonType.Submit"
+                                  Appearance="ButtonAppearance.Primary"
+                                  Disabled="_createInProgress">
+                        @(_createInProgress ? "Creating…" : "Create agency")
+                    </FluentButton>
+                </FluentStack>
+            </EditForm>
+        </FluentStack>
+
+        <FluentDivider />
+
+        <FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
+            <FluentLabel Typo="Typography.H5">Lifecycle</FluentLabel>
+            <FluentLabel>
+                Change lifecycle status for agencies assigned to you. Members cannot sign in whilst an agency is suspended or archived.
+            </FluentLabel>
+
+            @if (_assignments.Count == 0)
+            {
+                <FluentMessageBar Intent="MessageBarIntent.Info">
+                    You have no agency assignments yet. Create an agency above, or ask another platform operator to assign agencies to you.
+                </FluentMessageBar>
+            }
+            else
+            {
+                @if (!string.IsNullOrEmpty(_lifecycleSuccessMessage))
+                {
+                    <FluentMessageBar Intent="MessageBarIntent.Success">@_lifecycleSuccessMessage</FluentMessageBar>
+                }
+
+                @if (!string.IsNullOrEmpty(_lifecycleErrorMessage))
+                {
+                    <FluentMessageBar Intent="MessageBarIntent.Error">@_lifecycleErrorMessage</FluentMessageBar>
+                }
+
+                <EditForm Model="_lifecycleModel" OnValidSubmit="ChangeLifecycleAsync">
+                    <DataAnnotationsValidator />
+                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="12">
+                        <FluentSelect TOption="AgencyOption"
+                                      TValue="string"
+                                      Label="Agency"
+                                      Items="@_assignments"
+                                      OptionText="@(a => a.Label)"
+                                      OptionValue="@(a => a.Value)"
+                                      @bind-Value="_selectedAgencyId"
+                                      Style="max-width: 32rem;" />
+
+                        <FluentSelect TOption="string"
+                                      TValue="string"
+                                      Label="Target status"
+                                      Items="@_lifecycleTargets"
+                                      OptionText="@(s => s)"
+                                      OptionValue="@(s => s)"
+                                      @bind-Value="_selectedTargetStatus"
+                                      Style="max-width: 32rem;" />
+                        <ValidationMessage For="@(() => _lifecycleModel.TargetStatus)" />
+
+                        <FluentButton Type="ButtonType.Submit"
+                                      Appearance="ButtonAppearance.Primary"
+                                      Disabled="_lifecycleInProgress || string.IsNullOrWhiteSpace(_selectedAgencyId)">
+                            @(_lifecycleInProgress ? "Updating…" : "Update lifecycle")
+                        </FluentButton>
+                    </FluentStack>
+                </EditForm>
+            }
+        </FluentStack>
+    }
+</FluentStack>
+
+@code {
+    [Inject]
+    private LetorynApiClient ApiClient { get; set; } = default!;
+
+    [Inject]
+    private AgencyContextState AgencyContext { get; set; } = default!;
+
+    private readonly CreateAgencyFormModel _createModel = new();
+    private readonly LifecycleFormModel _lifecycleModel = new();
+    private readonly List<AgencyOption> _assignments = [];
+    private static readonly string[] _lifecycleTargets = ["Active", "Suspended", "Archived"];
+
+    private string? _selectedAgencyId;
+    private string? _selectedTargetStatus = "Suspended";
+    private bool _accessDenied;
+    private bool _createInProgress;
+    private bool _lifecycleInProgress;
+    private string? _createSuccessMessage;
+    private string? _createErrorMessage;
+    private string? _lifecycleSuccessMessage;
+    private string? _lifecycleErrorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        AgencyContext.Changed += OnContextChanged;
+        await AgencyContext.WaitForShellBootstrapAsync();
+        RefreshAccessAndAssignments();
+    }
+
+    private void OnContextChanged()
+    {
+        RefreshAccessAndAssignments();
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void RefreshAccessAndAssignments()
+    {
+        _accessDenied = AgencyContext.Profile?.IsPlatformOperator != true;
+        _assignments.Clear();
+
+        if (_accessDenied || AgencyContext.Profile is null)
+        {
+            _selectedAgencyId = null;
+            return;
+        }
+
+        foreach (var assignment in AgencyContext.Profile.OperatorAssignments)
+        {
+            _assignments.Add(new AgencyOption(
+                assignment.AgencyId.ToString(),
+                $"{assignment.DisplayName} ({assignment.AgencyLifecycleStatus})"));
+        }
+
+        if (string.IsNullOrWhiteSpace(_selectedAgencyId)
+            || !_assignments.Any(a => a.Value == _selectedAgencyId))
+        {
+            _selectedAgencyId = _assignments.FirstOrDefault()?.Value;
+        }
+    }
+
+    private async Task CreateAgencyAsync()
+    {
+        _createInProgress = true;
+        _createSuccessMessage = null;
+        _createErrorMessage = null;
+        _lifecycleSuccessMessage = null;
+
+        try
+        {
+            var result = await ApiClient.CreateOperatorAgencyAsync(
+                new CreateOperatorAgencyApiRequest(
+                    _createModel.DisplayName.Trim(),
+                    _createModel.PrimaryContactEmail.Trim(),
+                    string.IsNullOrWhiteSpace(_createModel.PrimaryContactPhone)
+                        ? null
+                        : _createModel.PrimaryContactPhone.Trim()));
+
+            if (result.IsSuccess && result.AgencyId is Guid agencyId)
+            {
+                _createSuccessMessage =
+                    $"Agency created and set to Active. You have been assigned to this agency (reference {agencyId}).";
+                _createModel.Reset();
+
+                var profile = await ApiClient.GetMeAsync();
+                if (profile is not null)
+                {
+                    AgencyContext.SetProfile(profile);
+                }
+            }
+            else
+            {
+                _createErrorMessage = result.ErrorMessage
+                    ?? "The agency could not be created. Check the details and try again.";
+                if (result.FieldErrors.Count > 0)
+                {
+                    var detail = string.Join(
+                        " ",
+                        result.FieldErrors.SelectMany(pair => pair.Value));
+                    if (!string.IsNullOrWhiteSpace(detail))
+                    {
+                        _createErrorMessage = detail;
+                    }
+                }
+            }
+        }
+        finally
+        {
+            _createInProgress = false;
+        }
+    }
+
+    private async Task ChangeLifecycleAsync()
+    {
+        if (!Guid.TryParse(_selectedAgencyId, out var agencyId)
+            || string.IsNullOrWhiteSpace(_selectedTargetStatus))
+        {
+            return;
+        }
+
+        _lifecycleModel.TargetStatus = _selectedTargetStatus;
+        var agencyLabel = _assignments.FirstOrDefault(a => a.Value == _selectedAgencyId)?.Label ?? "the agency";
+
+        _lifecycleInProgress = true;
+        _lifecycleSuccessMessage = null;
+        _lifecycleErrorMessage = null;
+        _createSuccessMessage = null;
+
+        try
+        {
+            var targetStatus = _selectedTargetStatus ?? _lifecycleModel.TargetStatus;
+            var result = await ApiClient.ChangeOperatorAgencyLifecycleAsync(
+                agencyId,
+                targetStatus);
+
+            if (result.IsSuccess)
+            {
+                _lifecycleSuccessMessage =
+                    $"Lifecycle updated to {targetStatus} for {agencyLabel}.";
+
+                var profile = await ApiClient.GetMeAsync();
+                if (profile is not null)
+                {
+                    AgencyContext.SetProfile(profile);
+                }
+            }
+            else
+            {
+                _lifecycleErrorMessage = result.ErrorMessage
+                    ?? "The lifecycle could not be updated. Check the target status and try again.";
+            }
+        }
+        finally
+        {
+            _lifecycleInProgress = false;
+        }
+    }
+
+    public void Dispose() => AgencyContext.Changed -= OnContextChanged;
+
+    private sealed class CreateAgencyFormModel
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Display name is required.")]
+        [System.ComponentModel.DataAnnotations.MaxLength(200, ErrorMessage = "Display name must be 200 characters or fewer.")]
+        public string DisplayName { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Primary contact email is required.")]
+        [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Primary contact email is not a valid email address.")]
+        public string PrimaryContactEmail { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.MaxLength(32, ErrorMessage = "Primary contact phone must be 32 characters or fewer.")]
+        public string? PrimaryContactPhone { get; set; }
+
+        public void Reset()
+        {
+            DisplayName = string.Empty;
+            PrimaryContactEmail = string.Empty;
+            PrimaryContactPhone = null;
+        }
+    }
+
+    private sealed class LifecycleFormModel
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Target status is required.")]
+        public string TargetStatus { get; set; } = "Suspended";
+    }
+
+    private sealed record AgencyOption(string Value, string Label);
+}

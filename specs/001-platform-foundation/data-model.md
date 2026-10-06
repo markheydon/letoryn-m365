@@ -1,7 +1,7 @@
 # Data model: Platform foundation (R1)
 
 **Feature**: `001-platform-foundation`  
-**Storage**: PostgreSQL via EF Core (`TenancyHubDbContext`)  
+**Storage**: PostgreSQL via EF Core (`LetorynDbContext`)  
 **Canonical spec**: [spec.md](./spec.md)
 
 All tables are **agency-scoped** where noted. Internal **`AgencyId`** (UUID) is the tenancy key; display name is not unique (FR-015).

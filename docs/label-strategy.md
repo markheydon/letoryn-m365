@@ -1,16 +1,16 @@
-# Tenancy Hub: Label strategy
+# Letoryn: Label strategy
 
 <!-- AI collaborator instructions: See the "AI collaborator instructions" section at the bottom. When creating issues or PRs, apply at least one label from each of the `type/` and `priority/` groups. -->
 
-This document defines the canonical label taxonomy for the **tenancy-hub** GitHub repository. Create or update labels using the definitions below so humans, Cursor agents, and other automations stay consistent.
+This document defines the canonical label taxonomy for the **letoryn-m365** GitHub repository. Create or update labels using the definitions below so humans, Cursor agents, and other automations stay consistent.
 
 Related artefacts:
 
 - Pull requests: [pull-request-policy.md](./pull-request-policy.md) and [`.github/pull_request_template.md`](../.github/pull_request_template.md).
 - Milestones (delivery phases): [milestone-strategy.md](./milestone-strategy.md).
-- Product slices (R1–R15): [specs/tenancy-hub-platform/roadmap.md](../specs/tenancy-hub-platform/roadmap.md).
+- Product slices (R1–R15): [specs/letoryn-platform/roadmap.md](../specs/letoryn-platform/roadmap.md).
 
-GitHub label definitions are synced from the maintainer’s cross-repo taxonomy process; this file is the **Tenancy Hub–specific** catalogue (especially `area/*` for R1–R15).
+GitHub label definitions are synced from the maintainer’s cross-repo taxonomy process; this file is the **Letoryn–specific** catalogue (especially `area/*` for R1–R15).
 
 ---
 
@@ -63,7 +63,7 @@ Describes workflow state on the issue or PR.
 
 ### Feature area labels (`area/*`)
 
-Maps work to [platform roadmap](../specs/tenancy-hub-platform/roadmap.md) slices **R1–R15** or cross-cutting engineering areas. Apply the **primary** slice when work spans modules (for example Graph integration for properties uses `area/graph-m365` when the PR is mainly M365 wiring, `area/properties-units` when it is mainly property domain logic).
+Maps work to [platform roadmap](../specs/letoryn-platform/roadmap.md) slices **R1–R15** or cross-cutting engineering areas. Apply the **primary** slice when work spans modules (for example Graph integration for properties uses `area/graph-m365` when the PR is mainly M365 wiring, `area/properties-units` when it is mainly property domain logic).
 
 | Label | Roadmap | Colour | Description |
 |-------|---------|--------|-------------|

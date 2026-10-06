@@ -427,9 +427,12 @@ FodyWeavers.xsd
 # Playwright files
 .playwright-mcp/
 tests/E2E/test-results/
-tests/TenancyHub.E2E/test-results/
-tests/TenancyHub.E2E/playwright-report/
-tests/TenancyHub.E2E/.playwright/
+tests/Letoryn.E2E/test-results/
+tests/Letoryn.E2E/playwright-report/
+tests/Letoryn.E2E/.playwright/
+
+# Windows downloaded-file markers
+*:Zone.Identifier
 
 # Local developer settings
 **/appsettings.Development.json

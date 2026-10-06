@@ -1,10 +1,10 @@
 # Product vision
 
-Public-safe product context for **Tenancy Hub**. Implementation slices and status live in the [platform roadmap](../specs/tenancy-hub-platform/roadmap.md); engineering stack choices live in [tech-stack.md](./tech-stack.md).
+Public-safe product context for **Letoryn**. Implementation slices and status live in the [platform roadmap](../specs/letoryn-platform/roadmap.md); engineering stack choices live in [tech-stack.md](./tech-stack.md).
 
 ## Summary
 
-Tenancy Hub is a **multi-tenant**, **Microsoft 365–centric** operating platform for **small UK letting agencies** (typically 1–25 staff, Microsoft 365 Business customers). The product combines CRM, property and tenancy operations, maintenance, compliance, communications, and (over time) finance and customer portals: **integrated with Entra ID and Microsoft Graph**, not a replacement for Microsoft 365.
+Letoryn is a **multi-tenant**, **Microsoft 365–centric** operating platform for **small UK letting agencies** (typically 1–25 staff, Microsoft 365 Business customers). The product combines CRM, property and tenancy operations, maintenance, compliance, communications, and (over time) finance and customer portals: **integrated with Entra ID and Microsoft Graph**, not a replacement for Microsoft 365.
 
 The idea evolved from replacing a fragmented legacy agency CRM toward a **vertical SaaS** that reduces tool sprawl while staying native to how agencies already work in Outlook, SharePoint, and Teams.
 
@@ -12,7 +12,7 @@ The idea evolved from replacing a fragmented legacy agency CRM toward a **vertic
 
 Letting agencies often operate across many disconnected systems: agency CRM, rent and referencing products, Outlook, SharePoint, telephony, spreadsheets, maintenance tools, and accounting. That fragmentation drives duplicate data entry, manual handoffs, weak reporting, brittle integrations, high total cost, and inconsistent user experience.
 
-Tenancy Hub aims to **consolidate operational software** in one platform that still **embraces M365** rather than fighting it.
+Letoryn aims to **consolidate operational software** in one platform that still **embraces M365** rather than fighting it.
 
 ## Target users and go-to-market shape
 
@@ -67,7 +67,7 @@ Real agencies run end-to-end processes (prospecting through compliance). **Step-
 
 ## Delivery phases
 
-Phases appear on the [roadmap](../specs/tenancy-hub-platform/roadmap.md) **Phase** column. Build in **dependency order** within each phase; re-prioritise by updating the roadmap first, then affected sub-specs. Assign GitHub issues and PRs to the matching milestone (**POC**, **Go-live**, **Later**) per [milestone-strategy.md](./milestone-strategy.md): there is no separate **MVP** milestone; informal “MVP” usually means POC complete or an agreed Go-live minimum.
+Phases appear on the [roadmap](../specs/letoryn-platform/roadmap.md) **Phase** column. Build in **dependency order** within each phase; re-prioritise by updating the roadmap first, then affected sub-specs. Assign GitHub issues and PRs to the matching milestone (**POC**, **Go-live**, **Later**) per [milestone-strategy.md](./milestone-strategy.md): there is no separate **MVP** milestone; informal “MVP” usually means POC complete or an agreed Go-live minimum.
 
 | Phase | Meaning |
 |-------|---------|
@@ -111,7 +111,7 @@ Roadmap **R12** covers, at a high level:
 ## Website and portal syndication (go-live)
 
 - **R13:** property showcase on an **existing** WordPress site via a plugin (custom post type): not a full website builder in v1.
-- **R14:** **outbound property feed** compatible with syndication services (e.g. Data Export): Tenancy Hub becomes the **source of property data**, not a replacement for aggregator relationships or Rightmove/Zoopla contracts.
+- **R14:** **outbound property feed** compatible with syndication services (e.g. Data Export): Letoryn becomes the **source of property data**, not a replacement for aggregator relationships or Rightmove/Zoopla contracts.
 
 ## Deferred capabilities
 
@@ -140,6 +140,6 @@ Keep Spec Kit artifacts **public-safe** at the level needed to implement. Partne
 | Document | Role |
 |----------|------|
 | [README.md](../README.md) | Repository entry, problem, quick links |
-| [specs/tenancy-hub-platform/roadmap.md](../specs/tenancy-hub-platform/roadmap.md) | Spec-of-specs index (R1–R15) |
+| [specs/letoryn-platform/roadmap.md](../specs/letoryn-platform/roadmap.md) | Spec-of-specs index (R1–R15) |
 | [tech-stack.md](./tech-stack.md) | .NET, Aspire, Azure, PostgreSQL, Graph boundaries |
 | [AGENTS.md](../AGENTS.md) | Contributor and agent conventions |

@@ -1,6 +1,6 @@
 # C# patterns
 
-Modern C# patterns and practices for Tenancy Hub. Apply these in all new code; tighten existing code when you touch an area.
+Modern C# patterns and practices for Letoryn. Apply these in all new code; tighten existing code when you touch an area.
 
 ## Patterns to follow
 

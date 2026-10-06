@@ -1,10 +1,10 @@
 # API contracts: Platform foundation (R1)
 
-**Base URL (local Aspire)**: Resolved via service discovery as `https+http://apiservice` from `TenancyHub.Web`; external testing uses URL from `aspire describe apiservice`.
+**Base URL (local Aspire)**: Resolved via service discovery as `https+http://apiservice` from `Letoryn.Web`; external testing uses URL from `aspire describe apiservice`.
 
 **Authentication**: `Authorization: Bearer {access_token}` from Entra (API app registration). All endpoints require authenticated caller unless noted.
 
-**Agency context**: Routine agency-scoped routes require header **`X-TenancyHub-Agency-Id: {uuid}`** matching caller's active agency (FR-002). Operator cross-agency routes use explicit **`/operator/agencies/{agencyId}/...`** paths; server verifies platform operator assignment.
+**Agency context**: Routine agency-scoped routes require header **`X-Letoryn-Agency-Id: {uuid}`** matching caller's active agency (FR-002). Operator cross-agency routes use explicit **`/operator/agencies/{agencyId}/...`** paths; server verifies platform operator assignment.
 
 **Error shape**: ASP.NET Core ProblemDetails (`application/problem+json`). No tenant leakage in titles or detail (FR-013).
 
@@ -153,7 +153,7 @@ Shared response shape for both routes below: `{ "items": [ { "occurredAt", "acto
 |--------|----------------|
 | Agency **administrator** | Agency lifecycle is **Active** and caller has **Active** membership in that agency |
 
-Requires routine agency context: header **`X-TenancyHub-Agency-Id`** MUST match `{agencyId}` (FR-002, T050). Standard and read-only members: **403** (tenant-safe).
+Requires routine agency context: header **`X-Letoryn-Agency-Id`** MUST match `{agencyId}` (FR-002, T050). Standard and read-only members: **403** (tenant-safe).
 
 ### GET `/api/v1/operator/agencies/{agencyId}/audit`
 
@@ -163,7 +163,7 @@ Requires routine agency context: header **`X-TenancyHub-Agency-Id`** MUST match 
 |--------|----------------|
 | **Platform operator** assigned to `{agencyId}` | Any lifecycle (**Active**, **Suspended**, or **Archived**) for that assigned agency |
 
-Operator cross-agency route: **does not** require `X-TenancyHub-Agency-Id` to match `{agencyId}` or agency to be **Active**; server verifies operator assignment only (same pattern as `GET /operator/agencies/{agencyId}/summary`). Operator access is auditable (T073). Agency administrators MUST use the agency route above, not this path.
+Operator cross-agency route: **does not** require `X-Letoryn-Agency-Id` to match `{agencyId}` or agency to be **Active**; server verifies operator assignment only (same pattern as `GET /operator/agencies/{agencyId}/summary`). Operator access is auditable (T073). Agency administrators MUST use the agency route above, not this path.
 
 ---
 
@@ -200,6 +200,6 @@ Standard members only (FR-010).
 
 ## OpenAPI
 
-`TenancyHub.ApiService` exposes OpenAPI 3.1 in **Development** at **`GET /openapi/v1.json`** (`AddOpenApi` + `MapOpenApi` in `Program.cs`).
+`Letoryn.ApiService` exposes OpenAPI 3.1 in **Development** at **`GET /openapi/v1.json`** (`AddOpenApi` + `MapOpenApi` in `Program.cs`).
 
 Checked-in route snapshot: **[openapi.yaml](./openapi.yaml)** (stable path index). **This document (`api-v1.md`)** remains the semantic contract for payloads, headers, and error behaviour; refresh `openapi.yaml` when route groups change materially.

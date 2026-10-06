@@ -1,7 +1,7 @@
 {
   "appHost": {
     "language": "csharp",
-    "path": "src/TenancyHub.AppHost/TenancyHub.AppHost.csproj"
+    "path": "src/Letoryn.AppHost/Letoryn.AppHost.csproj"
   },
   "channel": "stable"
 }

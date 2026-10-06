@@ -12,8 +12,8 @@ Runnable validation for the platform foundation feature after implementation. Th
 ## 1. Start the distributed application
 
 ```bash
-cd /path/to/tenancy-hub
-dotnet build TenancyHub.slnx
+cd /path/to/letoryn-m365
+dotnet build Letoryn.slnx
 aspire run
 ```
 
@@ -35,7 +35,7 @@ Note HTTPS URLs for `webfrontend` and `apiservice`.
 When EF migrations ship with implement:
 
 ```bash
-dotnet ef database update --project src/TenancyHub.Infrastructure --startup-project src/TenancyHub.ApiService
+dotnet ef database update --project src/Letoryn.Infrastructure --startup-project src/Letoryn.ApiService
 ```
 
 Apply platform operator seed per [docs/operations-rebuild-runbook.md §5](../../docs/operations-rebuild-runbook.md#5-seed-initial-platform-operator) using [scripts/r1/seed-platform-operator.sql](../../scripts/r1/seed-platform-operator.sql) (table names finalized in task T102 after first migration).
@@ -63,8 +63,8 @@ Multi-agency user: verify last-used agency default and agency switch clears stal
 | 3.6 | User has **Active** membership in Agency A and a pending **Invited** membership in Agency B | Shell opens on last-used **Active** Agency A; banner or nav prompts to open invitation acceptance; **Invited** in Agency B is not auto-activated on sign-in alone |
 | 3.7 | User has **only** **Invited** membership(s), no **Active** membership, not a platform operator with shell path | After sign-in → **invitation-acceptance** experience only (not routine agency shell); no agency notification bell; accept or decline required per invite (US1 scenario 5; tasks T101, T064) |
 | 3.8 | After User A (Agency 1) completes sign-in in step 3.2 | Within 1 minute, authorized audit query shows a **successful sign-in** audit entry for that user (FR-008; `AgencyId` may be Agency 1 when shell context is established, per T044). Intentional failed sign-in (wrong tenant user or revoked session) produces a **failed sign-in** audit entry without agency data leakage |
-| 3.9 | Work account **disabled in Entra** (or token refresh rejected) while Tenancy Hub membership remains | Sign-in or next API validation fails; no agency data; **failed sign-in** or terminated-session audit per T033/T044 (FR-001; use runbook access-token lifetime ≤ 60 minutes for POC) |
-| 3.10 | Sign in as a work account with **no** Tenancy Hub membership and **no** platform-operator global path | **Access not configured** page (T043); no agency data in UI or API |
+| 3.9 | Work account **disabled in Entra** (or token refresh rejected) while Letoryn membership remains | Sign-in or next API validation fails; no agency data; **failed sign-in** or terminated-session audit per T033/T044 (FR-001; use runbook access-token lifetime ≤ 60 minutes for POC) |
+| 3.10 | Sign in as a work account with **no** Letoryn membership and **no** platform-operator global path | **Access not configured** page (T043); no agency data in UI or API |
 | 3.11 | Sign in as **platform operator** with **zero** agency assignments and no agency memberships | **Operator home** / operator-only global flows (create agency, manage operators); **no** active agency shell context until assigned (T043; US1 scenario 9) |
 | 3.12 | *(Optional manual)* Signed-in user idle **30 minutes** without activity that resets the idle timer | Session ends; sign-in required; unsaved client state discarded (FR-001, T031/T034) |
 | 3.13 | *(Optional manual)* Signed-in session reaches **12 hours** from initial sign-in | Session ends even if recently active; sign-in required (FR-001, T031/T034) |
@@ -80,7 +80,7 @@ With User A signed in to Agency 1:
 1. Attempt `GET /api/v1/agencies/{agency2Id}/audit` (or any Agency 2 id).
 2. **Expected**: 403 or 404 with no Agency 2 payload fields.
 
-Repeat with forged `X-TenancyHub-Agency-Id` header.
+Repeat with forged `X-Letoryn-Agency-Id` header.
 
 ### 4.1 Lifecycle and membership gates (US2 scenarios 3–5)
 
@@ -162,7 +162,7 @@ Administrator/standard member on active agency: home shows coming-soon module su
 ## 9. Automated tests
 
 ```bash
-dotnet test TenancyHub.slnx --configuration Release
+dotnet test Letoryn.slnx --configuration Release
 ```
 
 Playwright C# journeys (when added) map to [docs/platform-foundation-user-journeys.md](../../docs/platform-foundation-user-journeys.md) (T089), aligned with quickstart **§3.6–§3.13**, **§4.1**, **§5.1–§5.3**, **§7** matrix, and **§8**; update the journeys doc if step numbers change.

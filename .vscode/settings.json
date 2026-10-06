@@ -24,7 +24,7 @@
         "**/obj/**": true,
         "**/.vs/**": true
     },
-    "dotnet.defaultSolution": "TenancyHub.slnx",
+    "dotnet.defaultSolution": "Letoryn.slnx",
     "dotnet.formatting.organizeImportsOnFormat": true,
     "editor.formatOnSave": true,
     "[csharp]": {

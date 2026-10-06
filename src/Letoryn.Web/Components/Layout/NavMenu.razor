@@ -1,0 +1,60 @@
+﻿@implements IDisposable
+@inject AgencyContextState AgencyContext
+@using Letoryn.Application.Navigation
+
+<FluentNav Id="main-menu" Width="260px">
+    @foreach (var item in _navItems)
+    {
+        <FluentNavItem Href="@item.Href"
+                       Match="@(item.Href == "/" ? NavLinkMatch.All : NavLinkMatch.Prefix)"
+                       IconRest="@GetIcon(item.Id, filled: false)"
+                       IconActive="@GetIcon(item.Id, filled: true)">
+            @item.Label
+        </FluentNavItem>
+    }
+</FluentNav>
+
+@code {
+    private IReadOnlyList<ShellNavigationItem> _navItems = [];
+
+    protected override void OnInitialized()
+    {
+        AgencyContext.Changed += OnContextChanged;
+        RefreshNav();
+    }
+
+    private void OnContextChanged()
+    {
+        RefreshNav();
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void RefreshNav()
+    {
+        var profile = AgencyContext.Profile;
+        if (profile is null)
+        {
+            _navItems = [];
+            return;
+        }
+
+        var context = ShellNavigationContext.FromMeProfile(profile, AgencyContext.ActiveAgencyId);
+        _navItems = ShellNavigationPolicy.GetPermittedItems(context);
+    }
+
+    private static Microsoft.FluentUI.AspNetCore.Components.Icon GetIcon(ShellNavigationItemId id, bool filled) =>
+        id switch
+        {
+            ShellNavigationItemId.Home => filled ? new Icons.Filled.Size20.Home() : new Icons.Regular.Size20.Home(),
+            ShellNavigationItemId.Members => filled ? new Icons.Filled.Size20.People() : new Icons.Regular.Size20.People(),
+            ShellNavigationItemId.AgencySettings => filled ? new Icons.Filled.Size20.Settings() : new Icons.Regular.Size20.Settings(),
+            ShellNavigationItemId.Audit => filled ? new Icons.Filled.Size20.History() : new Icons.Regular.Size20.History(),
+            ShellNavigationItemId.Invitations => filled ? new Icons.Filled.Size20.Mail() : new Icons.Regular.Size20.Mail(),
+            ShellNavigationItemId.OperatorAgencies => filled ? new Icons.Filled.Size20.Building() : new Icons.Regular.Size20.Building(),
+            ShellNavigationItemId.OperatorPlatformOperators => filled ? new Icons.Filled.Size20.Shield() : new Icons.Regular.Size20.Shield(),
+            ShellNavigationItemId.OperatorAgencyDiagnostics => filled ? new Icons.Filled.Size20.DocumentSearch() : new Icons.Regular.Size20.DocumentSearch(),
+            _ => filled ? new Icons.Filled.Size20.Navigation() : new Icons.Regular.Size20.Navigation(),
+        };
+
+    public void Dispose() => AgencyContext.Changed -= OnContextChanged;
+}

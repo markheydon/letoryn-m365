@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/markheydon/letoryn-m365/security/advisories/new
+    about: Report security issues privately (do not use public issues).
+  - name: Contributing guide
+    url: https://github.com/markheydon/letoryn-m365/blob/main/CONTRIBUTING.md
+    about: How to open pull requests and run the project locally.

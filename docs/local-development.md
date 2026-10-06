@@ -1,6 +1,6 @@
 # Local development
 
-How to build, test, and run Tenancy Hub on a developer machine. Product scope is under `specs/` via [Spec Kit](https://github.com/github/spec-kit) (see [platform roadmap](../specs/tenancy-hub-platform/roadmap.md)).
+How to build, test, and run Letoryn on a developer machine. Product scope is under `specs/` via [Spec Kit](https://github.com/github/spec-kit) (see [platform roadmap](../specs/letoryn-platform/roadmap.md)).
 
 ## Prerequisites
 
@@ -15,9 +15,9 @@ Optional: VS Code with C# Dev Kit and recommended extensions from `.vscode/exten
 ## First-time setup
 
 ```bash
-git clone <repo-url>
-cd tenancy-hub
-dotnet restore TenancyHub.slnx
+git clone https://github.com/markheydon/letoryn-m365.git
+cd letoryn-m365
+dotnet restore Letoryn.slnx
 ```
 
 Keep Aspire packages aligned with the CLI from the repository root:
@@ -29,15 +29,15 @@ aspire update --migrate
 ## Build and test
 
 ```bash
-dotnet build TenancyHub.slnx
-dotnet test TenancyHub.slnx
+dotnet build Letoryn.slnx
+dotnet test Letoryn.slnx
 ```
 
 Release configuration (matches CI):
 
 ```bash
-dotnet build TenancyHub.slnx --configuration Release
-dotnet test TenancyHub.slnx --configuration Release --no-build
+dotnet build Letoryn.slnx --configuration Release
+dotnet test Letoryn.slnx --configuration Release --no-build
 ```
 
 Build policy (warnings as errors, analyzers, XML docs): [build-quality.md](./build-quality.md).
@@ -53,12 +53,12 @@ aspire run
 Or target the AppHost explicitly:
 
 ```bash
-aspire start --apphost src/TenancyHub.AppHost/TenancyHub.AppHost.csproj
+aspire start --apphost src/Letoryn.AppHost/Letoryn.AppHost.csproj
 ```
 
 Use `--isolated` when another Aspire session might be running or you are in a git worktree.
 
-On startup, AppHost applies EF Core migrations for `TenancyHubDbContext` (migrations project: `TenancyHub.Infrastructure`) before `apiservice` becomes healthy. You do not need `dotnet ef database update` for normal local runs. Use that command for CI or when working without Aspire; use `dotnet ef migrations add` as before when authoring migrations (`DesignTimeDbContextFactory` in Infrastructure).
+On startup, AppHost applies EF Core migrations for `LetorynDbContext` (migrations project: `Letoryn.Infrastructure`) before `apiservice` becomes healthy. You do not need `dotnet ef database update` for normal local runs. Use that command for CI or when working without Aspire; use `dotnet ef migrations add` as before when authoring migrations (`DesignTimeDbContextFactory` in Infrastructure).
 
 Stop:
 
@@ -77,7 +77,7 @@ VS Code tasks: **aspire start**, **build**, **test** (`.vscode/tasks.json`).
 
 ## Secrets and configuration
 
-- **AppHost** has a `UserSecretsId` in `TenancyHub.AppHost.csproj` for local-only settings.
+- **AppHost** has a `UserSecretsId` in `Letoryn.AppHost.csproj` for local-only settings.
 - Use `dotnet user-secrets` on the AppHost or individual service projects as integrations are added.
 - Do **not** commit secrets, `.env` files with credentials, or connection strings in `appsettings*.json`.
 - Prefer Aspire parameters and user secrets for local dev; Azure Key Vault / managed identity patterns for deployment (document when introduced).

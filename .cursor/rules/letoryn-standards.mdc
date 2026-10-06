@@ -1,0 +1,13 @@
+---
+description: Letoryn standards; follow AGENTS.md and docs/
+alwaysApply: true
+---
+
+# Letoryn
+
+- Read `AGENTS.md` and `docs/` before changing C#, tests, UI, or AppHost wiring.
+- No em dashes (`—`) in UI copy, docs, commits, or PR text you write; see **Writing style** in `AGENTS.md`.
+- Do not add FluentAssertions, Moq, NUnit, MSTest, or TypeScript Playwright tests.
+- Use Fluent UI Blazor over custom CSS; see `docs/web-ui-and-css.md`.
+- AppHost: register .NET apps with `AddDotnetProject` (Aspire 13.6 Project v2), not legacy `AddProject<Projects.*>`.
+- `TreatWarningsAsErrors` is on solution-wide; fix warnings, do not weaken `Directory.Build.props` without explicit request.
