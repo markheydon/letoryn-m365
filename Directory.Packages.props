@@ -5,7 +5,7 @@
   </PropertyGroup>
   <!-- Application and framework -->
   <ItemGroup>
-    <PackageVersion Include="Aspire.Hosting.Dotnet" Version="13.6.1-preview.1.26506.6" />
+    <PackageVersion Include="Aspire.Hosting.Dotnet" Version="13.6.4-preview.1.26523.11" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.14" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.14" />
     <!-- Transitive from Microsoft.AspNetCore.OpenApi; pin patched 2.x (3.x is not compatible with ASP.NET Core 10). -->
@@ -20,7 +20,7 @@
   <!-- Aspire hosting integrations (13.6 family; AppHost SDK uses 13.6 preview) -->
   <ItemGroup>
     <!-- No stable 13.6.0 on NuGet yet; align preview with Aspire.Hosting.Dotnet -->
-    <PackageVersion Include="Aspire.Hosting.EntityFrameworkCore" Version="13.6.1-preview.1.26506.6" />
+    <PackageVersion Include="Aspire.Hosting.EntityFrameworkCore" Version="13.6.4-preview.1.26523.11" />
     <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="13.6.4" />
     <PackageVersion Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="13.6.4" />
   </ItemGroup>
