@@ -21,8 +21,8 @@
   <ItemGroup>
     <!-- No stable 13.6.0 on NuGet yet; align preview with Aspire.Hosting.Dotnet -->
     <PackageVersion Include="Aspire.Hosting.EntityFrameworkCore" Version="13.6.4-preview.1.26523.11" />
-    <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="13.6.4" />
-    <PackageVersion Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="13.6.4" />
+    <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="13.6.5" />
+    <PackageVersion Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="13.6.5" />
   </ItemGroup>
   <!-- Data access (EF Core 10) -->
   <ItemGroup>
