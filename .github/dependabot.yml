@@ -1,25 +1,20 @@
 version: 2
+
 updates:
   - package-ecosystem: nuget
-    directory: /
+    directory: "/"
     schedule:
       interval: weekly
       day: monday
       time: "04:00"
       timezone: Europe/London
     open-pull-requests-limit: 5
-    labels:
-      - type/chore
-      - priority/low
-      - status/in-review
-      - area/infrastructure
     assignees:
       - markheydon
+    labels:
+      - type/chore
     ignore:
       - dependency-name: "Microsoft.Extensions.*"
-        update-types:
-          - version-update:semver-major
-      - dependency-name: Microsoft.OpenApi
         update-types:
           - version-update:semver-major
       # Microsoft.OpenApi 3.x is not compatible with ASP.NET Core 10; stay on 2.x until a future ASP.NET release.
@@ -81,5 +76,26 @@ updates:
         patterns:
           - "*"
         update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "04:00"
+      timezone: Europe/London
+    open-pull-requests-limit: 5
+    assignees:
+      - markheydon
+    labels:
+      - type/chore
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+        update-types:
+          - major
           - minor
           - patch
