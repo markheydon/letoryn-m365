@@ -122,7 +122,7 @@ public sealed class TenancyContextMiddleware(
             logger.LogDebug(
                 "Blocked agency header request for agency {AgencyId} on path {Path}",
                 agencyId,
-                context.Request.Path);
+                LoggingSanitizer.ForLog(context.Request.Path.Value));
             await access.ExecuteFailureAsync(context);
             return;
         }
