@@ -72,6 +72,15 @@ updates:
         update-types:
           - minor
           - patch
+      # Central Microsoft.OpenApi pin must move with Microsoft.AspNetCore.OpenApi (avoids NU1109).
+      aspnet-openapi:
+        patterns:
+          - Microsoft.AspNetCore.OpenApi
+          - Microsoft.AspNetCore.Mvc.Testing
+          - Microsoft.OpenApi
+        update-types:
+          - minor
+          - patch
       other:
         patterns:
           - "*"
