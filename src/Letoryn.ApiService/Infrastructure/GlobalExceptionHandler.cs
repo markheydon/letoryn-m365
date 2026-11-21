@@ -28,8 +28,8 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
         logger.LogError(
             exception,
             "Unhandled exception processing {Method} {Path}",
-            httpContext.Request.Method,
-            httpContext.Request.Path);
+            LoggingSanitizer.ForLog(httpContext.Request.Method),
+            LoggingSanitizer.ForLog(httpContext.Request.Path.Value));
 
         var problem = Results.Problem(
             title: "An error occurred",
